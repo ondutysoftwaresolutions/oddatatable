@@ -2,5 +2,5 @@
 <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
     <cacheControl>Public</cacheControl>
     <contentType>text/css</contentType>
-    <description>CSS for the Enhanced Table</description>
+    <description>CSS for the OD Datatable</description>
 </StaticResource>

@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import CSSStyles from '@salesforce/resourceUrl/EnhancedTableCSS';
+import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import { YES_NO, EMPTY_STRING, EVENTS, DELETE_ICONS_CONFIGURATION } from 'c/odDatatableConstants';
 import { reduceErrors, getFieldType, getPrecision } from 'c/odDatatableUtils';
