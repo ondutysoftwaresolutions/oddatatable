@@ -1,0 +1,54 @@
+input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
+.option-text {
+  line-height: calc(var(--lwc-heightInput, 1.875rem) + (1px * 2));
+  --lwc-spacingXxSmall: 0px;
+  align-items: center;
+}
+
+.option-hover {
+  background-color: var(--lwc-colorBackgroundRowHover, rgb(243, 242, 242));
+  text-decoration: none;
+}
+
+.option-selected .option-text {
+  font-weight: 700;
+}
+
+.options-result {
+  padding: 0;
+  --slds-c-input-shadow: 0;
+}
+
+.no-option {
+  pointer-events: none;
+  cursor: default;
+  --lwc-spacingXxSmall: 0px;
+}
+
+.icon-button {
+  pointer-events: all !important;
+}
+
+.no-option:hover {
+  background-color: white;
+}
+
+.multilookup-input {
+  --sds-c-input-color-border: transparent;
+  --sds-c-input-color-border-focus: transparent;
+  --sds-c-input-shadow-focus: 0;
+  max-width: 160px;
+}
+
+.pill {
+  --sds-c-pill-spacing-inline-start: var(--lwc-spacingXxSmall, 0.25rem);
+  --sds-c-pill-spacing-inline-end: var(--lwc-spacingXxSmall, 0.25rem);
+}
+
+.border-multi {
+  border: var(--lwc-borderWidthThin, 1px) solid
+    var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--lwc-colorBorderInput, rgb(201, 201, 201))));
+}

@@ -1,0 +1,9 @@
+.help-text {
+  padding-left: 0.25rem;
+  margin-top: -4px;
+}
+.container {
+  min-height: 2vh;
+  display: flex;
+  align-items: center;
+}

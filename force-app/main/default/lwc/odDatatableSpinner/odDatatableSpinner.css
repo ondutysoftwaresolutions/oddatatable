@@ -1,0 +1,5 @@
+.spinner-text {
+  margin-top: 5rem;
+  z-index: 9051;
+  color: var(--lwc-colorTextLabel, rgb(62, 62, 60));
+}

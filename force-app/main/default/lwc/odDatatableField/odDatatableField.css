@@ -1,0 +1,9 @@
+.deleted-record {
+  font-style: italic;
+  opacity: 0.3;
+  background: #e7e3e3;
+  pointer-events: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,78 @@
+<template>
+  <c-od-datatable-spinner text=" " show={isLoading}></c-od-datatable-spinner>
+  <template if:false={isLoading}>
+    <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+    <template if:true={fieldsThatChanged.length}>
+      <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
+        <div class="slds-p-around--medium slds-text-heading_medium">
+          The following fields have changed, please reconfigure the table before using it as it can cause errors when
+          saving:
+        </div>
+        <ul class="slds-p-left--x-large slds-text-heading--small">
+          <template for:each={fieldsThatChanged} for:item="fl">
+            <li key={fl.name} class="slds-list--dotted">{fl.label}</li>
+          </template>
+        </ul>
+      </div>
+    </template>
+    <c-od-datatable-custom
+      key-field="_id"
+      class="od-datatable"
+      data={recordsToShow}
+      columns={columnsToShow}
+      selected-rows={selectedRowsIds}
+      hide-checkbox-column={notBulkDelete}
+      onrowselection={handleSelectRow}
+      onrowaction={handleRowAction}
+    >
+    </c-od-datatable-custom>
+    <div class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap">
+      <template if:true={showAddButton}>
+        <template if:true={addHasLabel}>
+          <lightning-button
+            label={addLabel}
+            title={addLabel}
+            icon-name="utility:add"
+            onclick={handleAdd}
+            variant="brand"
+          >
+          </lightning-button>
+        </template>
+        <template if:false={addHasLabel}>
+          <lightning-button-icon
+            icon-name="utility:add"
+            alternative-text="Add"
+            title="Add"
+            onclick={handleAdd}
+            variant="brand"
+          >
+          </lightning-button-icon>
+        </template>
+      </template>
+      <template if:true={showBulkDeleteButton}>
+        <template if:true={bulkDeleteHasLabel}>
+          <lightning-button
+            class="slds-m-left--medium"
+            label={bulkDeleteLabel}
+            title={bulkDeleteLabel}
+            icon-name="utility:delete"
+            onclick={handleBulkDelete}
+            disabled={bulkDeleteDisabled}
+          >
+          </lightning-button>
+        </template>
+        <template if:false={bulkDeleteHasLabel}>
+          <lightning-button-icon
+            class="slds-m-left--medium"
+            icon-name="utility:delete"
+            alternative-text="Delete"
+            title="Delete"
+            onclick={handleBulkDelete}
+            disabled={bulkDeleteDisabled}
+          >
+          </lightning-button-icon>
+        </template>
+      </template>
+    </div>
+  </template>
+</template>

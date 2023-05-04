@@ -1,0 +1,347 @@
+<template>
+  <template if:true={showLabel}>
+    <label for={fieldName} class={labelClasses}>
+      <span class="slds-required">{requiredStar}</span>
+      {label}
+      <template if:true={hasHelpText}>
+        <lightning-helptext class="help-text" content={helpText}></lightning-helptext>
+      </template>
+    </label>
+  </template>
+  <div class={containerClasses}>
+    <c-od-datatable-spinner text=" " show={isLoading}></c-od-datatable-spinner>
+    <template if:false={isLoading}>
+      <template if:true={isTextType}>
+        <template if:false={editable}>
+          <template if:true={isUrl}>
+            <lightning-formatted-url
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              value={theValue}
+              target="_blank"
+            >
+            </lightning-formatted-url>
+          </template>
+          <template if:true={isPhone}>
+            <lightning-formatted-phone
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              value={theValue}
+            >
+            </lightning-formatted-phone>
+          </template>
+          <template if:true={isEmail}>
+            <lightning-formatted-email
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              value={theValue}
+            >
+            </lightning-formatted-email>
+          </template>
+          <template if:true={isText}>
+            <lightning-formatted-text
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              value={theValue}
+            ></lightning-formatted-text>
+          </template>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            type={theType}
+            value={theValue}
+            max-length={maxLength}
+            name={fieldName}
+            variant="label-hidden"
+            required={required}
+            autocomplete="off"
+            message-when-value-missing=" "
+            onchange={handleChangeInput}
+            message-when-type-mismatch=" "
+            message-when-bad-input=" "
+            placeholder={placeholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isSelect}>
+        <template if:false={editable}>
+          <template if:true={isMulti}>
+            <lightning-formatted-text
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              id={fieldName}
+              value={theValue.label}
+            >
+            </lightning-formatted-text>
+          </template>
+          <template if:false={isMulti}>
+            <lightning-formatted-text
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              id={fieldName}
+              value={theValue}
+            >
+            </lightning-formatted-text>
+          </template>
+        </template>
+        <template if:true={editable}>
+          <c-od-datatable-input-autocomplete
+            element-id={fieldName}
+            name={fieldName}
+            value={theValue}
+            container-height={insidePopupHeight}
+            type={theType}
+            options={theOptions}
+            auto-focus={autoFocus}
+            object-name={parentObjectName}
+            onselect={handleSelectOption}
+            is-multi={isMulti}
+            onselectlookup={handleChangeLookupSelectedLabel}
+            current-record-id={currentRecordId}
+            placeholder={placeholder}
+            required={required}
+            opened={isOpened}
+            onfocus={handleOnFocusDropdown}
+            onblur={handleOnBlurDropdown}
+            class="slds-p-around--xx-small slds-size--1-of-1"
+          >
+          </c-od-datatable-input-autocomplete>
+        </template>
+      </template>
+      <template if:true={isCheckbox}>
+        <lightning-input
+          id={fieldName}
+          class={checkboxClasses}
+          onchange={handleChangeCheckbox}
+          variant="label-hidden"
+          type="checkbox"
+          disabled={isDisabled}
+          name={fieldName}
+          checked={theValue}
+        >
+        </lightning-input>
+      </template>
+      <template if:true={isToggle}>
+        <lightning-input
+          id={fieldName}
+          class="slds-p-around--xx-small"
+          onchange={handleChangeToggle}
+          message-toggle-active={toggleValueActive}
+          message-toggle-inactive={toggleValueInactive}
+          variant="label-hidden"
+          type="toggle"
+          disabled={isDisabled}
+          name={fieldName}
+          checked={toggleValue}
+        >
+        </lightning-input>
+      </template>
+      <template if:true={isCurrency}>
+        <template if:false={editable}>
+          <lightning-formatted-number
+            id={fieldName}
+            value={theValue}
+            format-style="currency"
+            currency-code={currencyCode}
+            minimum-fraction-digits={decimalsFormat}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+          >
+          </lightning-formatted-number>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            autocomplete="off"
+            variant="label-hidden"
+            type="number"
+            name={fieldName}
+            value={theValue}
+            formatter="currency"
+            step={decimalsStep}
+            required={required}
+            message-when-value-missing=" "
+            max={maxNumber}
+            message-when-range-overflow=" "
+            onchange={handleChangeDecimal}
+            message-when-bad-input=" "
+            placeholder={currencyPlaceholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isNumber}>
+        <template if:false={editable}>
+          <lightning-formatted-number
+            id={fieldName}
+            minimum-fraction-digits={decimalsFormat}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            variant="label-hidden"
+            value={theValue}
+          >
+          </lightning-formatted-number>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            id={fieldName}
+            autocomplete="off"
+            onchange={handleChangeNumber}
+            variant="label-hidden"
+            type="number"
+            name={fieldName}
+            value={theValue}
+            required={required}
+            message-when-value-missing=" "
+            max={maxNumber}
+            message-when-bad-input=" "
+            message-when-range-overflow=" "
+            placeholder={numberPlaceholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isPercentage}>
+        <template if:false={editable}>
+          <lightning-formatted-number
+            id={fieldName}
+            value={theValue}
+            format-style="percent"
+            minimum-fraction-digits={decimalsFormat}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+          >
+          </lightning-formatted-number>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            autocomplete="off"
+            onchange={handleChangeDecimal}
+            variant="label-hidden"
+            type="number"
+            name={fieldName}
+            message-when-bad-input=" "
+            message-when-range-overflow=" "
+            value={theValue}
+            formatter="percent"
+            step={decimalsStep}
+            required={required}
+            max={maxNumber}
+            message-when-value-missing=" "
+            placeholder={percentPlaceholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isDate}>
+        <template if:false={editable}>
+          <lightning-formatted-date-time
+            value={theValue}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            id={fieldName}
+            year="numeric"
+            month="2-digit"
+            day="2-digit"
+          >
+          </lightning-formatted-date-time>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            id={fieldName}
+            autocomplete="off"
+            onchange={handleChangeInput}
+            variant="label-hidden"
+            type="date"
+            name={fieldName}
+            message-when-bad-input=" "
+            value={theValue}
+            required={required}
+            message-when-value-missing=" "
+            placeholder={datePlaceholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isDatetime}>
+        <template if:false={editable}>
+          <lightning-formatted-date-time
+            value={theValue}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            id={fieldName}
+            year="numeric"
+            month="2-digit"
+            day="2-digit"
+            hour="2-digit"
+            minute="2-digit"
+          >
+          </lightning-formatted-date-time>
+        </template>
+        <template if:true={editable}>
+          <lightning-input
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            id={fieldName}
+            autocomplete="off"
+            onchange={handleChangeInput}
+            variant="label-hidden"
+            type="datetime"
+            name={fieldName}
+            value={theValue}
+            required={required}
+            message-when-value-missing=" "
+            message-when-bad-input=" "
+            placeholder={datePlaceholder}
+          >
+          </lightning-input>
+        </template>
+      </template>
+      <template if:true={isRichTextArea}>
+        <template if:false={editable}>
+          <lightning-formatted-rich-text
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            value={theValue}
+          >
+          </lightning-formatted-rich-text>
+        </template>
+        <template if:true={editable}>
+          <lightning-input-rich-text
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            variant="label-hidden"
+            data-name={fieldName}
+            value={theValue}
+            required={required}
+            onchange={handleChangeInputTextarea}
+            message-when-bad-input=" "
+            placeholder={placeholder}
+          >
+          </lightning-input-rich-text>
+        </template>
+      </template>
+      <template if:true={isTextArea}>
+        <template if:false={editable}>
+          <lightning-formatted-rich-text
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            value={theValue}
+          >
+          </lightning-formatted-rich-text>
+        </template>
+        <template if:true={editable}>
+          <lightning-textarea
+            id={fieldName}
+            class="slds-p-around--xx-small slds-size--1-of-1"
+            autocomplete="off"
+            variant="label-hidden"
+            data-name={fieldName}
+            value={theValue}
+            required={required}
+            max-length={maxLength}
+            onchange={handleChangeInputTextarea}
+            message-when-bad-input=" "
+            placeholder={placeholder}
+          >
+          </lightning-textarea>
+        </template>
+      </template>
+    </template>
+  </div>
+</template>

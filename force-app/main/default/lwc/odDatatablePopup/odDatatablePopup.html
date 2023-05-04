@@ -1,0 +1,44 @@
+<template>
+  <section
+    id="genericPopup"
+    role="dialog"
+    tabindex="-1"
+    aria-labelledby="generic-popup-heading"
+    aria-modal="true"
+    aria-describedby="generic-popup-content"
+    class="slds-modal slds-fade-in-open"
+  >
+    <div class={modalContainerClasses}>
+      <header class="slds-modal__header" style={style}>
+        <template if:false={hideTitleClose}>
+          <button
+            class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+            title="Close"
+            onclick={handleClose}
+          >
+            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse"> </lightning-icon>
+            <span class="slds-assistive-text">Close</span>
+          </button>
+        </template>
+        <template if:false={hideTitle}>
+          <h2 id="generic-popup-heading" class="slds-modal__title slds-hyphenate">
+            <slot name="title"></slot>
+          </h2>
+        </template>
+      </header>
+      <div class="slds-modal__content slds-is-relative" id="generic-popup-content">
+        <c-od-datatable-error error-message={showError}></c-od-datatable-error>
+        <template if:false={showError}>
+          <slot name="body"></slot>
+        </template>
+        <c-od-datatable-spinner text={spinnerMessage} show={showSpinner}></c-od-datatable-spinner>
+      </div>
+      <template if:false={hideFooter}>
+        <footer class="slds-modal__footer slds-modal__footer_directional">
+          <slot name="footer"></slot>
+        </footer>
+      </template>
+    </div>
+  </section>
+  <div class="slds-backdrop slds-backdrop_open modalBackdrops" id="modalBackdrops"></div>
+</template>

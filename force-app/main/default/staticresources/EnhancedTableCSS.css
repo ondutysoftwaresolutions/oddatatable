@@ -1,0 +1,21 @@
+.slds-modal__container {
+	min-width: 70% !important;
+}
+
+.od-datatable-dropdown-open .slds-table_header-fixed_container,
+.od-datatable-dropdown-open .slds-scrollable_y,
+.od-datatable-dropdown-open flowruntime-lwc-body,
+.od-datatable-dropdown-open .slds-modal__content,
+.od-datatable-dropdown-open .quick-actions-panel,
+.od-datatable-dropdown-open .slds-modal__content {
+  overflow: initial !important;
+}
+
+body.od-datatable-dropdown-open {
+  overflow: hidden !important;
+}
+
+.od-datatable td.slds-has-focus,
+.od-datatable th.slds-has-focus {
+  box-shadow: none !important;
+}

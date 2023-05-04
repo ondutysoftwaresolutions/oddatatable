@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>56.0</apiVersion>
+    <masterLabel>On Duty Datatable</masterLabel>
+    <description>Enhanced datatable with the ability to add and remove records</description>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen"
+            configurationEditor="c-od-datatable-configuration-editor">
+            <!-- Object Type -->
+            <propertyType name="T" extends="SObject" label="Datatable Object API Name"
+                description="Select the API Name of the SObject to use in the Datatable" />
+            <!-- Inputs -->
+            <property name="tableData" label="Data Source Record Collection" type="{T[]}"
+                role="inputOnly"
+                description="Record Collection variable containing the records to display in the datatable." />
+            <property name="columns" label="Columns" type="String" role="inputOnly" required="true"
+                default="{}"
+                description="JSON string with the columns to display in the datatable." />
+            <property name="canAdd" label="Can Add?" type="String" role="inputOnly" default="Yes"
+                description="This will add the record to the outputAddedRows and you will need to write these back to the Object with a Record Insert in the Flow." />
+            <property name="addLabel" label="Add Button Label" type="String" role="inputOnly"
+                default="Add"
+                description="Label to show in the Add button, if empty, it will only show the icon." />
+            <property name="canEdit" label="Can Edit?" type="String" role="inputOnly"
+                default="Yes"
+                description="This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow." />
+            <property name="canDelete" label="Can Delete?" type="String" role="inputOnly"
+                default="Yes"
+                description="This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
+            <property name="canBulkDelete" label="Can Bulk Delete?" type="String" role="inputOnly"
+                default="No"
+                description="Add a selection and a button to delete several at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
+            <property name="bulkDeleteLabel" label="Bulk Delete Button Label" type="String"
+                role="inputOnly" default="Delete"
+                description="Label to show in the Bulk Delete button, if empty, it will only show the icon." />
+            <!-- Hidden inputs / only used internally -->
+            <property name="objectName" label="API Object Name" type="String" role="inputOnly" />
+            <property name="uniqueTableName" label="Unique Table Name" type="String"
+                role="inputOnly" />
+            <!-- Outputs -->
+            <property name="outputAddedRows" label="Output Added Rows" type="{T[]}"
+                role="outputOnly"
+                description="Record Collection variable with all the added records in the datatable." />
+            <property name="outputEditedRows" label="Output Edited Rows" type="{T[]}"
+                role="outputOnly"
+                description="Record Collection variable with all the edited records in the datatable." />
+            <property name="outputDeletedRows" label="Output Deleted Rows" type="{T[]}"
+                role="outputOnly"
+                description="Record Collection variable with all the deleted records in the datatable." />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

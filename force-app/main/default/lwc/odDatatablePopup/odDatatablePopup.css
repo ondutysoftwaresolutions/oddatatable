@@ -1,0 +1,32 @@
+.slds-modal__content {
+  overflow: initial;
+}
+
+.slds-modal__container.lg {
+  max-width: 50vw;
+  width: 50vw;
+}
+
+.slds-modal__container.xl {
+  max-width: 70vw;
+  width: 70vw;
+}
+
+.modalBackdrops {
+  width: 100vw;
+  left: -5vw;
+}
+
+@media only screen and (max-width: 1800px) {
+  .slds-modal__container.lg {
+    max-width: 80vw;
+    width: 80vw;
+    margin: 0 !important;
+  }
+
+  .slds-modal__container.xl {
+    max-width: 90vw;
+    width: 90vw;
+    margin: 0 !important;
+  }
+}

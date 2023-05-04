@@ -1,0 +1,6 @@
+{
+  "extends": ["@salesforce/eslint-config-lwc/recommended"],
+  "rules": {
+    "@lwc/lwc/no-api-reassignments": "off"
+  }
+}

@@ -1,0 +1,12 @@
+:host {
+  --lwc-brandAccessible: #3d4a82;
+  --lwc-brandAccessibleActive: #657786;
+}
+
+.banner-section {
+  background-color: var(--lwc-brandAccessible);
+}
+
+.error-text {
+  color: red;
+}
