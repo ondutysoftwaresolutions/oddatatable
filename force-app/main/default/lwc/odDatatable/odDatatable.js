@@ -398,7 +398,7 @@ export default class ODDatatable extends LightningElement {
 
     const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === recordId);
     // doing it here as if we delete, then we don't have that index anymore
-    const record = this.recordsToShow[recordIndex];
+    let record = this.recordsToShow[recordIndex];
 
     switch (action) {
       case EVENTS.DELETE:
@@ -412,6 +412,9 @@ export default class ODDatatable extends LightningElement {
 
         // add to the valid invalids
         this._validInvalidFields[`${recordId}-${fieldName}`] = isValid;
+
+        // reassigning the record here, for the new values
+        record = this.recordsToShow[recordIndex];
 
         break;
       default:
