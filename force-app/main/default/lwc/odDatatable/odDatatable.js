@@ -49,8 +49,6 @@ export default class ODDatatable extends LightningElement {
   validate() {
     let isValid = true;
 
-    this._setSessionStorage();
-
     // check if there is at least one non valid, return the error
     if (Object.values(this._validInvalidFields).some((fa) => !fa)) {
       isValid = false;
@@ -68,6 +66,11 @@ export default class ODDatatable extends LightningElement {
         });
         return isValid;
       });
+    }
+
+    // if it's not valid, set the data in the cache
+    if (!isValid) {
+      this._setSessionStorage();
     }
 
     return {
