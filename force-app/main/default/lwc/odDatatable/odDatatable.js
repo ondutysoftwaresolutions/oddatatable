@@ -58,7 +58,7 @@ export default class ODDatatable extends LightningElement {
       // check the required fields with value, return false on the first one (this is for fields that are required but not navigated to them)
       this.columnsToShow.every((col) => {
         this.recordsToShow.every((rec) => {
-          if (col.typeAttributes.required && !rec[col.fieldName]) {
+          if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName]) {
             isValid = false;
             return false;
           }

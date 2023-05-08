@@ -330,7 +330,7 @@ export default class OdConfigurationEditor extends LightningElement {
 
       // dispatch to clean columns and also to clean the data collection
       this.handleSaveColumnsConfiguration({ detail: { value: '' } });
-      this.handleInputChange({ detail: { fieldName: 'tableData', value: '' } });
+      this.handleInputChange({ detail: { fieldName: 'tableData', value: null } });
 
       // trigger the change for the object name
       this._doDispatchChange({
