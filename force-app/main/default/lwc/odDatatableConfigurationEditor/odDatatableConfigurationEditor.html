@@ -147,6 +147,53 @@
         </template>
       </div>
     </fieldset>
+    <template if:true={canAdd}>
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>New Record Configuration</legend>
+        <c-od-datatable-input-generic
+          field-name="isMasterDetail"
+          type={inputValues.isMasterDetail.type}
+          editable
+          extra-container-classes="slds-align--absolute-center"
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          extra-label-classes="slds-align--absolute-center"
+          extra-checkbox-classes="slds-text-align--center"
+          class="slds-size--1-of-2"
+          value={inputValues.isMasterDetail.value}
+          label={inputValues.isMasterDetail.label}
+          onupdatefield={handleEnableDisableMasterDetail}
+          help-text={inputValues.isMasterDetail.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <template if:true={isMasterDetail}>
+          <div class="slds-m-top--small">
+            <lightning-button
+              label="Configure Master-Detail Fields"
+              icon-name="utility:insert_tag_field"
+              onclick={handleOpenMasterDetailFields}
+              variant="brand"
+            >
+            </lightning-button>
+            <template if:false={inputValues.masterDetailConfiguration.value}>
+              <div role="alert" class="slds-form-element__help error-text">
+                You must select at least one Master-Detail field. Click the button to do it.
+              </div>
+            </template>
+          </div>
+          <template if:true={showConfigureMasterDetailFields}>
+            <c-od-datatable-configuration-master-detail-fields
+              object-name={inputType}
+              context={builderContext}
+              onclose={handleCloseMasterDetailFields}
+              configuration={inputValues.masterDetailConfiguration.value}
+              onsave={handleSaveMasterDetailFields}
+            >
+            </c-od-datatable-configuration-master-detail-fields>
+          </template>
+        </template>
+      </fieldset>
+    </template>
     <fieldset class="slds-box slds-grid slds-wrap">
       <legend>Data</legend>
       <c-od-datatable-input-generic

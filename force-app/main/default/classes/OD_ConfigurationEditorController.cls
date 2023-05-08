@@ -131,6 +131,41 @@ public with sharing class OD_ConfigurationEditorController {
     }
   }
 
+  @AuraEnabled(cacheable=true)
+  public static List<PicklistOption> getMasterDetailFieldsForObject(String objectName) {
+    List<PicklistOption> result = new List<PicklistOption>();
+
+    try {
+      // get the object give the string with the object name
+      SObject objectInstance = (SObject) Type.forName('Schema', objectName).newInstance();
+
+      // get the fields map for the object
+      Map<String, Schema.SObjectField> fieldsMap = objectInstance.getSObjectType().getDescribe().fields.getMap();
+
+      // for each field
+      for (String fieldName : fieldsMap.keySet()) {
+        Schema.DescribeFieldResult fieldResult = fieldsMap.get(fieldName).getDescribe();
+
+        if (fieldResult.getReferenceTo().size() == 1 && !fieldResult.isDefaultedOnCreate()) {
+          // check if it's a master detail by get relationship order or if it does not have an ownerId field
+          if (fieldResult.getRelationshipOrder() != null || !fieldsMap.containsKey('OwnerId')) {
+            // add to the list
+            result.add(new PicklistOption(fieldResult.getName(), fieldResult.getLabel()));
+          }
+        }
+      }
+
+      system.debug('pabloi >>>> ' + result);
+
+      return result;
+    } catch (Exception exc) {
+      String message = 'ERROR while getting the master detail fields for the Object: ' + objectName + '.';
+      AuraHandledException e = new AuraHandledException(message);
+      e.setMessage(message);
+      throw e;
+    }
+  }
+
   /*********************************************************************************************************
    * @name			getNameFieldForObject
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>

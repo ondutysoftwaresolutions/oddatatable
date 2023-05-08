@@ -87,6 +87,16 @@ export default class ODInputGeneric extends LightningElement {
         return this.lookupSelectedLabel;
       }
 
+      // if ti's an array and disabled, do a space separated value return
+      if (Array.isArray(this.value) && this.isDisabled) {
+        let result = '';
+        this.value.forEach((vl) => {
+          result += vl.label + ' ';
+        });
+
+        return result;
+      }
+
       return this.value;
     }
 

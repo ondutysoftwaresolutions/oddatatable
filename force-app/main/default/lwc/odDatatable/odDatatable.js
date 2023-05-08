@@ -15,6 +15,10 @@ export default class ODDatatable extends LightningElement {
   // table structure
   @api tableData = [];
   @api columns;
+  @api isMasterDetail;
+  @api masterDetailConfiguration;
+  @api masterDetailField1;
+  @api masterDetailField2;
 
   // table configuration
   @api canAdd;
@@ -312,6 +316,17 @@ export default class ODDatatable extends LightningElement {
 
   _doAddRecord() {
     const newRecord = { ...DELETE_ICONS_CONFIGURATION.DELETE };
+
+    // add the master details configuration if any
+    if (this.masterDetailConfiguration) {
+      const masterDetailConfigurationParsed = JSON.parse(this.masterDetailConfiguration);
+
+      if (Object.keys(masterDetailConfigurationParsed).length > 0) {
+        Object.keys(masterDetailConfigurationParsed).forEach((res) => {
+          newRecord[masterDetailConfigurationParsed[res].apiName] = this[res];
+        });
+      }
+    }
 
     this.columnsToShow
       .filter((col) => col.type !== ROW_BUTTON_TYPE)

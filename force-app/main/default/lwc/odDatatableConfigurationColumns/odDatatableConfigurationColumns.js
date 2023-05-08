@@ -27,6 +27,7 @@ export default class OdConfigurationColumns extends LightningElement {
 
   // private variables
   _alreadyRendered = false;
+  _allFields;
 
   // =================================================================
   // lifecycle methods
@@ -243,7 +244,16 @@ export default class OdConfigurationColumns extends LightningElement {
     const { fieldName, value, ...other } = event.detail;
     const fieldAPIName = event.target.dataset.value;
 
-    // update the right field in the array
+    // update the right field in the arrays
+    // selected fields array
+    const fieldIndexSelected = this.selectedFields.findIndex((fl) => fl.value === fieldAPIName);
+    this.selectedFields[fieldIndexSelected] = {
+      ...this.selectedFields[fieldIndexSelected],
+      [fieldName]: value,
+      ...other,
+    };
+
+    // fields to display table array
     const fieldIndex = this.fieldsToDisplayTable.findIndex((fl) => fl.value === fieldAPIName);
     this.fieldsToDisplayTable[fieldIndex] = { ...this.fieldsToDisplayTable[fieldIndex], [fieldName]: value, ...other };
   }

@@ -15,6 +15,7 @@ export default class OdConfigurationEditor extends LightningElement {
   objectDropdownOpened = false;
   dataSourceOpened = false;
   showConfigureColumns = false;
+  showConfigureMasterDetailFields = false;
   errorMessage = false;
 
   _inputVariables = [];
@@ -94,6 +95,30 @@ export default class OdConfigurationEditor extends LightningElement {
     },
     objectName: {
       label: 'API Object Name',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+    },
+    isMasterDetail: {
+      label: 'Is Master-Detail?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s.',
+    },
+    masterDetailConfiguration: {
+      label: 'Master-Detail Configuration',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'JSON string with the columns and values for the master detail relationships',
+    },
+    masterDetailField1: {
+      label: 'First Master-Detail Field',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+    },
+    masterDetailField2: {
+      label: 'Second Master-Detail Field',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
     },
@@ -211,6 +236,10 @@ export default class OdConfigurationEditor extends LightningElement {
     return this.inputValues.canBulkDelete.value === YES_NO.YES;
   }
 
+  get isMasterDetail() {
+    return this.inputValues.isMasterDetail.value === YES_NO.YES;
+  }
+
   get canDeleteEditable() {
     return !this.canBulkDelete;
   }
@@ -314,6 +343,12 @@ export default class OdConfigurationEditor extends LightningElement {
     }
   }
 
+  handleEnableDisableMasterDetail(event) {
+    this.handleInputChange(event);
+
+    this.handleSaveMasterDetailFields({ detail: { value: '' } });
+  }
+
   handleInputTypeChange(event) {
     if (event && event.detail) {
       const newValue = event.detail.value;
@@ -331,6 +366,7 @@ export default class OdConfigurationEditor extends LightningElement {
       // dispatch to clean columns and also to clean the data collection
       this.handleSaveColumnsConfiguration({ detail: { value: '' } });
       this.handleInputChange({ detail: { fieldName: 'tableData', value: null } });
+      this.handleSaveMasterDetailFields({ detail: { value: '' } });
 
       // trigger the change for the object name
       this._doDispatchChange({
@@ -349,6 +385,14 @@ export default class OdConfigurationEditor extends LightningElement {
     this.showConfigureColumns = false;
   }
 
+  handleOpenMasterDetailFields() {
+    this.showConfigureMasterDetailFields = true;
+  }
+
+  handleCloseMasterDetailFields() {
+    this.showConfigureMasterDetailFields = false;
+  }
+
   handleSaveColumnsConfiguration(event) {
     if (event && event.detail) {
       const detail = {
@@ -360,6 +404,47 @@ export default class OdConfigurationEditor extends LightningElement {
       this._doDispatchChange(detail);
 
       this.handleCloseColumnsConfigurator();
+    }
+  }
+
+  handleSaveMasterDetailFields(event) {
+    if (event && event.detail) {
+      // dispatch the configuration
+      let detail = {
+        name: 'masterDetailConfiguration',
+        newValue: event.detail.value,
+        newValueDataType: 'string',
+      };
+
+      this._doDispatchChange(detail);
+
+      if (event.detail.value) {
+        // dispatch each field (2 for master details)
+        const mdDetails = JSON.parse(event.detail.value);
+
+        Object.keys(mdDetails).forEach((fld) => {
+          detail = {
+            name: fld,
+            newValue: `{!${mdDetails[fld].defaultValue}}`,
+            newValueDataType: 'string',
+          };
+
+          this._doDispatchChange(detail);
+        });
+      } else {
+        this._doDispatchChange({
+          name: 'masterDetailField1',
+          newValue: null,
+          newValueDataType: 'string',
+        });
+        this._doDispatchChange({
+          name: 'masterDetailField2',
+          newValue: null,
+          newValueDataType: 'string',
+        });
+      }
+
+      this.handleCloseMasterDetailFields();
     }
   }
 }

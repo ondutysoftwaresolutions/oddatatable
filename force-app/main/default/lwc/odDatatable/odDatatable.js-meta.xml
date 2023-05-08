@@ -37,7 +37,18 @@
             <property name="bulkDeleteLabel" label="Bulk Delete Button Label" type="String"
                 role="inputOnly" default="Delete"
                 description="Label to show in the Bulk Delete button, if empty, it will only show the icon." />
+            <property name="isMasterDetail" label="Is Master-Detail?" type="String" role="inputOnly"
+                default="No"
+                description="Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s." />
+            <property name="masterDetailField1" label="First Master-Detail Field" type="String"
+                role="inputOnly" />
+            <property name="masterDetailField2" label="Second Master-Detail Field" type="String"
+                role="inputOnly" />
             <!-- Hidden inputs / only used internally -->
+            <property name="masterDetailConfiguration" label="Master-Detail Configuration"
+                type="String" role="inputOnly"
+                default="{}"
+                description="JSON string with the columns and values for the master detail relationships" />
             <property name="objectName" label="API Object Name" type="String" role="inputOnly" />
             <property name="uniqueTableName" label="Unique Table Name" type="String"
                 role="inputOnly" />
