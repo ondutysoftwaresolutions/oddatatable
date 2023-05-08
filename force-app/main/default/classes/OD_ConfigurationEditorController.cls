@@ -131,6 +131,14 @@ public with sharing class OD_ConfigurationEditorController {
     }
   }
 
+  /*********************************************************************************************************
+   * @name			getMasterDetailFieldsForObject
+   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
+   * @created			08 / 05 / 2023
+   * @description		Get a list of available master-detail fields for the object to use in the table
+   * @param			String objectName : The name of the object to get the fields for
+   * @return			List of the picklist options to use in the UI
+   **********************************************************************************************************/
   @AuraEnabled(cacheable=true)
   public static List<PicklistOption> getMasterDetailFieldsForObject(String objectName) {
     List<PicklistOption> result = new List<PicklistOption>();
@@ -154,8 +162,6 @@ public with sharing class OD_ConfigurationEditorController {
           }
         }
       }
-
-      system.debug('pabloi >>>> ' + result);
 
       return result;
     } catch (Exception exc) {

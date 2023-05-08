@@ -23,7 +23,7 @@ public class OD_ConfigurationEditorControllerTest {
 
     Test.stopTest();
 
-    Assert.isTrue(result.size() > 0, 'We couldn\' find any object');
+    Assert.isTrue(result.size() > 0, 'We couldn\'t find any object');
   }
 
   @IsTest
@@ -36,7 +36,7 @@ public class OD_ConfigurationEditorControllerTest {
 
     Test.stopTest();
 
-    Assert.isTrue(result.size() > 0, 'We couldn\' find any field for the Account object');
+    Assert.isTrue(result.size() > 0, 'We couldn\'t find any field for the Account object');
   }
 
   @IsTest
@@ -72,7 +72,7 @@ public class OD_ConfigurationEditorControllerTest {
 
     Test.stopTest();
 
-    Assert.isTrue(result.size() > 0, 'We couldn\' find any lookup record');
+    Assert.isTrue(result.size() > 0, 'We couldn\'t find any lookup record');
     Assert.areEqual(result[0].label, con.LastName, 'Wrong label found');
   }
 
@@ -142,6 +142,50 @@ public class OD_ConfigurationEditorControllerTest {
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('ERROR while getting the record for the Object: Contact and the Id: null.'),
+        'Wrong error message'
+      );
+    }
+
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testGetMasterDetailFieldsForObjectSuccessFound() {
+    Test.startTest();
+
+    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+      'OpportunityLineItem'
+    );
+
+    Test.stopTest();
+
+    Assert.isTrue(result.size() > 1, 'We couldn\'t find any field for the OpportunityLineItem object');
+  }
+
+  @IsTest
+  static void testGetMasterDetailFieldsForObjectSuccessNotFound() {
+    Test.startTest();
+
+    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+      'Account'
+    );
+
+    Test.stopTest();
+
+    Assert.isTrue(result.size() == 0, 'We could find at least one field for the Account object');
+  }
+
+  @IsTest
+  static void testGetMasterDetailFieldsForObjectFail() {
+    Test.startTest();
+
+    try {
+      List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+        'OpportunityProduct'
+      );
+    } catch (AuraHandledException e) {
+      Assert.isTrue(
+        e.getMessage().contains('ERROR while getting the master detail fields for the Object: OpportunityProduct'),
         'Wrong error message'
       );
     }

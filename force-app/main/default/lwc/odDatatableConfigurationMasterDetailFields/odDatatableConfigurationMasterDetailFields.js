@@ -43,9 +43,14 @@ export default class OdDatatableConfigurationMasterDetailFields extends Lightnin
   _getFields({ error, data }) {
     if (data) {
       this.isLoading = false;
-      this.fields = JSON.parse(JSON.stringify(data));
 
-      this._selectFields();
+      if (data.length > 0) {
+        this.fields = JSON.parse(JSON.stringify(data));
+
+        this._selectFields();
+      } else {
+        this.errorMessage = `We couldn't find any Master-Detail field in the ${this.objectName} object`;
+      }
     } else if (error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(error);
