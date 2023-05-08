@@ -211,7 +211,11 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get decimalsStep() {
-    return 1 / Math.pow(10, this.scale);
+    if (this.scale > 0) {
+      return 1 / Math.pow(10, this.scale);
+    }
+
+    return 1;
   }
 
   get theOptions() {
