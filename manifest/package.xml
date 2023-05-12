@@ -5,10 +5,6 @@
         <name>ApexClass</name>
     </types>
     <types>
-        <members>OD_Name_Field</members>
-        <name>CustomLabel</name>
-    </types>
-    <types>
         <members>*</members>
         <name>LightningComponentBundle</name>
     </types>

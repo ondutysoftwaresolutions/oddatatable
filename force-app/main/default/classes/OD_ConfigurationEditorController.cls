@@ -181,26 +181,21 @@ public with sharing class OD_ConfigurationEditorController {
    * @return			String with the API Name of the field name
    **********************************************************************************************************/
   private static String getNameFieldForObject(String objectName) {
-    // get the name field to return, first try with a custom name field (to support customization of display)
-    String nameField = Label.OD_Name_Field;
-
     // get the schema
     Schema.SObjectType targetType = Schema.getGlobalDescribe().get(objectName);
     Map<String, Schema.SObjectField> fieldMap = targetType.getDescribe().fields.getMap();
 
+    // check for the name field (standard)
+    String nameField = 'Name';
+
     if (!fieldMap.containsKey(nameField)) {
-      // then check for the name field (standard)
-      nameField = 'Name';
+      // lastly search by the name field property (CaseNumber e.g.)
+      for (Schema.SObjectField field : fieldMap.values()) {
+        Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
 
-      if (!fieldMap.containsKey(nameField)) {
-        // lastly search by the name field property (CaseNumber e.g.)
-        for (Schema.SObjectField field : fieldMap.values()) {
-          Schema.DescribeFieldResult fieldDescribe = field.getDescribe();
-
-          if (fieldDescribe.isNameField()) {
-            nameField = fieldDescribe.getName();
-            break;
-          }
+        if (fieldDescribe.isNameField()) {
+          nameField = fieldDescribe.getName();
+          break;
         }
       }
     }
