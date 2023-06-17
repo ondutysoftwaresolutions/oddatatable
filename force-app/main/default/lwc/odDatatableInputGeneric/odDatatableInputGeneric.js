@@ -323,7 +323,8 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   handleChangeNumber(event) {
-    this._doUpdateField(event.target.name, parseInt(event.target.value, 10), event.target.checkValidity());
+    const valueToSend = this.decimalsFormat > 0 ? parseFloat(event.target.value) : parseInt(event.target.value, 10);
+    this._doUpdateField(event.target.name, valueToSend, event.target.checkValidity());
   }
 
   handleChangeDecimal(event) {
