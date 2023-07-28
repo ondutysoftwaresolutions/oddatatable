@@ -138,3 +138,7 @@ export function getFieldType(type) {
 export function getPrecision(field) {
   return field.precision > 0 ? field.precision - field.scale : field.digits;
 }
+
+export function generateRandomNumber(stringLength = 36, sliceStart = 2, sliceEnd = 12) {
+  return Math.random().toString(stringLength).slice(sliceStart, sliceEnd);
+}

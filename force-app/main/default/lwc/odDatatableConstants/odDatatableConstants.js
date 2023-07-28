@@ -14,6 +14,7 @@ export const FIELD_TYPES = {
   MULTISELECT: 'multipicklist',
   PERCENTAGE: 'percent',
   PHONE: 'phone',
+  RADIO_BUTTON_TYPE: 'radioButtonType',
   RICH_TEXTAREA: 'rich_textarea',
   SELECT: 'picklist',
   STRING: 'string',
@@ -123,6 +124,11 @@ export const YES_NO = {
   NO: 'No',
 };
 
+export const INLINE_FLOW = {
+  INLINE: 'Inline',
+  FLOW: 'Flow',
+};
+
 export const EMPTY_STRING = '--empty--';
 
 export const EVENTS = {
@@ -132,7 +138,11 @@ export const EVENTS = {
   UNDELETE: 'undelete',
 };
 
-export const DELETE_ICONS_CONFIGURATION = {
+export const ROW_BUTTON_CONFIGURATION = {
+  EDIT: {
+    _editAction: EVENTS.CHANGE,
+    _editLabel: 'Edit',
+  },
   DELETE: {
     _deleteIcon: 'utility:delete',
     _deleteAction: EVENTS.DELETE,
@@ -144,3 +154,18 @@ export const DELETE_ICONS_CONFIGURATION = {
     _deleteTooltip: 'Restore this record',
   },
 };
+
+export const FLOW_DATA_TYPES = [
+  {
+    value: 'String',
+    label: 'Text',
+  },
+  {
+    value: 'Number',
+    label: 'Number',
+  },
+  {
+    value: 'Boolean',
+    label: 'Boolean',
+  },
+];

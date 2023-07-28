@@ -1,23 +1,54 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import getObjects from '@salesforce/apex/OD_ConfigurationEditorController.getObjects';
-import { FIELD_TYPES, YES_NO, EMPTY_STRING } from 'c/odDatatableConstants';
-import { reduceErrors } from 'c/odDatatableUtils';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
+import getConfiguration from '@salesforce/apex/OD_ConfigurationEditorController.getConfiguration';
+import { FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
+import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
 
 export default class OdConfigurationEditor extends LightningElement {
   @api genericTypeMappings;
   @api builderContext;
 
   @track objectTypes = [];
+  @track flows = [];
 
+  // constants
   fieldTypes = FIELD_TYPES;
   yesNo = YES_NO;
+  inlineFlow = INLINE_FLOW;
+
+  // state
   isLoading = true;
-  objectDropdownOpened = false;
-  dataSourceOpened = false;
-  showConfigureColumns = false;
-  showConfigureMasterDetailFields = false;
   errorMessage = false;
 
+  // dropdowns
+  @track dropdowns = {
+    objectName: false,
+    tableData: false,
+    addFlowName: false,
+    editFlowName: false,
+  };
+  inlineFlowOptions = [
+    {
+      label: INLINE_FLOW.INLINE,
+      value: INLINE_FLOW.INLINE,
+    },
+    {
+      label: INLINE_FLOW.FLOW,
+      value: INLINE_FLOW.FLOW,
+    },
+  ];
+
+  // popups
+  showConfigureColumns = false;
+  showConfigureMasterDetailFields = false;
+  showFlowInputVariables = false;
+
+  // flow inputs
+  flowInputVariablesType;
+  flowInputs;
+
+  // private
   _inputVariables = [];
 
   @track inputValues = {
@@ -50,6 +81,27 @@ export default class OdConfigurationEditor extends LightningElement {
       canBeEmpty: true,
       helpText: 'Label to show in the Add button, if empty, it will only show the icon.',
     },
+    addType: {
+      label: 'Add Type',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: INLINE_FLOW.INLINE,
+      helpText: 'Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow.',
+    },
+    addFlowName: {
+      label: 'Flow Name',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: '',
+      helpText:
+        "Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed",
+    },
+    addFlowInputVariables: {
+      label: 'Flow Input Variables',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'JSON string with the input variables to send to the flow.',
+    },
     canEdit: {
       label: 'Can Edit?',
       type: FIELD_TYPES.TOGGLE,
@@ -57,6 +109,39 @@ export default class OdConfigurationEditor extends LightningElement {
       value: YES_NO.YES,
       helpText:
         "This will add a flag 'isEdited' to the record and you will need to write these back to the Object with a Record Update in the Flow.",
+    },
+    editType: {
+      label: 'Edit Type',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: INLINE_FLOW.INLINE,
+      linked: [
+        {
+          field: 'canBulkEdit',
+          on: INLINE_FLOW.FLOW,
+          value: YES_NO.NO,
+        },
+        {
+          field: 'addType',
+          on: INLINE_FLOW.FLOW,
+        },
+      ],
+      helpText:
+        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow',
+    },
+    editFlowName: {
+      label: 'Flow Name',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: '',
+      helpText:
+        "Screen flow name to fire whenever the edit button in the row is clicked.  A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed",
+    },
+    editFlowInputVariables: {
+      label: 'Flow Input Variables',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'JSON string with the input variables to send to the flow.',
     },
     canDelete: {
       label: 'Can Delete?',
@@ -71,10 +156,12 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
-      linked: {
-        field: 'canDelete',
-        on: YES_NO.YES,
-      },
+      linked: [
+        {
+          field: 'canDelete',
+          on: YES_NO.YES,
+        },
+      ],
       helpText:
         "Add a selection and a button to delete several at one time. This will add a flag 'isDeleted' to the record and you will need to write these back to the Object with a Record Delete in the Flow.",
     },
@@ -86,11 +173,50 @@ export default class OdConfigurationEditor extends LightningElement {
       canBeEmpty: true,
       helpText: 'Label to show in the Bulk Delete button, if empty, it will only show the icon.',
     },
+    canBulkEdit: {
+      label: 'Can Bulk Edit?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      linked: [
+        {
+          field: 'canEdit',
+          on: YES_NO.YES,
+        },
+      ],
+      helpText:
+        'Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow.',
+    },
+    bulkEditLabel: {
+      label: 'Bulk Edit Label',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: 'Bulk Edit',
+      canBeEmpty: true,
+      helpText: 'Label to show in the Bulk Edit button, if empty, it will only show the icon.',
+    },
+    inlineSave: {
+      label: 'Save Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving.',
+    },
+    saveLabel: {
+      label: 'Save Label',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: 'Save',
+      canBeEmpty: true,
+      helpText: 'Label to show in the Save button if inline save is enabled.',
+    },
+
     // internal use
     uniqueTableName: {
       label: 'Unique Table Name',
       type: FIELD_TYPES.TEXT,
-      value: Math.random().toString(36).slice(2, 10),
+      value: generateRandomNumber(36, 2, 10),
       valueType: FIELD_TYPES.STRING,
     },
     objectName: {
@@ -125,13 +251,21 @@ export default class OdConfigurationEditor extends LightningElement {
   };
 
   // =================================================================
+  // lifecycle methods
+  // =================================================================
+  connectedCallback() {
+    Promise.all([loadStyle(this, CSSStyles)]);
+  }
+
+  // =================================================================
   // wire methods
   // =================================================================
-  @wire(getObjects)
-  _getObjects({ error, data }) {
+  @wire(getConfiguration)
+  _getConfiguration({ error, data }) {
     if (data) {
       this.isLoading = false;
-      this.objectTypes = data;
+      this.objectTypes = data.objects;
+      this.flows = data.flows;
     } else if (error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(error);
@@ -150,6 +284,22 @@ export default class OdConfigurationEditor extends LightningElement {
       validity.push({
         key: 'columns',
         errorString: 'You must select at least one column.',
+      });
+    }
+
+    // check flow names if flow add
+    if (this.inputValues.addType.value === INLINE_FLOW.FLOW && !this.inputValues.addFlowName.value) {
+      validity.push({
+        key: 'addFlowName',
+        errorString: 'You must select a Flow if Add Type is Flow',
+      });
+    }
+
+    // check flow names if flow edit
+    if (this.inputValues.editType.value === INLINE_FLOW.FLOW && !this.inputValues.editFlowName.value) {
+      validity.push({
+        key: 'editFlowName',
+        errorString: 'You must select a Flow if Edit Type is Flow',
       });
     }
 
@@ -232,8 +382,28 @@ export default class OdConfigurationEditor extends LightningElement {
     return this.inputValues.canAdd.value === YES_NO.YES;
   }
 
+  get canEdit() {
+    return this.inputValues.canEdit.value === YES_NO.YES;
+  }
+
+  get editInline() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get addInline() {
+    return this.inputValues.addType.value === INLINE_FLOW.INLINE;
+  }
+
+  get canDelete() {
+    return this.inputValues.canDelete.value === YES_NO.YES;
+  }
+
   get canBulkDelete() {
     return this.inputValues.canBulkDelete.value === YES_NO.YES;
+  }
+
+  get canBulkEdit() {
+    return this.inputValues.canBulkEdit.value === YES_NO.YES;
   }
 
   get isMasterDetail() {
@@ -242,6 +412,18 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get canDeleteEditable() {
     return !this.canBulkDelete;
+  }
+
+  get canEditEditable() {
+    return !this.canBulkEdit;
+  }
+
+  get addTypeEditable() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get inlineSave() {
+    return this.inputValues.inlineSave.value === YES_NO.YES;
   }
 
   // =================================================================
@@ -287,20 +469,16 @@ export default class OdConfigurationEditor extends LightningElement {
   // =================================================================
   // handler methods
   // =================================================================
-  handleOnFocusDropdown() {
-    this.objectDropdownOpened = true;
+  handleOnFocusDropdown(event) {
+    const fieldName = event.target.fieldName;
+
+    this.dropdowns[fieldName] = true;
   }
 
-  handleOnBlurDropdown() {
-    this.objectDropdownOpened = false;
-  }
+  handleOnBlurDropdown(event) {
+    const fieldName = event.target.fieldName;
 
-  handleDataOnFocusDropdown() {
-    this.dataSourceOpened = true;
-  }
-
-  handleDataOnBlurDropdown() {
-    this.dataSourceOpened = false;
+    this.dropdowns[fieldName] = false;
   }
 
   handleInputChange(event) {
@@ -322,23 +500,22 @@ export default class OdConfigurationEditor extends LightningElement {
       this._doDispatchChange(detail);
 
       // if we have a linked element, dispatch that too with the same value
-      if (inputValue.linked) {
-        const linkedValue = this.inputValues[inputValue.linked.field];
+      if (inputValue.linked && inputValue.linked.length > 0) {
+        inputValue.linked.forEach((linked) => {
+          const linkedValue = this.inputValues[linked.field];
 
-        // only if they are of the same type and the condition is met (or no condition)
-        if (
-          linkedValue.type === inputValue.type &&
-          ((inputValue.linked.on && inputValue.linked.on === value) || !inputValue.linked.on)
-        ) {
-          // dispatch the change
-          const detailLinked = {
-            name: inputValue.linked.field,
-            newValue: value,
-            newValueDataType: linkedValue.valueType,
-          };
+          // only if they are of the same type and the condition is met (or no condition)
+          if (linkedValue.valueType === inputValue.valueType && ((linked.on && linked.on === value) || !linked.on)) {
+            // dispatch the change
+            const detailLinked = {
+              name: linked.field,
+              newValue: linked.value || value,
+              newValueDataType: linkedValue.valueType,
+            };
 
-          this._doDispatchChange(detailLinked);
-        }
+            this._doDispatchChange(detailLinked);
+          }
+        });
       }
     }
   }
@@ -391,6 +568,32 @@ export default class OdConfigurationEditor extends LightningElement {
 
   handleCloseMasterDetailFields() {
     this.showConfigureMasterDetailFields = false;
+  }
+
+  handleOpenFlowInputVariables(event) {
+    this.flowInputVariablesType = event.target.name;
+    this.flowInputs = this.inputValues[event.target.name].value;
+    this.showFlowInputVariables = true;
+  }
+
+  handleCloseFlowInputVariables() {
+    this.flowInputVariablesType = null;
+    this.flowInputs = null;
+    this.showFlowInputVariables = false;
+  }
+
+  handleSaveFlowInputVariables(event) {
+    if (event && event.detail) {
+      const detail = {
+        name: this.flowInputVariablesType,
+        newValue: event.detail.value,
+        newValueDataType: 'string',
+      };
+
+      this._doDispatchChange(detail);
+
+      this.handleCloseFlowInputVariables();
+    }
   }
 
   handleSaveColumnsConfiguration(event) {

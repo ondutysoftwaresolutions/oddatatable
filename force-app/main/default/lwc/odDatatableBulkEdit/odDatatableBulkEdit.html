@@ -1,0 +1,62 @@
+<template>
+  <c-od-datatable-popup onclose={handleClose} container-classes="lg" backdrop-classes="modalBackdropsBulkEdit">
+    <div slot="title" class="title-popup">{title}</div>
+    <div slot="body" class={bodyClasses}>
+      <div class="slds-grid slds-wrap">
+        <template for:each={fieldsToShow} for:item="fld">
+          <div key={fld.fieldName} class="slds-size--1-of-2">
+            <c-od-datatable-input-generic
+              type={fld.type}
+              editable
+              field-name={fld.fieldName}
+              value={fld.value}
+              options={fld.options}
+              onupdatefield={handleUpdateField}
+              required={fld.required}
+              label={fld.label}
+              opened={fld.opened}
+              parent-object-name={fld.parentObjectName}
+              precision={fld.precision}
+              is-html={fld.isHtml}
+              scale={fld.scale}
+              max-length={fld.maxLength}
+              is-multi={fld.isMulti}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+            >
+            </c-od-datatable-input-generic>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div slot="footer" class="footer-popup slds-grid">
+      <div class="slds-align--absolute-center slds-size--12-of-12">
+        <c-od-datatable-input-generic
+          field-name="onlyEmpty"
+          type={fieldTypes.TOGGLE}
+          editable
+          toggle-value-active=" "
+          toggle-value-inactive=" "
+          class="slds-p-right--medium"
+          extra-label-classes="slds-align--absolute-center"
+          value={onlyEmpty}
+          toggle-label="Only update if empty?"
+          onupdatefield={handleToggleIfEmpty}
+          help-text="Only update the fields in the selected rows if the current value is empty."
+        >
+        </c-od-datatable-input-generic>
+        <lightning-button
+          variant="brand"
+          disabled={disabledUpdate}
+          name="update"
+          label="Update Selected Rows"
+          title="Update Selected Rows"
+          onclick={handleUpdateRows}
+          class="slds-m-right--large"
+        >
+        </lightning-button>
+        <lightning-button name="close" label="Close" title="Close" onclick={handleClose}> </lightning-button>
+      </div>
+    </div>
+  </c-od-datatable-popup>
+</template>

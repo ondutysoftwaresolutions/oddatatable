@@ -34,6 +34,7 @@ export default class ODInputGeneric extends LightningElement {
   @api extraContainerClasses = '';
   @api toggleValueActive = 'Active';
   @api toggleValueInactive = 'Inactive';
+  @api toggleLabel;
   @api insideDatatable = false;
   @api maxLength = 255;
   @api isHtml = false;
@@ -79,6 +80,10 @@ export default class ODInputGeneric extends LightningElement {
   // =======================================================================================================================================================================================================================================
   get showLabel() {
     return this.label;
+  }
+
+  get variantToggle() {
+    return this.toggleLabel ? 'label-stacked' : 'label-hidden';
   }
 
   get theValue() {
@@ -184,6 +189,10 @@ export default class ODInputGeneric extends LightningElement {
 
   get isRichTextArea() {
     return this.theType === FIELD_TYPES.TEXTAREA && this.isHtml;
+  }
+
+  get isRadioButtonType() {
+    return this.theType === FIELD_TYPES.RADIO_BUTTON_TYPE;
   }
 
   get isDisabled() {

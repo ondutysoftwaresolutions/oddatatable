@@ -2,6 +2,7 @@
   <c-od-datatable-spinner text=" " show={isLoading}></c-od-datatable-spinner>
   <template if:false={isLoading}>
     <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+    <c-od-datatable-spinner text=" " show={isSaving}></c-od-datatable-spinner>
     <template if:true={fieldsThatChanged.length}>
       <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
         <div class="slds-p-around--medium slds-text-heading_medium">
@@ -21,7 +22,7 @@
       data={recordsToShow}
       columns={columnsToShow}
       selected-rows={selectedRowsIds}
-      hide-checkbox-column={notBulkDelete}
+      hide-checkbox-column={notBulkOperation}
       onrowselection={handleSelectRow}
       onrowaction={handleRowAction}
     >
@@ -57,7 +58,7 @@
             title={bulkDeleteLabel}
             icon-name="utility:delete"
             onclick={handleBulkDelete}
-            disabled={bulkDeleteDisabled}
+            disabled={bulkOperationDisabled}
           >
           </lightning-button>
         </template>
@@ -65,14 +66,54 @@
           <lightning-button-icon
             class="slds-m-left--medium"
             icon-name="utility:delete"
-            alternative-text="Delete"
-            title="Delete"
+            alternative-text={bulkDeleteLabel}
+            title={bulkDeleteLabel}
             onclick={handleBulkDelete}
-            disabled={bulkDeleteDisabled}
+            disabled={bulkOperationDisabled}
+          >
+          </lightning-button-icon>
+        </template>
+      </template>
+      <template if:true={showBulkEditButton}>
+        <template if:true={bulkEditHasLabel}>
+          <lightning-button
+            class="slds-m-left--medium"
+            label={bulkEditLabel}
+            title={bulkEditLabel}
+            icon-name="utility:edit"
+            onclick={handleOpenBulkEdit}
+            disabled={bulkOperationDisabled}
+          >
+          </lightning-button>
+        </template>
+        <template if:false={bulkEditHasLabel}>
+          <lightning-button-icon
+            class="slds-m-left--medium"
+            icon-name="utility:edit"
+            alternative-text={bulkEditLabel}
+            title={bulkEditLabel}
+            onclick={handleOpenBulkEdit}
+            disabled={bulkOperationDisabled}
           >
           </lightning-button-icon>
         </template>
       </template>
     </div>
+    <template if:true={showSaveButtons}>
+      <div class="slds-align--absolute-center slds-grid slds-wrap">
+        <lightning-button label="Cancel" onclick={handleCancel}> </lightning-button>
+        <lightning-button class="slds-m-left--xx-small" label={saveLabel} variant="brand" onclick={handleSave}>
+        </lightning-button>
+      </div>
+    </template>
+    <template if:true={showBulkEditPopup}>
+      <c-od-datatable-bulk-edit
+        title={bulkEditLabel}
+        fields={columnsForBulkEdit}
+        onclose={handleCloseBulkEdit}
+        onupdaterows={handleBulkEditRows}
+      >
+      </c-od-datatable-bulk-edit>
+    </template>
   </template>
 </template>

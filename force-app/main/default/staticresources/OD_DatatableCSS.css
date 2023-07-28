@@ -2,17 +2,19 @@
 	min-width: 70% !important;
 }
 
-.od-datatable-dropdown-open .slds-table_header-fixed_container,
-.od-datatable-dropdown-open .slds-scrollable_y,
-.od-datatable-dropdown-open flowruntime-lwc-body,
-.od-datatable-dropdown-open .slds-modal__content,
-.od-datatable-dropdown-open .quick-actions-panel,
-.od-datatable-dropdown-open .slds-modal__content {
+.od-datatable-dropdown-open .od-datatable .slds-table_header-fixed_container,
+.od-datatable-dropdown-open .od-datatable .slds-scrollable_y {
   overflow: initial !important;
 }
 
-body.od-datatable-dropdown-open {
-  overflow: hidden !important;
+#wrapper-body > .quick-actions-panel, 
+#wrapper-body > .quick-actions-panel > .slds-modal__content,
+.od-datatable-dropdown-open flowruntime-lwc-body {
+  overflow-y: hidden !important;
+}
+
+.od-datatable-dropdown-open flowruntime-lwc-body {
+  margin-right: 15px !important;
 }
 
 .od-datatable td.slds-has-focus,

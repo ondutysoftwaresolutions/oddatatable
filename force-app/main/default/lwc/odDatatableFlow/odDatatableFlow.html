@@ -1,0 +1,12 @@
+<template>
+  <lightning-modal-body class="slds-is-relative">
+    <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+    <lightning-flow
+      flow-input-variables={inputVariables}
+      flow-api-name={flowName}
+      class="slds-is-relative"
+      onstatuschange={handleStatusChange}
+    >
+    </lightning-flow>
+  </lightning-modal-body>
+</template>

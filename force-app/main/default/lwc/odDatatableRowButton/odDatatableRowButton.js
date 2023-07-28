@@ -5,6 +5,19 @@ export default class OdDatatableRowButton extends LightningElement {
   @api iconName;
   @api tooltip;
   @api name;
+  @api label;
+  @api isDeleted;
+  @api disableIfDeleted;
+
+  get isIconButton() {
+    return this.iconName;
+  }
+
+  get cellClasses() {
+    return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${
+      this.disableIfDeleted && this.isDeleted ? 'disabled' : ''
+    }`;
+  }
 
   handleClick() {
     const event = new CustomEvent('rowaction', {

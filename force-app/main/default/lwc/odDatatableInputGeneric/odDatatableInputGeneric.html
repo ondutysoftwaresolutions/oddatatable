@@ -122,9 +122,10 @@
           id={fieldName}
           class="slds-p-around--xx-small"
           onchange={handleChangeToggle}
+          label={toggleLabel}
           message-toggle-active={toggleValueActive}
           message-toggle-inactive={toggleValueInactive}
-          variant="label-hidden"
+          variant={variantToggle}
           type="toggle"
           disabled={isDisabled}
           name={fieldName}
@@ -343,6 +344,18 @@
           >
           </lightning-textarea>
         </template>
+      </template>
+      <template if:true={isRadioButtonType}>
+        <lightning-radio-group
+          name={fieldName}
+          variant="label-hidden"
+          options={theOptions}
+          value={theValue}
+          disabled={isDisabled}
+          type="button"
+          onchange={handleChangeInput}
+        >
+        </lightning-radio-group>
       </template>
     </template>
   </div>

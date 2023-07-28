@@ -8,9 +8,14 @@ export default class Popup extends LightningElement {
   @api containerClasses = '';
   @api hideTitle = false;
   @api hideFooter = false;
+  @api backdropClasses;
 
   get modalContainerClasses() {
     return `slds-modal__container ${this.containerClasses}`;
+  }
+
+  get modalBackdropClasses() {
+    return `slds-backdrop slds-backdrop_open modalBackdrops ${this.backdropClasses}`;
   }
 
   get style() {

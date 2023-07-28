@@ -25,18 +25,40 @@
             <property name="addLabel" label="Add Button Label" type="String" role="inputOnly"
                 default="Add"
                 description="Label to show in the Add button, if empty, it will only show the icon." />
+            <property name="addType" label="Add Type" type="String" role="inputOnly"
+                default="Inline"
+                description="Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow." />
+            <property name="addFlowName" label="Flow Name" type="String" role="inputOnly"
+                description="Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed" />
+            <property name="addFlowInputVariables" label="Flow Input Variables" type="String"
+                role="inputOnly"
+                description="JSON string with the input variables to send to the flow." />
             <property name="canEdit" label="Can Edit?" type="String" role="inputOnly"
                 default="Yes"
                 description="This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow." />
+            <property name="editType" label="Edit Type" type="String" role="inputOnly"
+                default="Inline"
+                description="Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow" />
+            <property name="editFlowName" label="Flow Name" type="String" role="inputOnly"
+                description="Screen flow name to fire whenever the edit button in the row is clicked. A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed" />
+            <property name="editFlowInputVariables" label="Flow Input Variables" type="String"
+                role="inputOnly"
+                description="JSON string with the input variables to send to the flow." />
             <property name="canDelete" label="Can Delete?" type="String" role="inputOnly"
                 default="Yes"
                 description="This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
             <property name="canBulkDelete" label="Can Bulk Delete?" type="String" role="inputOnly"
                 default="No"
-                description="Add a selection and a button to delete several at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
-            <property name="bulkDeleteLabel" label="Bulk Delete Button Label" type="String"
+                description="Add a selection and a button to delete several lines at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
+            <property name="bulkDeleteLabel" label="Bulk Delete Label" type="String"
                 role="inputOnly" default="Delete"
                 description="Label to show in the Bulk Delete button, if empty, it will only show the icon." />
+            <property name="canBulkEdit" label="Can Bulk Edit?" type="String" role="inputOnly"
+                default="No"
+                description="Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow." />
+            <property name="bulkEditLabel" label="Bulk Edit Label" type="String"
+                role="inputOnly" default="Bulk Edit"
+                description="Label to show in the Bulk Edit button, if empty, it will only show the icon." />
             <property name="isMasterDetail" label="Is Master-Detail?" type="String" role="inputOnly"
                 default="No"
                 description="Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s." />
@@ -44,6 +66,13 @@
                 role="inputOnly" />
             <property name="masterDetailField2" label="Second Master-Detail Field" type="String"
                 role="inputOnly" />
+            <property name="inlineSave" label="Save Enabled?" type="String" role="inputOnly"
+                default="No"
+                description="If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving." />
+            <property name="saveLabel" label="Save Label" type="String"
+                role="inputOnly" default="Save"
+                description="Label to show in the Save button if inline save is enabled." />
+
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"
                 type="String" role="inputOnly"
@@ -52,6 +81,7 @@
             <property name="objectName" label="API Object Name" type="String" role="inputOnly" />
             <property name="uniqueTableName" label="Unique Table Name" type="String"
                 role="inputOnly" />
+
             <!-- Outputs -->
             <property name="outputAddedRows" label="Output Added Rows" type="{T[]}"
                 role="outputOnly"

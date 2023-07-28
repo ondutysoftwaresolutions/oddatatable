@@ -16,14 +16,15 @@ public class OD_ConfigurationEditorControllerTest {
   }
 
   @IsTest
-  static void testGetObjectsSuccess() {
+  static void testGetConfigurationSuccess() {
     Test.startTest();
 
-    List<OD_ConfigurationEditorController.ObjectWrapper> result = OD_ConfigurationEditorController.getObjects();
+    OD_ConfigurationEditorController.ConfigurationWrapper result = OD_ConfigurationEditorController.getConfiguration();
 
     Test.stopTest();
 
-    Assert.isTrue(result.size() > 0, 'We couldn\'t find any object');
+    Assert.isTrue(result.objects.size() > 0, 'We couldn\'t find any object');
+    Assert.isTrue(result.flows.size() > 0, 'We couldn\'t find any screen flow');
   }
 
   @IsTest
@@ -186,6 +187,81 @@ public class OD_ConfigurationEditorControllerTest {
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('ERROR while getting the master detail fields for the Object: OpportunityProduct'),
+        'Wrong error message'
+      );
+    }
+
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testSaveRecordsSuccess() {
+    List<Contact> contacts = [SELECT Id FROM Contact ORDER BY LastName];
+
+    Assert.isTrue(contacts.size() == 2, 'Wrong number of contacts before the process');
+
+    Test.startTest();
+
+    List<SObject> result = OD_ConfigurationEditorController.saveRecords(
+      'Contact',
+      '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
+      '[{ "Id": "' +
+      contacts[0].Id +
+      '", "LastName": "LastName Updated"}]',
+      '[{ "Id": "' +
+      contacts[1].Id +
+      '"}]'
+    );
+
+    Test.stopTest();
+
+    contacts = [SELECT Id, LastName FROM Contact ORDER BY LastName];
+
+    Assert.isTrue(result.size() == 3, 'Wrong number of returned records');
+    Assert.isTrue(result.size() == 3, 'Wrong number of contacts after the process');
+    Assert.areEqual(contacts[0].LastName, 'Created 1', 'Wrong last name on the first contact');
+    Assert.areEqual(contacts[1].LastName, 'Created 2', 'Wrong last name on the second contact');
+    Assert.areEqual(contacts[2].LastName, 'LastName Updated', 'Wrong last name on the third contact');
+  }
+
+  @IsTest
+  static void testSaveRecordsFailNoObjectName() {
+    List<Contact> contacts = [SELECT Id FROM Contact ORDER BY LastName];
+
+    Test.startTest();
+
+    try {
+      List<SObject> result = OD_ConfigurationEditorController.saveRecords(
+        null,
+        '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
+        '[{ "Id": "' +
+        contacts[0].Id +
+        '", "LastName": "LastName Updated"}]',
+        '[{ "Id": "' +
+        contacts[1].Id +
+        '"}]'
+      );
+    } catch (AuraHandledException e) {
+      Assert.isTrue(
+        e.getMessage().contains('An Object Name is required to modify the records.'),
+        'Wrong error message'
+      );
+    }
+
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testSaveRecordsFailNoLists() {
+    List<Contact> contacts = [SELECT Id FROM Contact ORDER BY LastName];
+
+    Test.startTest();
+
+    try {
+      List<SObject> result = OD_ConfigurationEditorController.saveRecords('Contact', null, null, null);
+    } catch (AuraHandledException e) {
+      Assert.isTrue(
+        e.getMessage().contains('A list of records to add, edit and/or delete are needed to do the save'),
         'Wrong error message'
       );
     }

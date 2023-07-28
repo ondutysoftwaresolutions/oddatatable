@@ -21,10 +21,10 @@ public with sharing class OD_ConfigurationEditorController {
    * @return			List of the object wrapper to use in the UI
    **********************************************************************************************************/
   @AuraEnabled(cacheable=true)
-  public static List<ObjectWrapper> getObjects() {
-    List<ObjectWrapper> result = new List<ObjectWrapper>();
-    Map<String, SObjectType> allObjects = Schema.getGlobalDescribe();
+  public static ConfigurationWrapper getConfiguration() {
+    ConfigurationWrapper result = new ConfigurationWrapper();
 
+    // objects
     List<EntityDefinition> listObjects = [
       SELECT Label, QualifiedApiName
       FROM EntityDefinition
@@ -39,7 +39,21 @@ public with sharing class OD_ConfigurationEditorController {
     ];
 
     for (EntityDefinition entity : listObjects) {
-      result.add(new ObjectWrapper(entity.QualifiedApiName, entity.Label));
+      result.objects.add(new RecordWrapper(entity.QualifiedApiName, entity.Label));
+    }
+
+    // flows
+    List<FlowDefinitionView> listFlows = [
+      SELECT Label, ApiName
+      FROM FlowDefinitionView
+      WHERE IsActive = TRUE AND ProcessType = 'Flow'
+      ORDER BY Label
+    ];
+
+    if (listFlows?.size() > 0) {
+      for (FlowDefinitionView flow : listFlows) {
+        result.flows.add(new RecordWrapper(flow.ApiName, flow.Label));
+      }
     }
 
     return result;
@@ -285,14 +299,106 @@ public with sharing class OD_ConfigurationEditorController {
     }
   }
 
-  public class ObjectWrapper {
+  /*********************************************************************************************************
+   * @name			saveRecords
+   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
+   * @created			27 / 07 / 2023
+   * @description		Save the records (add, edit and delete)
+   * @param			String objectName : The Name of the object to modify
+   * @param			String recordsToCreate : JSON string of the list of records to create
+   * @param			String recordsToUpdate : JSON string of the list of records to update
+   * @param			String recordsToDelete : JSON string of the list of records to delete
+   * @return			List<SObject> with the new and updated SObject records
+   **********************************************************************************************************/
+  @AuraEnabled
+  public static List<SObject> saveRecords(
+    String objectName,
+    String recordsToCreate,
+    String recordsToUpdate,
+    String recordsToDelete
+  ) {
+    try {
+      List<SObject> result = new List<SObject>();
+
+      // type to deserialise
+      String strType = 'List<' + objectName + '>';
+      Type theType = Type.forName(strType);
+
+      if (String.isBlank(objectName)) {
+        String message = 'An Object Name is required to modify the records.';
+        AuraHandledException e = new AuraHandledException(message);
+        e.setMessage(message);
+        throw e;
+      }
+
+      if (String.isBlank(recordsToCreate) && String.isBlank(recordsToUpdate) && String.isBlank(recordsToDelete)) {
+        String message = 'A list of records to add, edit and/or delete are needed to do the save';
+        AuraHandledException e = new AuraHandledException(message);
+        e.setMessage(message);
+        throw e;
+      }
+
+      // create new records
+      if (String.isNotBlank(recordsToCreate)) {
+        List<SObject> listTCreate = (List<SObject>) JSON.deserialize(recordsToCreate, theType);
+
+        insert listTCreate;
+
+        result.addAll(listTCreate);
+      }
+
+      // update records
+      if (String.isNotBlank(recordsToUpdate)) {
+        List<SObject> listToUpdate = (List<SObject>) JSON.deserialize(recordsToUpdate, theType);
+
+        update listToUpdate;
+
+        result.addAll(listToUpdate);
+      }
+
+      // delete records
+      if (String.isNotBlank(recordsToDelete)) {
+        List<SObject> listToDelete = (List<SObject>) JSON.deserialize(recordsToDelete, theType);
+
+        delete listToDelete;
+      }
+
+      return result;
+    } catch (AuraHandledException e) {
+      throw e;
+    } catch (Exception exc) {
+      String message =
+        'ERROR while trying to save the records: ' +
+        exc.getMessage() +
+        ' / ' +
+        exc.getStackTraceString();
+      AuraHandledException e = new AuraHandledException(message);
+      e.setMessage(message);
+      throw e;
+    }
+  }
+
+  public class ConfigurationWrapper {
+    @AuraEnabled
+    public List<RecordWrapper> objects;
+
+    @AuraEnabled
+    public List<RecordWrapper> flows;
+
+    public ConfigurationWrapper() {
+      this.objects = new List<RecordWrapper>();
+      this.flows = new List<RecordWrapper>();
+    }
+  }
+
+  public class RecordWrapper {
     @AuraEnabled
     public String label;
 
     @AuraEnabled
     public String value;
 
-    public ObjectWrapper(String value, String label) {
+    public RecordWrapper(String value, String label) {
       this.label = label;
       this.value = value;
     }

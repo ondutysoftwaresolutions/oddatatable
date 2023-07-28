@@ -1,3 +1,20 @@
-.inside-table-row {
+.icon-inside-table-row {
   --lwc-squareIconMediumContentAlt: 1.25rem;
+}
+
+.btn-inside-table-row {
+  --slds-c-button-line-height: none;
+}
+
+.deleted-record {
+  font-style: italic;
+  background: #e7e3e3;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.disabled {
+  opacity: 0.3;
+  pointer-events: none;
 }

@@ -12,8 +12,21 @@
   width: 70vw;
 }
 
+.slds-modal__container.md {
+  max-width: 40vw;
+  width: 40vw;
+  min-width: 40vw !important;
+}
+
 .modalBackdrops {
   width: 100vw;
+}
+
+.modalBackdropsBulkEdit {
+  left: -15vw;
+}
+
+.modalBackdropsPropertyEditor {
   left: -5vw;
 }
 

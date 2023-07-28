@@ -35,18 +35,21 @@ export default class ODInputAutocomplete extends LightningElement {
   // private variables
   _searched = false;
   _wasSelected = false;
+  _valueToCompare;
 
   // =======================================================================================================================================================================================================================================
   // lifecycle method
   // =======================================================================================================================================================================================================================================
   connectedCallback() {
-    // if it's server search perform the search and then select
-    if (this.isServerSearch && this.value) {
-      this._doSearchSelectedRecord();
-    }
-
     if (this.autoFocus) {
       this.handleEmptyAndFocus();
+    }
+  }
+
+  renderedCallback() {
+    // if it's server search perform the search and then select, and we didn't already rendered
+    if (this.isServerSearch && this.value !== this._valueToCompare && !this.isSearching) {
+      this._doSearchSelectedRecord();
     }
   }
 
@@ -329,9 +332,12 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   _doSearchSelectedRecord() {
+    this.isSearching = true;
     getLookupRecord({ objectName: this.objectName, value: this.value })
       .then((res) => {
         this.searchText = res.label;
+        this._valueToCompare = this.value;
+        this.isSearching = false;
 
         this._doDispatchSelectLabelLookup(res.label);
       })
@@ -596,6 +602,7 @@ export default class ODInputAutocomplete extends LightningElement {
     this._doDispatchSelect({ value: '' });
     this.handleEmptyAndFocus();
 
+    this._valueToCompare = '';
     this.searchText = '';
     this._doOpen();
   }

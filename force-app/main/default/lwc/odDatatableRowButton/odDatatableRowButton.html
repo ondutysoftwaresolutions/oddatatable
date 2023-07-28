@@ -1,12 +1,17 @@
 <template>
-  <div class="slds-align--absolute-center">
-    <lightning-button-icon
-      icon-name={iconName}
-      variant="bare"
-      class="inside-table-row"
-      onclick={handleClick}
-      tooltip={tooltip}
-    >
-    </lightning-button-icon>
+  <div class={cellClasses}>
+    <template if:true={isIconButton}>
+      <lightning-button-icon
+        icon-name={iconName}
+        variant="bare"
+        class="icon-inside-table-row"
+        onclick={handleClick}
+        tooltip={tooltip}
+      >
+      </lightning-button-icon>
+    </template>
+    <template if:false={isIconButton}>
+      <lightning-button class="btn-inside-table-row" onclick={handleClick} label={label}> </lightning-button>
+    </template>
   </div>
 </template>
