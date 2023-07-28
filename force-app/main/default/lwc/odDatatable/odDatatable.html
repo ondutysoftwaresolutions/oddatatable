@@ -16,17 +16,22 @@
         </ul>
       </div>
     </template>
-    <c-od-datatable-custom
-      key-field="_id"
-      class="od-datatable"
-      data={recordsToShow}
-      columns={columnsToShow}
-      selected-rows={selectedRowsIds}
-      hide-checkbox-column={notBulkOperation}
-      onrowselection={handleSelectRow}
-      onrowaction={handleRowAction}
-    >
-    </c-od-datatable-custom>
+    <template if:true={recordsToShow.length}>
+      <c-od-datatable-custom
+        key-field="_id"
+        class="od-datatable"
+        data={recordsToShow}
+        columns={columnsToShow}
+        selected-rows={selectedRowsIds}
+        hide-checkbox-column={notBulkOperation}
+        onrowselection={handleSelectRow}
+        onrowaction={handleRowAction}
+      >
+      </c-od-datatable-custom>
+    </template>
+    <template if:false={recordsToShow.length}>
+      <div class="slds-p-left--xx-small slds-text-heading--small">{noRecordsMessage}</div>
+    </template>
     <div class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap">
       <template if:true={showAddButton}>
         <template if:true={addHasLabel}>

@@ -17,6 +17,7 @@ export default class ODDatatable extends LightningElement {
   @api objectName;
   @api tableData = [];
   @api columns;
+  @api noRecordsMessage;
 
   // master detail configuration
   @api isMasterDetail;

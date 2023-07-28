@@ -20,6 +20,10 @@
             <property name="columns" label="Columns" type="String" role="inputOnly" required="true"
                 default="{}"
                 description="JSON string with the columns to display in the datatable." />
+            <property name="noRecordsMessage" label="No Records Message" type="String"
+                role="inputOnly"
+                default="No Records Found"
+                description="Message to display instead of the datatable if there are no records." />
             <property name="canAdd" label="Can Add?" type="String" role="inputOnly" default="Yes"
                 description="This will add the record to the outputAddedRows and you will need to write these back to the Object with a Record Insert in the Flow." />
             <property name="addLabel" label="Add Button Label" type="String" role="inputOnly"

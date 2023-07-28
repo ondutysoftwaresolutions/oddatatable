@@ -65,6 +65,13 @@ export default class OdConfigurationEditor extends LightningElement {
       required: true,
       helpText: 'JSON string with the columns to display in the datatable.',
     },
+    noRecordsMessage: {
+      label: 'No Records Message',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: 'No Records Found',
+      helpText: 'Message to display instead of the datatable if there are no records.',
+    },
     canAdd: {
       label: 'Can Add?',
       type: FIELD_TYPES.TOGGLE,
