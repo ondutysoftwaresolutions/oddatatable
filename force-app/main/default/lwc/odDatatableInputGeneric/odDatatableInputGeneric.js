@@ -26,6 +26,7 @@ export default class ODInputGeneric extends LightningElement {
   @api defaultValue;
   @api autoFocus = false;
   @api parentObjectName;
+  @api lookupConfiguration;
   @api isLoading = false;
   @api opened = false;
   @api insidePopupHeight = 0;

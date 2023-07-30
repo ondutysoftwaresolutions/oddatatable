@@ -28,6 +28,7 @@ export default class OdConfigurationEditor extends LightningElement {
     addFlowName: false,
     editFlowName: false,
   };
+
   inlineFlowOptions = [
     {
       label: INLINE_FLOW.INLINE,

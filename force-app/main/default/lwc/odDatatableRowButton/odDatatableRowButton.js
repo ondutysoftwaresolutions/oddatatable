@@ -15,7 +15,7 @@ export default class OdDatatableRowButton extends LightningElement {
 
   get cellClasses() {
     return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${
-      this.disableIfDeleted && this.isDeleted ? 'disabled' : ''
+      this.disableIfDeleted && this.isDeleted ? '' : 'enabled'
     }`;
   }
 

@@ -1,0 +1,5 @@
+@import 'c/odDatatableCSSLibrary';
+
+.legend-help-text {
+  padding-right: 0.25rem;
+}

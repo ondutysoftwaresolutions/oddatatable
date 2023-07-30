@@ -1,0 +1,54 @@
+.help-text {
+  padding-left: 0.25rem;
+  margin-top: -4px;
+}
+
+.body-popup {
+  max-height: 85vh;
+}
+
+@media only screen and (max-width: 1800px) {
+  .body-popup {
+    max-height: 65vh;
+  }
+}
+
+.columnsTable th {
+  position: sticky;
+  background: #f4f2f2;
+  top: -25px;
+  z-index: 10;
+}
+
+.columnsTable tr {
+  border: var(--lwc-borderWidthThin, 1px) solid
+    var(--slds-g-color-border-base-1, var(--lwc-colorBorder, rgb(229, 229, 229)));
+}
+
+.columnsTable tbody tr {
+  border-top: 0;
+}
+
+.columnsTable th:not(:last-child),
+.columnsTable td:not(:last-child) {
+  border-right: var(--lwc-borderWidthThin, 1px) solid
+    var(--slds-g-color-border-base-1, var(--lwc-colorBorder, rgb(229, 229, 229)));
+}
+
+.icon-inside-table-row {
+  --lwc-squareIconMediumContentAlt: 1.25rem;
+}
+
+.deleted-record {
+  font-style: italic;
+  opacity: 0.3;
+  background: #e7e3e3;
+  pointer-events: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.alignItemsCenter {
+  align-items: center;
+}

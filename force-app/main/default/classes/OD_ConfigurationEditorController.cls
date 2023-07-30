@@ -75,6 +75,12 @@ public with sharing class OD_ConfigurationEditorController {
       // get the object give the string with the object name
       SObject objectInstance = (SObject) Type.forName('Schema', objectName).newInstance();
 
+      // get the master detail fields for the object
+      Set<String> masterDetailFields = new Set<String>();
+      for (PicklistOption masterDetail : getMasterDetailFieldsForObject(objectName)) {
+        masterDetailFields.add(masterDetail.value.toLowerCase());
+      }
+
       // get the fields map for the object
       Map<String, Schema.SObjectField> fieldsMap = objectInstance.getSObjectType().getDescribe().fields.getMap();
 
@@ -101,6 +107,8 @@ public with sharing class OD_ConfigurationEditorController {
         newField.precision = fieldResult.getPrecision();
         newField.scale = fieldResult.getScale();
         newField.required = !fieldResult.isNillable();
+        newField.canBeUsedInWhere = fieldResult.isFilterable();
+        newField.isMasterDetail = masterDetailFields.contains(fieldName);
 
         // add the reference to if it's a lookup
         if (fieldResult.getReferenceTo().size() == 1) {
@@ -224,24 +232,48 @@ public with sharing class OD_ConfigurationEditorController {
    * @description		Get a list of picklist options from a record and return it to the UI
    * @param			String objectName : The name of the object to get the records for
    * @param			String searchText : The search text to look for
+   * @param			String searchGroup : Search group to use (), if null ALL FIELDS will be used
+   * @param			String displayField : The Display field to return, if null the Name field for the object will be used
+   * @param			String whereCondition : The where condition to filter the results
+   * @param			String orderCondition : The Order By Condition to filter the results
+   * @param			Integer limitRecords : The number of records to return
    * @return			List of picklist options
    **********************************************************************************************************/
   @AuraEnabled
-  public static List<PicklistOption> getRecordsForLookup(String objectName, String searchText) {
+  public static List<PicklistOption> getRecordsForLookup(
+    String objectName,
+    String searchText,
+    String searchGroup,
+    String displayField,
+    String whereCondition,
+    String orderCondition,
+    Integer limitRecords
+  ) {
     try {
       List<PicklistOption> result = new List<PicklistOption>();
 
-      String nameField = getNameFieldForObject(objectName);
+      String searchGroupToUse = String.isBlank(searchGroup) ? 'ALL FIELDS' : searchGroup;
+      String nameField = String.isBlank(displayField) ? getNameFieldForObject(objectName) : displayField;
+      String whereFilter = String.isBlank(whereCondition) ? '' : ' WHERE ' + whereCondition;
+      String orderBy = String.isBlank(orderCondition) ? '' : ' ORDER BY ' + orderCondition;
+      String limitToUse = limitRecords == null ? '' : ' LIMIT ' + limitRecords;
+      String textToSearch = '*' + searchText.replace(' ', '*') + '*';
 
       // perform the query
       String searchQuery =
         'FIND {' +
-        searchText +
-        '} IN NAME FIELDS RETURNING ' +
+        textToSearch +
+        '} IN ' +
+        searchGroupToUse +
+        ' RETURNING ' +
         objectName +
         '(Id, ' +
         nameField +
+        whereFilter +
+        orderBy +
+        limitToUse +
         ')';
+
       List<List<SObject>> searchList = search.query(searchQuery);
 
       if (searchList?.size() > 0) {
@@ -273,13 +305,14 @@ public with sharing class OD_ConfigurationEditorController {
    * @description		Get a picklist option for a record
    * @param			String objectName : The name of the object to get the record for
    * @param			String value : The Id of the record to look for
+   * @param			String displayField : The Display field to return, if null the Name field for the object will be used
    * @return			Picklist option
    **********************************************************************************************************/
   @AuraEnabled
-  public static PicklistOption getLookupRecord(String objectName, String value) {
+  public static PicklistOption getLookupRecord(String objectName, String value, String displayField) {
     try {
       // get the name field to return
-      String nameField = getNameFieldForObject(objectName);
+      String nameField = String.isBlank(displayField) ? getNameFieldForObject(objectName) : displayField;
 
       // perform the query
       String searchQuery = 'SELECT Id, ' + nameField + ' FROM ' + objectName + ' WHERE Id = \'' + value + '\' LIMIT 1';
@@ -443,6 +476,12 @@ public with sharing class OD_ConfigurationEditorController {
 
     @AuraEnabled
     public String parentObjectLabel;
+
+    @AuraEnabled
+    public Boolean canBeUsedInWhere;
+
+    @AuraEnabled
+    public Boolean isMasterDetail;
 
     @AuraEnabled
     public List<PicklistOption> options;

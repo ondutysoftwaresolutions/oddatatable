@@ -1,20 +1,10 @@
-.icon-inside-table-row {
-  --lwc-squareIconMediumContentAlt: 1.25rem;
-}
+@import 'c/odDatatableCSSLibrary';
 
 .btn-inside-table-row {
   --slds-c-button-line-height: none;
 }
 
-.deleted-record {
-  font-style: italic;
-  background: #e7e3e3;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-}
-
-.disabled {
-  opacity: 0.3;
-  pointer-events: none;
+.enabled {
+  opacity: 1;
+  pointer-events: all;
 }

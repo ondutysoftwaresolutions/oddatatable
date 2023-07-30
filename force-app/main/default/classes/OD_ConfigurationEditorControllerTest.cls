@@ -5,11 +5,14 @@ public class OD_ConfigurationEditorControllerTest {
     Account acc = new Account(Name = 'Test');
     insert acc;
 
-    Contact con = new Contact(LastName = 'Test', AccountId = acc.Id);
+    Contact con = new Contact(FirstName = 'First', LastName = 'Test', AccountId = acc.Id);
     insert con;
 
-    Contact con2 = new Contact(LastName = 'LastName', AccountId = acc.Id);
+    Contact con2 = new Contact(FirstName = 'Second', LastName = 'LastName', AccountId = acc.Id);
     insert con2;
+
+    Contact con3 = new Contact(FirstName = 'Third', LastName = 'Test 2', AccountId = acc.Id);
+    insert con3;
 
     Case theCase = new Case();
     insert theCase;
@@ -60,7 +63,7 @@ public class OD_ConfigurationEditorControllerTest {
 
   @IsTest
   static void testGetRecordsForLookupSuccess() {
-    Contact con = [SELECT Id, LastName FROM Contact WHERE LastName = 'Test' LIMIT 1];
+    Contact con = [SELECT Id, Name FROM Contact WHERE LastName = 'Test' LIMIT 1];
     Test.startTest();
 
     Id[] fixedSearchResults = new List<Id>{ con.Id };
@@ -68,13 +71,45 @@ public class OD_ConfigurationEditorControllerTest {
 
     List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
       'Contact',
-      'test'
+      'test',
+      null,
+      null,
+      null,
+      null,
+      null
     );
 
     Test.stopTest();
 
     Assert.isTrue(result.size() > 0, 'We couldn\'t find any lookup record');
-    Assert.areEqual(result[0].label, con.LastName, 'Wrong label found');
+    Assert.areEqual(result[0].label, con.Name, 'Wrong label found');
+  }
+
+  @IsTest
+  static void testGetRecordsForLookupSuccessAllParams() {
+    List<Contact> con = [SELECT Id, LastName, AccountId FROM Contact WHERE LastName LIKE 'Test%'];
+    Test.startTest();
+
+    Id[] fixedSearchResults = new List<Id>{ con[0].Id, con[1].Id };
+    Test.setFixedSearchResults(fixedSearchResults);
+
+    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
+      'Contact',
+      'test',
+      'NAME FIELDS',
+      'FirstName',
+      'AccountId = \'' +
+      con[0].AccountId +
+      '\'',
+      'LastName ASC',
+      2
+    );
+
+    Test.stopTest();
+
+    Assert.isTrue(result.size() == 2, 'The return did not respect the limit');
+    Assert.areEqual(result[0].label, 'First', 'Wrong label found for the first record');
+    Assert.areEqual(result[1].label, 'Third', 'Wrong label found for the second record');
   }
 
   @IsTest
@@ -88,7 +123,12 @@ public class OD_ConfigurationEditorControllerTest {
     try {
       List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
         null,
-        't'
+        't',
+        null,
+        null,
+        null,
+        null,
+        null
       );
     } catch (AuraHandledException e) {
       Assert.isTrue(
@@ -102,17 +142,34 @@ public class OD_ConfigurationEditorControllerTest {
 
   @IsTest
   static void testGetLookupRecordSuccess() {
-    Contact con = [SELECT Id, LastName FROM Contact WHERE LastName = 'LastName' LIMIT 1];
+    Contact con = [SELECT Id, Name FROM Contact WHERE LastName = 'LastName' LIMIT 1];
     Test.startTest();
 
     OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
       'Contact',
-      con.Id
+      con.Id,
+      null
     );
 
     Test.stopTest();
 
-    Assert.areEqual(result.label, con.LastName, 'Wrong label found');
+    Assert.areEqual(result.label, con.Name, 'Wrong label found');
+  }
+
+  @IsTest
+  static void testGetLookupRecordSuccessOtherDisplayValue() {
+    Contact con = [SELECT Id, FirstName, LastName FROM Contact WHERE LastName = 'LastName' LIMIT 1];
+    Test.startTest();
+
+    OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
+      'Contact',
+      con.Id,
+      'FirstName'
+    );
+
+    Test.stopTest();
+
+    Assert.areEqual(result.label, con.FirstName, 'Wrong label found');
   }
 
   @IsTest
@@ -122,7 +179,8 @@ public class OD_ConfigurationEditorControllerTest {
 
     OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
       'Case',
-      theCase.Id
+      theCase.Id,
+      null
     );
 
     Test.stopTest();
@@ -138,6 +196,7 @@ public class OD_ConfigurationEditorControllerTest {
     try {
       OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
         'Contact',
+        null,
         null
       );
     } catch (AuraHandledException e) {
@@ -198,7 +257,7 @@ public class OD_ConfigurationEditorControllerTest {
   static void testSaveRecordsSuccess() {
     List<Contact> contacts = [SELECT Id FROM Contact ORDER BY LastName];
 
-    Assert.isTrue(contacts.size() == 2, 'Wrong number of contacts before the process');
+    Assert.isTrue(contacts.size() == 3, 'Wrong number of contacts before the process');
 
     Test.startTest();
 
@@ -218,7 +277,7 @@ public class OD_ConfigurationEditorControllerTest {
     contacts = [SELECT Id, LastName FROM Contact ORDER BY LastName];
 
     Assert.isTrue(result.size() == 3, 'Wrong number of returned records');
-    Assert.isTrue(result.size() == 3, 'Wrong number of contacts after the process');
+    Assert.isTrue(contacts.size() == 4, 'Wrong number of contacts after the process');
     Assert.areEqual(contacts[0].LastName, 'Created 1', 'Wrong last name on the first contact');
     Assert.areEqual(contacts[1].LastName, 'Created 2', 'Wrong last name on the second contact');
     Assert.areEqual(contacts[2].LastName, 'LastName Updated', 'Wrong last name on the third contact');

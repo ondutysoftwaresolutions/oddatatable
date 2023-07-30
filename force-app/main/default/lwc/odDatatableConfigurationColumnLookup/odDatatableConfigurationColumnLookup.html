@@ -1,0 +1,232 @@
+<template>
+  <c-od-datatable-popup
+    onclose={handleClose}
+    container-classes="md"
+    show-spinner={isLoading}
+    show-error={errorMessage}
+    backdrop-classes="modalBackdropsPropertyEditor onTopOfEverything"
+    spinner-message={loadingMessage}
+    modal-classes="onTopOfEverything"
+  >
+    <div slot="title" class="title-popup">Configure Lookup</div>
+    <div slot="body" class={bodyClasses}>
+      <div class="slds-grid slds-wrap">
+        <fieldset class="slds-box slds-size--3-of-6" style="min-height: 92.5px">
+          <legend class="slds-grid">
+            Search Group
+            <lightning-helptext
+              class="help-text legend-help-text"
+              content="Search Group defines the scope of the search. Specify which types of text fields to search for."
+            >
+            </lightning-helptext>
+          </legend>
+          <lightning-radio-group
+            label="Search Group"
+            options={searchGroups}
+            value={selectedSearchGroup}
+            variant="label-hidden"
+            class="od-datatable-horizontal-radio slds-form-element slds-p-top--small"
+            onchange={handleSearchGroupChange}
+            required
+          >
+          </lightning-radio-group>
+        </fieldset>
+        <fieldset class="slds-box slds-size--2-of-6 slds-m-left--small">
+          <legend class="slds-grid">
+            Display Value Field
+            <lightning-helptext
+              class="help-text legend-help-text"
+              content="This is the field that will be displayed in the field and in the lookup records. If Empty the 'Name' field of the object will be used"
+            >
+            </lightning-helptext>
+          </legend>
+          <c-od-datatable-input-generic
+            field-name="displayField"
+            type={fieldTypes.SELECT}
+            editable
+            value={displayField}
+            options={fieldsForDisplay}
+            placeholder="Select Field..."
+            onupdatefield={handleDisplayFieldChange}
+            data-name="displayField"
+            opened={dropdowns.displayField}
+            onfocusdropdown={handleOnFocusDropdown}
+            inside-popup-height={popupHeight}
+            onblurdropdown={handleOnBlurDropdown}
+          >
+          </c-od-datatable-input-generic>
+        </fieldset>
+      </div>
+      <fieldset class="slds-box slds-grid slds-m-top--medium slds-size--1-of-1 slds-wrap">
+        <legend>Query Configuration</legend>
+        <fieldset class="slds-box slds-size--1-of-1">
+          <legend class="slds-grid">
+            Filter Condition
+            <lightning-helptext
+              class="help-text legend-help-text"
+              content="Add a filter condition for the query to return specific records. This will always add conditions linked with 'AND' but you can manually edit it to include 'OR' e.g."
+            >
+            </lightning-helptext>
+          </legend>
+          <div class="slds-grid slds-wrap alignItemsCenter">
+            <c-od-datatable-input-generic
+              field-name="fieldWhere"
+              type={fieldTypes.SELECT}
+              editable
+              data-name="fieldWhere"
+              inside-popup-height={popupHeight}
+              value={addWhere.fieldWhere}
+              options={fieldsForWhere}
+              placeholder="Select Field..."
+              class="slds-size--2-of-6"
+              onupdatefield={handleAddWhereInputChange}
+              opened={dropdowns.fieldWhere}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+            >
+            </c-od-datatable-input-generic>
+            <c-od-datatable-input-generic
+              field-name="operatorWhere"
+              type={fieldTypes.SELECT}
+              editable
+              data-name="operatorWhere"
+              inside-popup-height={popupHeight}
+              value={addWhere.operatorWhere}
+              options={operations}
+              placeholder="Select Operator..."
+              class="slds-size--1-of-6"
+              onupdatefield={handleAddWhereInputChange}
+              opened={dropdowns.operatorWhere}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+            >
+            </c-od-datatable-input-generic>
+            <c-od-datatable-input-generic
+              type={selectedField.type}
+              editable
+              field-name={selectedField.value}
+              data-name="valueWhere"
+              class="slds-size--2-of-6"
+              value={addWhere.valueWhere}
+              options={selectedField.options}
+              onupdatefield={handleAddWhereInputChange}
+              inside-popup-height={popupHeight}
+              opened={dropdowns.valueWhere}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+              max-length={selectedField.maxLength}
+              is-multi={selectedField.isMulti}
+            >
+            </c-od-datatable-input-generic>
+            <lightning-button
+              variant="brand"
+              disabled={disabledAddFilter}
+              name="addFilter"
+              label="Add Filter"
+              title="Add Filter"
+              onclick={handleAddFilter}
+              class="slds-m-left--small"
+            >
+            </lightning-button>
+            <c-od-datatable-input-generic
+              field-name="finalWhereCondition"
+              type={fieldTypes.TEXTAREA}
+              editable
+              label="Where"
+              data-name="finalWhereCondition"
+              value={finalWhereCondition}
+              class="slds-size--1-of-1"
+              onupdatefield={handleWhereConditionChange}
+            >
+            </c-od-datatable-input-generic>
+          </div>
+        </fieldset>
+        <fieldset class="slds-box slds-m-top--medium slds-size--3-of-5">
+          <legend>Order By Condition</legend>
+          <div class="slds-grid slds-wrap alignItemsCenter">
+            <c-od-datatable-input-generic
+              field-name="fieldOrder"
+              type={fieldTypes.SELECT}
+              editable
+              value={addOrder.fieldOrder}
+              data-name="fieldOrder"
+              options={fields}
+              placeholder="Select Field..."
+              onupdatefield={handleAddOrderInputChange}
+              opened={dropdowns.fieldOrder}
+              class="slds-size--3-of-6"
+              onfocusdropdown={handleOnFocusDropdown}
+              inside-popup-height={popupHeight}
+              onblurdropdown={handleOnBlurDropdown}
+            >
+            </c-od-datatable-input-generic>
+            <c-od-datatable-input-generic
+              field-name="directionOrder"
+              type={fieldTypes.SELECT}
+              editable
+              data-name="directionOrder"
+              inside-popup-height={popupHeight}
+              value={addOrder.directionOrder}
+              options={directions}
+              placeholder="Select Direction..."
+              class="slds-size--2-of-6"
+              onupdatefield={handleAddOrderInputChange}
+              opened={dropdowns.directionOrder}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+            >
+            </c-od-datatable-input-generic>
+            <lightning-button
+              variant="brand"
+              disabled={disabledAddOrder}
+              name="addOrder"
+              label="Add Order"
+              title="Add Order"
+              onclick={handleAddOrder}
+              class="slds-m-left--small"
+            >
+            </lightning-button>
+            <c-od-datatable-input-generic
+              field-name="finalOrderCondition"
+              type={fieldTypes.TEXTAREA}
+              editable
+              label="Order"
+              data-name="finalOrderCondition"
+              value={finalOrderCondition}
+              class="slds-size--1-of-1"
+              onupdatefield={handleOrderConditionChange}
+            >
+            </c-od-datatable-input-generic>
+          </div>
+        </fieldset>
+        <fieldset class="slds-box slds-m-left--small slds-m-top--medium slds-size--1-of-5">
+          <legend>Limit Condition</legend>
+          <c-od-datatable-input-generic
+            field-name="limit"
+            type={fieldTypes.INTEGER}
+            scale="0"
+            editable
+            value={limit}
+            onupdatefield={handleLimitChange}
+          >
+          </c-od-datatable-input-generic>
+        </fieldset>
+      </fieldset>
+    </div>
+    <div slot="footer" class="footer-popup slds-grid">
+      <div class="slds-align--absolute-center slds-size--12-of-12">
+        <lightning-button
+          variant="brand"
+          disabled={disabledSave}
+          name="save"
+          label="Save"
+          title="Save"
+          onclick={handleSave}
+          class="slds-m-right--large"
+        >
+        </lightning-button>
+        <lightning-button name="cancel" label="Cancel" title="Cancel" onclick={handleClose}> </lightning-button>
+      </div>
+    </div>
+  </c-od-datatable-popup>
+</template>

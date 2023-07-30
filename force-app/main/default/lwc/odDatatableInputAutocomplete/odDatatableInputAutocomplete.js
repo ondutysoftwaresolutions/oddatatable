@@ -26,6 +26,7 @@ export default class ODInputAutocomplete extends LightningElement {
   @api opened = false;
   @api containerHeight = 0;
   @api currentRecordId;
+  @api serverSideConfiguration;
 
   // tracked
   isSearching = false;
@@ -145,6 +146,10 @@ export default class ODInputAutocomplete extends LightningElement {
     }
 
     return this.value;
+  }
+
+  get parsedServerSideConfiguration() {
+    return this.serverSideConfiguration ? JSON.parse(this.serverSideConfiguration) : null;
   }
 
   get positionDropdown() {
@@ -333,7 +338,14 @@ export default class ODInputAutocomplete extends LightningElement {
 
   _doSearchSelectedRecord() {
     this.isSearching = true;
-    getLookupRecord({ objectName: this.objectName, value: this.value })
+
+    const objectToSend = { objectName: this.objectName, value: this.value };
+
+    if (this.parsedServerSideConfiguration) {
+      objectToSend.displayField = this.parsedServerSideConfiguration.displayField || null;
+    }
+
+    getLookupRecord(objectToSend)
       .then((res) => {
         this.searchText = res.label;
         this._valueToCompare = this.value;
@@ -350,7 +362,19 @@ export default class ODInputAutocomplete extends LightningElement {
   _doSearchOptions() {
     const searchTxt = this.searchText;
 
-    getRecordsForLookup({ objectName: this.objectName, searchText: searchTxt })
+    const objectToSend = { objectName: this.objectName, searchText: searchTxt };
+
+    if (this.parsedServerSideConfiguration) {
+      objectToSend.searchGroup = this.parsedServerSideConfiguration.searchGroup || null;
+      objectToSend.displayField = this.parsedServerSideConfiguration.displayField || null;
+      objectToSend.whereCondition = this.parsedServerSideConfiguration.whereCondition || null;
+      objectToSend.orderCondition = this.parsedServerSideConfiguration.orderCondition || null;
+      objectToSend.limitRecords = this.parsedServerSideConfiguration.limit
+        ? parseInt(this.parsedServerSideConfiguration.limit, 10)
+        : null;
+    }
+
+    getRecordsForLookup(objectToSend)
       .then((res) => {
         this._searched = true;
 

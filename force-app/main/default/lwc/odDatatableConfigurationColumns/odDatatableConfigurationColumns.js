@@ -25,6 +25,12 @@ export default class OdConfigurationColumns extends LightningElement {
   errorMessage = false;
   fieldTypes = FIELD_TYPES;
 
+  // lookup configuration
+  showLookupConfiguration = false;
+  lookupConfiguration;
+  lookupObjectName;
+  lookupFieldName;
+
   // private variables
   _alreadyRendered = false;
   _allFields;
@@ -100,7 +106,7 @@ export default class OdConfigurationColumns extends LightningElement {
       rs.isMulti = this._isMulti(rs.type);
     });
 
-    this.fields = result;
+    this.fields = result.filter((fld) => !fld.isMasterDetail);
   }
 
   _buildTypeSpec(type, field) {
@@ -169,7 +175,9 @@ export default class OdConfigurationColumns extends LightningElement {
           required: col.typeAttributes.required,
           defaultValue: col.typeAttributes.config.defaultValue,
           initialWidth: col.initialWidth,
+          isLookup: type === FIELD_TYPES.LOOKUP,
           order: col.order,
+          lookupConfig: col.typeAttributes.config.lookupConfig,
         });
       }
     });
@@ -199,6 +207,7 @@ export default class OdConfigurationColumns extends LightningElement {
         fl.precision = getPrecision(fl);
         fl.isMulti = this._isMulti(fl.type);
         fl.type = getFieldType(fl.type);
+        fl.isLookup = fl.type === FIELD_TYPES.LOOKUP;
         iteration++;
       });
 
@@ -294,6 +303,7 @@ export default class OdConfigurationColumns extends LightningElement {
             precision: field.precision,
             isHTML: field.isHTML,
             isMulti: field.isMulti,
+            lookupConfig: field.lookupConfig,
           },
           value: {
             fieldName: field.value,
@@ -317,5 +327,24 @@ export default class OdConfigurationColumns extends LightningElement {
 
   handleReorder() {
     this.fieldsToDisplayTable = sortArrayByProperty(this.fieldsToDisplayTable, 'order');
+  }
+
+  handleOpenLookupConfiguration(event) {
+    this.lookupObjectName = event.target.dataset.object;
+    this.lookupFieldName = event.target.dataset.field;
+    this.lookupConfiguration = event.target.dataset.configuration;
+    this.showLookupConfiguration = true;
+  }
+
+  handleCloseLookupConfiguration() {
+    this.showLookupConfiguration = false;
+    this.lookupObjectName = undefined;
+    this.lookupFieldName = undefined;
+  }
+
+  handleSaveLookupConfiguration(event) {
+    this.handleUpdateField(event);
+
+    this.handleCloseLookupConfiguration();
   }
 }

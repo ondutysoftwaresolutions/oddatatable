@@ -1,9 +1,1 @@
-.body-popup {
-  max-height: 85vh;
-}
-
-@media only screen and (max-width: 1800px) {
-  .body-popup {
-    max-height: 65vh;
-  }
-}
+@import 'c/odDatatableCSSLibrary';

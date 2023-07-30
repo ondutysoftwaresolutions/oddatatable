@@ -41,6 +41,8 @@ export const LOCAL_SIDE_SEARCH = [FIELD_TYPES.SELECT, FIELD_TYPES.MULTISELECT];
 
 export const SERVER_SIDE_SEARCH = [FIELD_TYPES.LOOKUP];
 
+export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SIDE_SEARCH];
+
 export const FORMATTED_TYPE_TO_SHOW = {
   address: {
     label: 'Address',

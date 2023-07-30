@@ -34,8 +34,8 @@
             <thead>
               <tr>
                 <th class="slds-p-around--x-small" style="width: 300px">Field API Name</th>
-                <th class="slds-p-around--x-small" style="width: 300px">Label</th>
-                <th class="slds-p-around--x-small" style="width: 180px">Type</th>
+                <th class="slds-p-around--x-small" style="width: 250px">Label</th>
+                <th class="slds-p-around--x-small" style="width: 250px">Type</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Editable?</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Required?</th>
                 <th class="slds-p-around--x-small" style="width: 300px">Default Value</th>
@@ -61,9 +61,22 @@
                     >
                     </c-od-datatable-input-generic>
                   </td>
-                  <td>
+                  <td class="slds-grid slds-p-top--xx-small slds-wrap">
                     <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value={field.typeSpec}>
                     </c-od-datatable-input-generic>
+                    <template if:true={field.isLookup}>
+                      <lightning-button
+                        label="Configure"
+                        title="Configure"
+                        icon-name="utility:settings"
+                        data-object={field.parentObjectName}
+                        class="slds-m-left--small"
+                        data-field={field.value}
+                        data-configuration={field.lookupConfig}
+                        onclick={handleOpenLookupConfiguration}
+                      >
+                      </lightning-button>
+                    </template>
                   </td>
                   <td class="slds-p-around--xx-small slds-text-align--center">
                     <c-od-datatable-input-generic
@@ -100,6 +113,7 @@
                       precision={field.precision}
                       is-html={field.isHTML}
                       scale={field.scale}
+                      lookup-configuration={field.lookupConfig}
                       max-length={field.maxLength}
                       options={field.options}
                       opened={field.opened}
@@ -114,6 +128,7 @@
                       type={fieldTypes.INTEGER}
                       field-name="initialWidth"
                       editable
+                      scale="0"
                       data-value={field.value}
                       value={field.initialWidth}
                       onupdatefield={handleUpdateField}
@@ -125,6 +140,7 @@
                       type={fieldTypes.INTEGER}
                       field-name="order"
                       editable
+                      scale="0"
                       data-value={field.value}
                       value={field.order}
                       onupdatefield={handleUpdateField}
@@ -164,4 +180,17 @@
       </lightning-button>
     </div>
   </c-od-datatable-popup>
+
+  <!-- Lookup configuration popup -->
+  <template if:true={showLookupConfiguration}>
+    <c-od-datatable-configuration-column-lookup
+      onclose={handleCloseLookupConfiguration}
+      object-name={lookupObjectName}
+      class="onTopOfEverything"
+      configuration={lookupConfiguration}
+      data-value={lookupFieldName}
+      onsave={handleSaveLookupConfiguration}
+    >
+    </c-od-datatable-configuration-column-lookup>
+  </template>
 </template>

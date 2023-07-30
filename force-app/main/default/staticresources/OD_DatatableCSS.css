@@ -21,3 +21,8 @@
 .od-datatable th.slds-has-focus {
   box-shadow: none !important;
 }
+
+.od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .slds-form-element__control .slds-checkbox {
+  display: inline-block;
+  margin-right: 2rem;
+}

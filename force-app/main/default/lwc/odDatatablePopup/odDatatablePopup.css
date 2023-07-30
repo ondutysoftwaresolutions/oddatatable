@@ -30,6 +30,14 @@
   left: -5vw;
 }
 
+.slds-backdrop.onTopOfEverything {
+  z-index: 9998;
+}
+
+.slds-modal.onTopOfEverything {
+  z-index: 9999;
+}
+
 @media only screen and (max-width: 1800px) {
   .slds-modal__container.lg {
     max-width: 80vw;

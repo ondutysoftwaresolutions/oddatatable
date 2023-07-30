@@ -1,7 +1,5 @@
-.help-text {
-  padding-left: 0.25rem;
-  margin-top: -4px;
-}
+@import 'c/odDatatableCSSLibrary';
+
 .container {
   min-height: 2vh;
   display: flex;
