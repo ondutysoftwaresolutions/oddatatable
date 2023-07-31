@@ -177,8 +177,8 @@ public with sharing class OD_ConfigurationEditorController {
         Schema.DescribeFieldResult fieldResult = fieldsMap.get(fieldName).getDescribe();
 
         if (fieldResult.getReferenceTo().size() == 1 && !fieldResult.isDefaultedOnCreate()) {
-          // check if it's a master detail by get relationship order or if it does not have an ownerId field
-          if (fieldResult.getRelationshipOrder() != null || !fieldsMap.containsKey('OwnerId')) {
+          // check if it's a master detail by get relationship order
+          if (fieldResult.getRelationshipOrder() != null) {
             // add to the list
             result.add(new PicklistOption(fieldResult.getName(), fieldResult.getLabel()));
           }
