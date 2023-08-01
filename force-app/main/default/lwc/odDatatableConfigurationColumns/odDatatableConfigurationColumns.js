@@ -13,6 +13,7 @@ import { FIELD_TYPES, DATE_FIELDS, NUMERIC_FIELDS, FORMATTED_TYPE_TO_SHOW } from
 export default class OdConfigurationColumns extends LightningElement {
   @api objectName;
   @api columns;
+  @api builderContext;
 
   @track fieldsToDisplayTable = [];
   @track fields = [];
@@ -150,6 +151,57 @@ export default class OdConfigurationColumns extends LightningElement {
     return result;
   }
 
+  _buildOptionsFromFlow(type) {
+    const result = [];
+
+    // variables
+    const variables = this.builderContext.variables;
+    if (variables.length > 0) {
+      const variablesPerType = variables.filter((vr) => vr.dataType.toLowerCase() === type);
+
+      if (variablesPerType.length > 0) {
+        variablesPerType.forEach((vpo) => {
+          result.push({
+            label: vpo.name,
+            value: `{!${vpo.name}}`,
+          });
+        });
+      }
+    }
+
+    // formulas
+    const formulas = this.builderContext.formulas;
+    if (formulas.length > 0) {
+      const formulasPerType = formulas.filter((fml) => fml.dataType.toLowerCase() === type);
+
+      if (formulasPerType.length > 0) {
+        formulasPerType.forEach((fml) => {
+          result.push({
+            label: fml.name,
+            value: `{!${fml.name}}`,
+          });
+        });
+      }
+    }
+
+    // constants
+    const constants = this.builderContext.constants;
+    if (constants.length > 0) {
+      const constantsPerType = constants.filter((cnt) => cnt.dataType.toLowerCase() === type);
+
+      if (constantsPerType.length > 0) {
+        constantsPerType.forEach((cnt) => {
+          result.push({
+            label: cnt.name,
+            value: `{!${cnt.name}}`,
+          });
+        });
+      }
+    }
+
+    return result;
+  }
+
   _selectFields() {
     const parsedColumns = this.columns ? JSON.parse(this.columns) : [];
     const result = [];
@@ -175,7 +227,10 @@ export default class OdConfigurationColumns extends LightningElement {
           required: col.typeAttributes.required,
           defaultValue: col.typeAttributes.config.defaultValue,
           initialWidth: col.initialWidth,
+          hidden: col.typeAttributes.config.hidden,
           isLookup: type === FIELD_TYPES.LOOKUP,
+          typeForDefault: type === FIELD_TYPES.LOOKUP ? FIELD_TYPES.SELECT : type,
+          options: type === FIELD_TYPES.LOOKUP ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : field.options,
           order: col.order,
           lookupConfig: col.typeAttributes.config.lookupConfig,
         });
@@ -208,6 +263,8 @@ export default class OdConfigurationColumns extends LightningElement {
         fl.isMulti = this._isMulti(fl.type);
         fl.type = getFieldType(fl.type);
         fl.isLookup = fl.type === FIELD_TYPES.LOOKUP;
+        fl.typeForDefault = fl.isLookup ? FIELD_TYPES.SELECT : fl.type;
+        fl.options = fl.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
         iteration++;
       });
 
@@ -298,12 +355,13 @@ export default class OdConfigurationColumns extends LightningElement {
             maxLength: field.maxLength,
             defaultValue: field.defaultValue,
             parentObjectName: field.parentObjectName,
-            options: field.options,
+            options: field.isLookup ? [] : field.options,
             scale: field.scale,
             precision: field.precision,
             isHTML: field.isHTML,
             isMulti: field.isMulti,
             lookupConfig: field.lookupConfig,
+            hidden: field.hidden,
           },
           value: {
             fieldName: field.value,

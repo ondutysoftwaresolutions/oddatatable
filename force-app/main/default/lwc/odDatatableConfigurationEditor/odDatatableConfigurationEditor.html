@@ -395,6 +395,7 @@
     <template if:true={showConfigureColumns}>
       <c-od-datatable-configuration-columns
         object-name={inputType}
+        builder-context={builderContext}
         onclose={handleCloseColumnsConfigurator}
         class="configurator"
         columns={inputValues.columns.value}

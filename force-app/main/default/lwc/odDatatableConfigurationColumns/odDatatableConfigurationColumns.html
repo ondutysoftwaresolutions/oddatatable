@@ -33,12 +33,13 @@
           <table class="columnsTable">
             <thead>
               <tr>
-                <th class="slds-p-around--x-small" style="width: 300px">Field API Name</th>
+                <th class="slds-p-around--x-small" style="width: 250px">Field API Name</th>
                 <th class="slds-p-around--x-small" style="width: 250px">Label</th>
                 <th class="slds-p-around--x-small" style="width: 250px">Type</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Editable?</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Required?</th>
-                <th class="slds-p-around--x-small" style="width: 300px">Default Value</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Hidden?</th>
+                <th class="slds-p-around--x-small" style="width: 250px">Default Value</th>
                 <th class="slds-p-around--x-small" style="width: 140px">Initial Width (px)</th>
                 <th class="slds-p-around--x-small" style="width: 80px">Order</th>
               </tr>
@@ -100,20 +101,30 @@
                     >
                     </c-od-datatable-input-generic>
                   </td>
+                  <td class="slds-p-around--xx-small slds-text-align--center">
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.CHECKBOX}
+                      field-name="hidden"
+                      data-value={field.value}
+                      value={field.hidden}
+                      editable
+                      onupdatefield={handleUpdateField}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
                   <td>
                     <c-od-datatable-input-generic
-                      type={field.type}
+                      type={field.typeForDefault}
                       field-name="defaultValue"
                       data-value={field.value}
                       inside-popup-height={popupHeight}
-                      editable={field.isEditable}
+                      editable
                       value={field.defaultValue}
                       onupdatefield={handleUpdateField}
                       parent-object-name={field.parentObjectName}
                       precision={field.precision}
                       is-html={field.isHTML}
                       scale={field.scale}
-                      lookup-configuration={field.lookupConfig}
                       max-length={field.maxLength}
                       options={field.options}
                       opened={field.opened}

@@ -63,6 +63,7 @@ export default class ODDatatable extends LightningElement {
 
   showBulkEditPopup = false;
 
+  _allColumns = [];
   _validInvalidFields = {};
   afterValidate = false;
   _selectedRows = [];
@@ -382,7 +383,10 @@ export default class ODDatatable extends LightningElement {
       });
     }
 
-    this.columnsToShow = columnsConfiguration;
+    this._allColumns = columnsConfiguration;
+    this.columnsToShow = columnsConfiguration.filter(
+      (col) => (col.typeAttributes.config && !col.typeAttributes.config.hidden) || !col.typeAttributes.config,
+    );
   }
 
   _doUpdateRecord(recordIndex, newObject) {
@@ -455,7 +459,7 @@ export default class ODDatatable extends LightningElement {
       }
     }
 
-    this.columnsToShow
+    this._allColumns
       .filter((col) => col.type !== ROW_BUTTON_TYPE)
       .forEach((col) => {
         newRecord.isNew = true;

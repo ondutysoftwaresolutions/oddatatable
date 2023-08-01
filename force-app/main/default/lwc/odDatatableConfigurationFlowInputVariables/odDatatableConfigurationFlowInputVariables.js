@@ -98,7 +98,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     // variables
     const variables = this.builderContext.variables;
     if (variables.length > 0) {
-      const variablesPerType = variables.filter((vr) => vr.dataType === type);
+      const variablesPerType = variables.filter((vr) => vr.dataType.toLowerCase() === type.toLowerCase());
 
       if (variablesPerType.length > 0) {
         variablesPerType.forEach((vpo) => {
@@ -113,7 +113,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     // formulas
     const formulas = this.builderContext.formulas;
     if (formulas.length > 0) {
-      const formulasPerType = formulas.filter((fml) => fml.dataType === type);
+      const formulasPerType = formulas.filter((fml) => fml.dataType.toLowerCase() === type.toLowerCase());
 
       if (formulasPerType.length > 0) {
         formulasPerType.forEach((fml) => {
@@ -128,7 +128,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     // constants
     const constants = this.builderContext.constants;
     if (constants.length > 0) {
-      const constantsPerType = constants.filter((cnt) => cnt.dataType === type);
+      const constantsPerType = constants.filter((cnt) => cnt.dataType.toLowerCase() === type.toLowerCase());
 
       if (constantsPerType.length > 0) {
         constantsPerType.forEach((cnt) => {
