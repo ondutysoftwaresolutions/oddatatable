@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
+import { FlowNavigationNextEvent } from 'lightning/flowSupport';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
@@ -12,6 +13,9 @@ const ROW_BUTTON_TYPE = 'rowButtonType';
 export default class ODDatatable extends LightningElement {
   // internal use
   @api uniqueTableName;
+
+  // flow
+  @api availableActions = [];
 
   // table configuration
   @api objectName;
@@ -44,8 +48,10 @@ export default class ODDatatable extends LightningElement {
   // save
   @api inlineSave;
   @api saveLabel = 'Save';
+  @api navigateNextAfterSave;
 
   // outputs
+  @api saveAndNext = false;
   @api outputAddedRows = [];
   @api outputEditedRows = [];
   @api outputDeletedRows = [];
@@ -142,6 +148,7 @@ export default class ODDatatable extends LightningElement {
   _getFields({ error, data }) {
     if (data) {
       this.isLoading = false;
+      this.saveAndNext = false;
 
       // build the columns
       this._buildColumns(data);
@@ -603,6 +610,15 @@ export default class ODDatatable extends LightningElement {
 
     // build the new set of records
     this._buildRecords(newRecords);
+
+    // if next is enabled and the save and next is enabled, navigate to next screen
+    if (this.navigateNextAfterSave && this.availableActions.find((action) => action === 'NEXT')) {
+      this.saveAndNext = true;
+
+      // navigate to the next screen
+      const navigateNextEvent = new FlowNavigationNextEvent();
+      this.dispatchEvent(navigateNextEvent);
+    }
   }
 
   // =================================================================
@@ -739,8 +755,14 @@ export default class ODDatatable extends LightningElement {
   handleSave() {
     this.isSaving = true;
 
+    // get a list of the fields separated by comma and remove the last comma
+    let fieldsToReturn = this._allColumns.map((fld) => fld.fieldName).join(',');
+
+    fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
+
     saveRecords({
       objectName: this.objectName,
+      fields: fieldsToReturn,
       recordsToCreate: JSON.stringify(this.outputAddedRows),
       recordsToUpdate: JSON.stringify(this.outputEditedRows),
       recordsToDelete: JSON.stringify(this.outputDeletedRows),

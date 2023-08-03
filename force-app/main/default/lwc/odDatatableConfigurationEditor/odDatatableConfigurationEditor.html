@@ -388,6 +388,22 @@
           help-text={inputValues.saveLabel.helpText}
         >
         </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="navigateNextAfterSave"
+          type={inputValues.navigateNextAfterSave.type}
+          editable
+          extra-container-classes="slds-p-left--x-large"
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          extra-label-classes="slds-p-left--x-small"
+          extra-checkbox-classes="slds-text-align--center"
+          class="slds-size--1-of-1"
+          value={inputValues.navigateNextAfterSave.value}
+          label={inputValues.navigateNextAfterSave.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.navigateNextAfterSave.helpText}
+        >
+        </c-od-datatable-input-generic>
       </template>
     </fieldset>
 

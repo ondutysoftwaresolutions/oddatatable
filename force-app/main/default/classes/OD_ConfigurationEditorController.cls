@@ -165,6 +165,9 @@ public with sharing class OD_ConfigurationEditorController {
   public static List<PicklistOption> getMasterDetailFieldsForObject(String objectName) {
     List<PicklistOption> result = new List<PicklistOption>();
 
+    // this is a list of objects where the Master Details fields don't return the getRelationshipOrder() different than null (Salesforce being Salesforce and breaking that rule)
+    Set<String> standardObjectsMasterDetails = new Set<String>{ 'OpportunityLineItem', 'WorkOrderLineItem ' };
+
     try {
       // get the object give the string with the object name
       SObject objectInstance = (SObject) Type.forName('Schema', objectName).newInstance();
@@ -178,7 +181,7 @@ public with sharing class OD_ConfigurationEditorController {
 
         if (fieldResult.getReferenceTo().size() == 1 && !fieldResult.isDefaultedOnCreate()) {
           // check if it's a master detail by get relationship order
-          if (fieldResult.getRelationshipOrder() != null) {
+          if (fieldResult.getRelationshipOrder() != null || standardObjectsMasterDetails.contains(objectName)) {
             // add to the list
             result.add(new PicklistOption(fieldResult.getName(), fieldResult.getLabel()));
           }
@@ -333,11 +336,38 @@ public with sharing class OD_ConfigurationEditorController {
   }
 
   /*********************************************************************************************************
+   * @name			getRecords
+   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
+   * @created			03 / 08 / 2023
+   * @description		Get the records after insert/update to return updated fields to the UI
+   * @param			String objectName : The Name of the object to retrieve
+   * @param			String fields : Comma separated field names to retrieve
+   * @param			Set<Id> idsToQuery : Set of record ids to retrieve
+   * @return			List of found records
+   **********************************************************************************************************/
+  private static List<SObject> getRecords(String objectName, String fields, Set<Id> idsToQuery) {
+    // build the query
+    String query = 'SELECT Id';
+
+    // add fields if any
+    if (String.isNotBlank(fields)) {
+      query += ', ' + String.escapeSingleQuotes(fields);
+    }
+
+    query += ' FROM ' + objectName + ' WHERE Id IN :idsToQuery';
+
+    SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, Database.query(query));
+
+    return securityDecision.getRecords();
+  }
+
+  /*********************************************************************************************************
    * @name			saveRecords
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
    * @created			27 / 07 / 2023
    * @description		Save the records (add, edit and delete)
    * @param			String objectName : The Name of the object to modify
+   * @param			String fields : Comma separated field names to retrieve after insert/update
    * @param			String recordsToCreate : JSON string of the list of records to create
    * @param			String recordsToUpdate : JSON string of the list of records to update
    * @param			String recordsToDelete : JSON string of the list of records to delete
@@ -346,6 +376,7 @@ public with sharing class OD_ConfigurationEditorController {
   @AuraEnabled
   public static List<SObject> saveRecords(
     String objectName,
+    String fields,
     String recordsToCreate,
     String recordsToUpdate,
     String recordsToDelete
@@ -373,11 +404,13 @@ public with sharing class OD_ConfigurationEditorController {
 
       // create new records
       if (String.isNotBlank(recordsToCreate)) {
-        List<SObject> listTCreate = (List<SObject>) JSON.deserialize(recordsToCreate, theType);
+        List<SObject> listToCreate = (List<SObject>) JSON.deserialize(recordsToCreate, theType);
 
-        insert listTCreate;
+        insert listToCreate;
 
-        result.addAll(listTCreate);
+        Formula.recalculateFormulas(listToCreate);
+
+        result.addAll(listToCreate);
       }
 
       // update records
@@ -385,6 +418,8 @@ public with sharing class OD_ConfigurationEditorController {
         List<SObject> listToUpdate = (List<SObject>) JSON.deserialize(recordsToUpdate, theType);
 
         update listToUpdate;
+
+        Formula.recalculateFormulas(listToUpdate);
 
         result.addAll(listToUpdate);
       }
@@ -396,7 +431,12 @@ public with sharing class OD_ConfigurationEditorController {
         delete listToDelete;
       }
 
-      return result;
+      Set<Id> setIdsToQuery = new Set<Id>();
+      for (SObject record : result) {
+        setIdsToQuery.add(record.Id);
+      }
+
+      return getRecords(objectName, fields, setIdsToQuery);
     } catch (AuraHandledException e) {
       throw e;
     } catch (Exception exc) {

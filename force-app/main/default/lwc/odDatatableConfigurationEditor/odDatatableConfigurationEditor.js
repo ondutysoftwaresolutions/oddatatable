@@ -219,6 +219,14 @@ export default class OdConfigurationEditor extends LightningElement {
       canBeEmpty: true,
       helpText: 'Label to show in the Save button if inline save is enabled.',
     },
+    navigateNextAfterSave: {
+      label: 'Navigate Next after Save?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        "If enabled, after clicking Save it will execute the Next button navigation of the screen and it will output the variable 'saveAndNext' = true.",
+    },
 
     // internal use
     uniqueTableName: {

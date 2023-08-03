@@ -263,6 +263,7 @@ public class OD_ConfigurationEditorControllerTest {
 
     List<SObject> result = OD_ConfigurationEditorController.saveRecords(
       'Contact',
+      'FirstName,LastName',
       '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
       '[{ "Id": "' +
       contacts[0].Id +
@@ -292,6 +293,7 @@ public class OD_ConfigurationEditorControllerTest {
     try {
       List<SObject> result = OD_ConfigurationEditorController.saveRecords(
         null,
+        'FirstName,LastName',
         '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
         '[{ "Id": "' +
         contacts[0].Id +
@@ -317,7 +319,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_ConfigurationEditorController.saveRecords('Contact', null, null, null);
+      List<SObject> result = OD_ConfigurationEditorController.saveRecords('Contact', null, null, null, null);
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('A list of records to add, edit and/or delete are needed to do the save'),
