@@ -72,12 +72,18 @@
             </lightning-formatted-text>
           </template>
           <template if:false={isMulti}>
-            <lightning-formatted-text
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
-              id={fieldName}
+            <c-od-datatable-input-autocomplete
+              element-id={fieldName}
+              name={fieldName}
               value={theValue}
+              type={theType}
+              disabled
+              options={theOptions}
+              object-name={parentObjectName}
+              server-side-configuration={lookupConfiguration}
+              class="slds-p-around--xx-small slds-size--1-of-1"
             >
-            </lightning-formatted-text>
+            </c-od-datatable-input-autocomplete>
           </template>
         </template>
         <template if:true={editable}>

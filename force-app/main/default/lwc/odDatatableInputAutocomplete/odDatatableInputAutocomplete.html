@@ -11,49 +11,58 @@
         >
           <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
             <template if:false={isMulti}>
-              <template if:true={showInputSearch}>
-                <lightning-icon
-                  size="x-small"
-                  class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
-                  icon-name={iconName}
-                >
-                </lightning-icon>
-                <lightning-input
-                  type="text"
-                  value={searchTextToShow}
-                  placeholder={thePlaceholder}
-                  name={name}
-                  autocomplete="off"
-                  data-name={name}
-                  onkeydown={handleKeyDown}
-                  variant="label-hidden"
-                  onchange={handleSearch}
-                  tabindex="0"
-                  onclick={handleOpenDropdown}
-                  disabled={disabled}
-                  message-when-value-missing=" "
-                  onblur={handleBlur}
-                >
-                </lightning-input>
+              <template if:false={disabled}>
+                <template if:true={showInputSearch}>
+                  <lightning-icon
+                    size="x-small"
+                    class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                    icon-name={iconName}
+                  >
+                  </lightning-icon>
+                  <lightning-input
+                    type="text"
+                    value={searchTextToShow}
+                    placeholder={thePlaceholder}
+                    name={name}
+                    autocomplete="off"
+                    data-name={name}
+                    onkeydown={handleKeyDown}
+                    variant="label-hidden"
+                    onchange={handleSearch}
+                    tabindex="0"
+                    onclick={handleOpenDropdown}
+                    message-when-value-missing=" "
+                    onblur={handleBlur}
+                  >
+                  </lightning-input>
+                </template>
+                <template if:false={showInputSearch}>
+                  <lightning-button-icon
+                    size="medium"
+                    variant="bare"
+                    onclick={handleClearSelection}
+                    tabindex="0"
+                    class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default icon-button"
+                    icon-name="utility:close"
+                  >
+                  </lightning-button-icon>
+                  <lightning-input
+                    data-name={name}
+                    value={searchTextToShow}
+                    read-only
+                    variant="label-hidden"
+                    tabindex="-1"
+                  >
+                  </lightning-input>
+                </template>
               </template>
-              <template if:false={showInputSearch}>
-                <lightning-button-icon
-                  size="medium"
-                  variant="bare"
-                  onclick={handleClearSelection}
-                  tabindex="0"
-                  class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default icon-button"
-                  icon-name="utility:close"
-                >
-                </lightning-button-icon>
-                <lightning-input
-                  data-name={name}
+              <template if:true={disabled}>
+                <lightning-formatted-text
+                  class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+                  id={name}
                   value={searchTextToShow}
-                  read-only
-                  variant="label-hidden"
-                  tabindex="-1"
                 >
-                </lightning-input>
+                </lightning-formatted-text>
               </template>
             </template>
             <template if:true={isMulti}>
