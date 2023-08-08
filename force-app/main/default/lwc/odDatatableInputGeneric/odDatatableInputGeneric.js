@@ -139,7 +139,11 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get isText() {
-    return this.theType === FIELD_TYPES.TEXT;
+    return this.theType === FIELD_TYPES.TEXT && !this.isTextWithHTML;
+  }
+
+  get isTextWithHTML() {
+    return this.theType === FIELD_TYPES.TEXT && /<[a-z][\s\S]*>/i.test(this.theValue);
   }
 
   get isUrl() {
