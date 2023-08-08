@@ -103,6 +103,16 @@ export default class ODInputGeneric extends LightningElement {
         return result;
       }
 
+      // if it's a text with html, add a title to images or any html tag that has an alt value
+      if (this.isTextWithHTML) {
+        if (this.value.includes('alt')) {
+          const indexOfAlt = this.value.indexOf('alt="') + 5;
+          const title = `title="${this.value.substring(indexOfAlt, this.value.indexOf('"', indexOfAlt))}"`;
+
+          return this.value.replace('alt', `${title} alt`);
+        }
+      }
+
       return this.value;
     }
 
@@ -143,7 +153,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get isTextWithHTML() {
-    return this.theType === FIELD_TYPES.TEXT && /<[a-z][\s\S]*>/i.test(this.theValue);
+    return this.theType === FIELD_TYPES.TEXT && /<[a-z][\s\S]*>/i.test(this.value);
   }
 
   get isUrl() {
