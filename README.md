@@ -73,7 +73,7 @@ Live Demo on a Scratch Org: <a href="https://hosted-scratch.herokuapp.com/launch
 
 ## Installation
 
-<a href="https://githubsfdeploy.herokuapp.com?owner=ondutysoftwaresolutions&repo=oddatatable&ref=main">
+<a href="https://githubsfdeploy.herokuapp.com?owner=ondutysoftwaresolutions&repo=oddatatable&ref=master">
   <img alt="Deploy to Salesforce"
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
 </a>
