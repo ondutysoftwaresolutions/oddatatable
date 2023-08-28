@@ -612,7 +612,7 @@ export default class ODDatatable extends LightningElement {
     this._buildRecords(newRecords);
 
     // if next is enabled and the save and next is enabled, navigate to next screen
-    if (this.navigateNextAfterSave && this.availableActions.find((action) => action === 'NEXT')) {
+    if (this.navigateNextAfterSave === YES_NO.YES && this.availableActions.find((action) => action === 'NEXT')) {
       this.saveAndNext = true;
 
       // navigate to the next screen
