@@ -137,6 +137,14 @@ export default class OdConfigurationEditor extends LightningElement {
       helpText:
         'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow',
     },
+    editLabel: {
+      label: 'Edit Label',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: 'Edit',
+      helpText: 'Label to show in the Edit button when Editing with a flow.',
+    },
+
     editFlowName: {
       label: 'Flow Name',
       type: FIELD_TYPES.TEXT,

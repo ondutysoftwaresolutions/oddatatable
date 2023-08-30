@@ -143,7 +143,6 @@ export const EVENTS = {
 export const ROW_BUTTON_CONFIGURATION = {
   EDIT: {
     _editAction: EVENTS.CHANGE,
-    _editLabel: 'Edit',
   },
   DELETE: {
     _deleteIcon: 'utility:delete',

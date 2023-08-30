@@ -90,7 +90,9 @@ public with sharing class OD_ConfigurationEditorController {
 
         Boolean canEdit =
           !fieldResult.isCalculated() &&
-          (fieldResult.isPermissionable() || fieldResult.isNameField()) &&
+          (fieldResult.isPermissionable() ||
+          fieldResult.isNameField() ||
+          !fieldResult.isNillable()) &&
           !fieldResult.isAutoNumber() &&
           !fieldResult.isQueryByDistance();
 

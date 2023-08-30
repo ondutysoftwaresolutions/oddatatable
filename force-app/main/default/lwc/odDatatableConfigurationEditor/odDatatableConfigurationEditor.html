@@ -234,6 +234,19 @@
           <template if:false={editInline}>
             <div class="slds-size--1-of-1 slds-grid slds-wrap">
               <c-od-datatable-input-generic
+                field-name="editLabel"
+                type={inputValues.editLabel.type}
+                editable
+                class="slds-size--1-of-2"
+                value={inputValues.editLabel.value}
+                label={inputValues.editLabel.label}
+                onupdatefield={handleInputChange}
+                help-text={inputValues.editLabel.helpText}
+              >
+              </c-od-datatable-input-generic>
+            </div>
+            <div class="slds-size--1-of-1 slds-grid slds-wrap">
+              <c-od-datatable-input-generic
                 field-name="editFlowName"
                 type={fieldTypes.SELECT}
                 editable

@@ -37,6 +37,7 @@ export default class ODDatatable extends LightningElement {
   @api addFlowInputVariables;
   @api canEdit;
   @api editType;
+  @api editLabel = 'Edit';
   @api editFlowName;
   @api editFlowInputVariables;
   @api canDelete;
@@ -272,6 +273,7 @@ export default class ODDatatable extends LightningElement {
           record = {
             ...record,
             ...ROW_BUTTON_CONFIGURATION.EDIT,
+            _editLabel: this.editLabel,
           };
         }
         result.push(record);
@@ -517,6 +519,7 @@ export default class ODDatatable extends LightningElement {
         const newRecord = {
           ...ROW_BUTTON_CONFIGURATION.DELETE,
           ...ROW_BUTTON_CONFIGURATION.EDIT,
+          _editLabel: this.editLabel,
           ...resultModal,
           _id: resultModal.Id,
         };

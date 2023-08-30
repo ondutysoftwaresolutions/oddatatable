@@ -43,6 +43,9 @@
             <property name="editType" label="Edit Type" type="String" role="inputOnly"
                 default="Inline"
                 description="Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow" />
+            <property name="editLabel" label="Edit Button Label" type="String" role="inputOnly"
+                default="Edit"
+                description="Label to show in the Edit button when Editing with a flow." />
             <property name="editFlowName" label="Flow Name" type="String" role="inputOnly"
                 description="Screen flow name to fire whenever the edit button in the row is clicked. A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed" />
             <property name="editFlowInputVariables" label="Flow Input Variables" type="String"
