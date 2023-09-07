@@ -13,6 +13,7 @@ export default class ODCustomDatatable extends LightningDatatable {
         'editable',
         'value',
         'recordId',
+        'record',
         'isDeleted',
         'isNew',
         'config',

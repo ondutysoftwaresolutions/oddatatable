@@ -6,7 +6,7 @@
     show-error={errorMessage}
     backdrop-classes="modalBackdropsPropertyEditor onTopOfEverything"
     spinner-message={loadingMessage}
-    modal-classes="onTopOfEverything"
+    modal-classes="onTopOfEverything overFlowInitial"
   >
     <div slot="title" class="title-popup">Configure Lookup</div>
     <div slot="body" class={bodyClasses}>
@@ -36,7 +36,7 @@
             Display Value Field
             <lightning-helptext
               class="help-text legend-help-text"
-              content="This is the field that will be displayed in the field and in the lookup records. If Empty the 'Name' field of the object will be used"
+              content="Add a filter condition for the query to return specific records. If you want to reference the current record use '{{Record.Name}}' to reference the current row Name field. Also, remember to wrap it in single quotes if needed. This will always add conditions linked with 'AND' but you can manually edit it to include 'OR' for example"
             >
             </lightning-helptext>
           </legend>

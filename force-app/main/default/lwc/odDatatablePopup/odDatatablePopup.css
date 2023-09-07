@@ -34,6 +34,10 @@
   z-index: 9999;
 }
 
+slds-modal.overFlowInitial .slds-modal__content {
+  overflow: initial !important;
+}
+
 @media only screen and (max-width: 1800px) {
   .slds-modal__container.lg {
     max-width: 80vw;

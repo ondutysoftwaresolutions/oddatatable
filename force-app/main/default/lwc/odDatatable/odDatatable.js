@@ -74,7 +74,6 @@ export default class ODDatatable extends LightningElement {
   _validInvalidFields = {};
   afterValidate = false;
   _selectedRows = [];
-  _alreadyRendered = false;
 
   // =================================================================
   // validate flow method
@@ -129,17 +128,6 @@ export default class ODDatatable extends LightningElement {
 
     // get the variables from the session storage if any
     this._getSessionStoredVariables();
-  }
-
-  renderedCallback() {
-    if (!this._alreadyRendered && !this.isLoading) {
-      const tableRendered = this.template.querySelector('.od-datatable');
-
-      if (tableRendered) {
-        this._alreadyRendered = true;
-        this._addInsidePopupHeightToColumns(tableRendered);
-      }
-    }
   }
 
   // =================================================================
@@ -266,6 +254,7 @@ export default class ODDatatable extends LightningElement {
         let record = {
           ...rec,
           _id: rec.Id,
+          _originalRecord: rec,
           ...ROW_BUTTON_CONFIGURATION.DELETE,
         };
 
@@ -286,21 +275,6 @@ export default class ODDatatable extends LightningElement {
     }
 
     this.recordsToShow = result;
-  }
-
-  _addInsidePopupHeightToColumns(datatableElement) {
-    if (datatableElement) {
-      const wrapperBody = datatableElement.closest('#wrapper-body');
-
-      if (wrapperBody) {
-        const clientRect = wrapperBody.getBoundingClientRect();
-
-        // add the height of the popup to all the columns
-        this.columnsToShow.forEach((col) => {
-          col.typeAttributes.config.insidePopupHeight = clientRect.height;
-        });
-      }
-    }
   }
 
   _buildColumns(columnsFromObject) {
@@ -342,19 +316,32 @@ export default class ODDatatable extends LightningElement {
 
       // build the bulk edit columns in case we need it
       if (col.typeAttributes.editable) {
-        this.columnsForBulkEdit.push({
-          label: col.tableLabel,
-          order: col.order,
-          fieldName: col.fieldName,
-          type: col.typeAttributes.type,
-          maxLength: col.typeAttributes.config.maxLength,
-          parentObjectName: col.typeAttributes.config.parentObjectName,
-          options: col.typeAttributes.config.options,
-          scale: col.typeAttributes.config.scale,
-          precision: col.typeAttributes.config.precision,
-          isHTML: col.typeAttributes.config.isHTML,
-          isMulti: col.typeAttributes.config.isMulti,
-        });
+        let addField = true;
+        // if a field has a {{Record. string in the where condition it means it needs to be filtered by the record so it cannot be bulk edit
+        if (col.typeAttributes.config.lookupConfig) {
+          const parsed = JSON.parse(col.typeAttributes.config.lookupConfig);
+
+          if (parsed.whereCondition && parsed.whereCondition.includes('{{Record.')) {
+            addField = false;
+          }
+        }
+
+        if (addField) {
+          this.columnsForBulkEdit.push({
+            label: col.tableLabel,
+            order: col.order,
+            fieldName: col.fieldName,
+            type: col.typeAttributes.type,
+            maxLength: col.typeAttributes.config.maxLength,
+            parentObjectName: col.typeAttributes.config.parentObjectName,
+            options: col.typeAttributes.config.options,
+            scale: col.typeAttributes.config.scale,
+            precision: col.typeAttributes.config.precision,
+            isHTML: col.typeAttributes.config.isHTML,
+            isMulti: col.typeAttributes.config.isMulti,
+            lookupConfig: col.typeAttributes.config.lookupConfig,
+          });
+        }
       }
     });
 

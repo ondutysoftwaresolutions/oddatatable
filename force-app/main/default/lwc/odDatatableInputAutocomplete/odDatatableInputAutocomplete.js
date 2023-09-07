@@ -156,6 +156,7 @@ export default class ODInputAutocomplete extends LightningElement {
     // get the element
     let element = this.template.querySelector(`lightning-input[data-name="${this.name}"]`);
     const maxHeight = 250;
+    let upsideDown = false;
 
     if (element) {
       // if it's a multi picklist get the positioning of the parent element (DIV)
@@ -175,10 +176,22 @@ export default class ODInputAutocomplete extends LightningElement {
         if (windowHeight - this.containerHeight < maxHeight) {
           windowHeight = this.containerHeight;
         }
+      } else {
+        // if it's inside a table
+        if (element.closest('table')) {
+          // get the number of rows
+          const totalRows = element.closest('table').rows.length;
+          const currentIndex = element.closest('tr').rowIndex;
+
+          // the last 3 rows of the table always opens up if there is no container height (default)
+          if (totalRows - currentIndex <= 3) {
+            upsideDown = true;
+          }
+        }
       }
 
       // if we are near the bottom we need to change to open the dropdown up
-      if (windowHeight - topPosition < maxHeight) {
+      if (windowHeight - topPosition < maxHeight || upsideDown) {
         top = 'auto';
         bottom = '100%';
       }
