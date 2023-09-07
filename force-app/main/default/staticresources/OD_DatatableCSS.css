@@ -13,10 +13,6 @@
   overflow-y: hidden !important;
 }
 
-.od-datatable-dropdown-open flowruntime-lwc-body {
-  margin-right: 15px !important;
-}
-
 .od-datatable td.slds-has-focus,
 .od-datatable th.slds-has-focus {
   box-shadow: none !important;
