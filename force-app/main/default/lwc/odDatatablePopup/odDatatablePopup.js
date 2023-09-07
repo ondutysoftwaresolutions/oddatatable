@@ -9,7 +9,7 @@ export default class Popup extends LightningElement {
   @api hideTitle = false;
   @api hideFooter = false;
   @api backdropClasses;
-  @api modalClasses;
+  @api modalClasses = '';
 
   get modalSectionClasses() {
     return `slds-modal slds-fade-in-open ${this.modalClasses}`;
