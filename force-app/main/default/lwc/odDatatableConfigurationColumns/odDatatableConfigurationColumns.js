@@ -346,6 +346,7 @@ export default class OdConfigurationColumns extends LightningElement {
         typeAttributes: {
           type: field.type,
           recordId: { fieldName: '_id' },
+          record: { fieldName: '_originalRecord' },
           editable: field.isEditable,
           required: field.required,
           fieldName: field.value,
