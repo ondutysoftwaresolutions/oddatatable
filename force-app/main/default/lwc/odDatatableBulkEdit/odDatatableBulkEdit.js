@@ -11,6 +11,7 @@ export default class OdDatatableBulkEdit extends LightningElement {
   fieldTypes = FIELD_TYPES;
   yesNo = YES_NO;
   onlyEmpty = YES_NO.NO;
+  popupHeight;
 
   // private variables
   _alreadyRendered = false;
@@ -23,7 +24,7 @@ export default class OdDatatableBulkEdit extends LightningElement {
   }
 
   renderedCallback() {
-    if (!this._alreadyRendered && !this.isLoading) {
+    if (!this._alreadyRendered) {
       const bodyRendered = this.template.querySelector('.body-popup');
 
       if (bodyRendered) {
