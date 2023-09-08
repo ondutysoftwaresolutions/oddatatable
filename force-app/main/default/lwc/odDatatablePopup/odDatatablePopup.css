@@ -34,7 +34,7 @@
   z-index: 9999;
 }
 
-slds-modal.overFlowInitial .slds-modal__content {
+.slds-modal.overFlowInitial .slds-modal__content {
   overflow: initial !important;
 }
 
