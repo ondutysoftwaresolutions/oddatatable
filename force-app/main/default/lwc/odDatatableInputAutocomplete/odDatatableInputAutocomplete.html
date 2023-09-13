@@ -110,13 +110,13 @@
             </template>
           </div>
           <template if:true={opened}>
-            <div
-              id="results"
-              class="slds-dropdown slds-dropdown_fluid slds-input slds-scrollable--y options-result"
-              style={positionDropdown}
-              role="listbox"
-              onmousedown={handleClickInside}
-            >
+            <div id="results">
+              <div
+                class="slds-dropdown slds-dropdown_fluid slds-input slds-scrollable--y options-result"
+                style={positionDropdown}
+                role="listbox"
+                onmousedown={handleClickInside}
+              >
               <ul class="slds-listbox slds-listbox_vertical" role="presentation" data-id={elementId}>
                 <template if:false={isSearching}>
                   <template if:true={optionsToShow.length}>
@@ -153,6 +153,7 @@
                 </template>
               </ul>
             </div>
+           </div>
           </template>
         </div>
       </div>

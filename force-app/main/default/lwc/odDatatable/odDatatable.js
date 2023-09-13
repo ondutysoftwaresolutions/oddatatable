@@ -610,6 +610,20 @@ export default class ODDatatable extends LightningElement {
       this.dispatchEvent(navigateNextEvent);
     }
   }
+  
+  _doCleanDataToSend(data) {
+    const copyData = JSON.parse(JSON.stringify(data));
+
+    copyData.forEach((record) => {
+      Object.keys(record).forEach((key) => {
+        if (/^_/.test(key)) {
+          delete record[key];
+        }
+      });
+    });
+
+    return copyData;
+  }
 
   // =================================================================
   // handler methods
@@ -753,9 +767,9 @@ export default class ODDatatable extends LightningElement {
     saveRecords({
       objectName: this.objectName,
       fields: fieldsToReturn,
-      recordsToCreate: JSON.stringify(this.outputAddedRows),
-      recordsToUpdate: JSON.stringify(this.outputEditedRows),
-      recordsToDelete: JSON.stringify(this.outputDeletedRows),
+      recordsToCreate: JSON.stringify(this._doCleanDataToSend(this.outputAddedRows)),
+      recordsToUpdate: JSON.stringify(this._doCleanDataToSend(this.outputEditedRows)),
+      recordsToDelete: JSON.stringify(this._doCleanDataToSend(this.outputDeletedRows)),
     })
       .then((rs) => {
         this.isSaving = false;

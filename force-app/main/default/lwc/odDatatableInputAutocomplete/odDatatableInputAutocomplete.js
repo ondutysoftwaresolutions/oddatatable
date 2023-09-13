@@ -156,7 +156,6 @@ export default class ODInputAutocomplete extends LightningElement {
     // get the element
     let element = this.template.querySelector(`lightning-input[data-name="${this.name}"]`);
     const maxHeight = 250;
-    let upsideDown = false;
 
     if (element) {
       // if it's a multi picklist get the positioning of the parent element (DIV)
@@ -167,7 +166,7 @@ export default class ODInputAutocomplete extends LightningElement {
       const bounding = element.getBoundingClientRect();
 
       const topPosition = bounding.top + bounding.height;
-      let top = '100%';
+      let top = `${topPosition}px`;
       let bottom = 'auto';
 
       let windowHeight = window.innerHeight;
@@ -176,27 +175,15 @@ export default class ODInputAutocomplete extends LightningElement {
         if (windowHeight - this.containerHeight < maxHeight) {
           windowHeight = this.containerHeight;
         }
-      } else {
-        // if it's inside a table
-        if (element.closest('table')) {
-          // get the number of rows
-          const totalRows = element.closest('table').rows.length;
-          const currentIndex = element.closest('tr').rowIndex;
-
-          // the last 3 rows of the table always opens up if there is no container height (default)
-          if (totalRows - currentIndex <= 3) {
-            upsideDown = true;
-          }
-        }
       }
 
       // if we are near the bottom we need to change to open the dropdown up
-      if (windowHeight - topPosition < maxHeight || upsideDown) {
+      if (windowHeight - topPosition < maxHeight) {
         top = 'auto';
-        bottom = '100%';
+        bottom = `${windowHeight - bounding.top}px`;
       }
 
-      return `max-height: ${maxHeight}px; position: absolute; top: ${top}; bottom: ${bottom}; left: 0; right: auto; max-width: ${bounding.width}px; transform: translateX(0);`;
+      return `position: fixed; max-height: ${maxHeight}px;top: ${top}; bottom: ${bottom}; max-width: ${bounding.width}px; transform: none; left: unset;`;
     }
 
     return '';
