@@ -2,11 +2,6 @@
 	min-width: 70% !important;
 }
 
-.od-datatable-dropdown-open .od-datatable .slds-table_header-fixed_container,
-.od-datatable-dropdown-open .od-datatable .slds-scrollable_y {
-  overflow: initial !important;
-}
-
 #wrapper-body > .quick-actions-panel, 
 #wrapper-body > .quick-actions-panel > .slds-modal__content,
 .od-datatable-dropdown-open flowruntime-lwc-body {
