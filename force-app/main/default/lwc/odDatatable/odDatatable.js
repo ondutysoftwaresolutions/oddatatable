@@ -153,6 +153,10 @@ export default class ODDatatable extends LightningElement {
   // =================================================================
   // getter methods
   // =================================================================
+  get loaded() {
+    return !this.isLoading;
+  }
+
   get _storageTag() {
     return this.uniqueTableName;
   }
@@ -610,7 +614,7 @@ export default class ODDatatable extends LightningElement {
       this.dispatchEvent(navigateNextEvent);
     }
   }
-  
+
   _doCleanDataToSend(data) {
     const copyData = JSON.parse(JSON.stringify(data));
 

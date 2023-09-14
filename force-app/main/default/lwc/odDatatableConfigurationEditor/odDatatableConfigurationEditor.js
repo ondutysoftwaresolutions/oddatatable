@@ -338,6 +338,14 @@ export default class OdConfigurationEditor extends LightningElement {
     return this._inputVariables;
   }
 
+  get emptyColumns() {
+    return !this.inputValues.columns.value;
+  }
+
+  get emptyMasterDetailColumns() {
+    return !this.inputValues.masterDetailConfiguration.value;
+  }
+
   get inputType() {
     const type = this.genericTypeMappings.find(({ typeName }) => typeName === 'T');
     return type && type.typeValue;
@@ -414,8 +422,16 @@ export default class OdConfigurationEditor extends LightningElement {
     return this.inputValues.editType.value === INLINE_FLOW.INLINE;
   }
 
+  get editFlow() {
+    return this.inputValues.editType.value === INLINE_FLOW.FLOW;
+  }
+
   get addInline() {
     return this.inputValues.addType.value === INLINE_FLOW.INLINE;
+  }
+
+  get addFlow() {
+    return this.inputValues.addType.value === INLINE_FLOW.FLOW;
   }
 
   get canDelete() {

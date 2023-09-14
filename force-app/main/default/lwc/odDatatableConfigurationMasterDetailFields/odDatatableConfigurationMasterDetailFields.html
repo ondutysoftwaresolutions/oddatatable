@@ -9,81 +9,83 @@
   >
     <div slot="title" class="title-popup">Configure Fields</div>
     <div slot="body" class={bodyClasses}>
-      <span class="slds-align_absolute-center slds-p-bottom--x-small">
-        Select the Master-Detail fields for the object and the values
-      </span>
       <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
-      <c-od-datatable-input-generic
-        field-name="fields"
-        type={fieldTypes.SELECT}
-        editable
-        value={selectedFields}
-        options={fields}
-        placeholder="Search field..."
-        onupdatefield={handleSelectField}
-        opened={isSelectFieldsOpened}
-        onfocusdropdown={handleOnFocusDropdown}
-        onblurdropdown={handleOnBlurDropdown}
-        is-multi
-        required
-        auto-focus
-      >
-      </c-od-datatable-input-generic>
-      <template if:true={fieldsToDisplayTable.length}>
-        <div class="slds-m-top--medium slds-p-around--xx-small">
-          <table class="columnsTable">
-            <thead>
-              <tr>
-                <th class="slds-p-around--x-small" style="width: 200px">Field Label</th>
-                <th class="slds-p-around--x-small" style="width: 200px">Field API Name</th>
-                <th class="slds-p-around--x-small" style="width: 200px">
-                  Value
-                  <lightning-helptext
-                    class="help-text"
-                    content="You need to select a formula, constant or variable to pre-populate the field with a master-detail value"
-                  ></lightning-helptext>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="">
-              <template for:each={fieldsToDisplayTable} for:item="field">
-                <tr key={field.value}>
-                  <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="label" value={field.label}>
-                    </c-od-datatable-input-generic>
-                  </td>
-                  <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="apiName" value={field.apiName}>
-                    </c-od-datatable-input-generic>
-                  </td>
-                  <td>
-                    <template if:true={options.length}>
-                      <c-od-datatable-input-generic
-                        type={fieldTypes.SELECT}
-                        field-name="defaultValue"
-                        data-value={field.apiName}
-                        inside-popup-height={popupHeight}
-                        editable
-                        value={field.defaultValue}
-                        onupdatefield={handleUpdateField}
-                        options={options}
-                        opened={field.opened}
-                        onfocusdropdown={handleValueOnFocusDropdown}
-                        onblurdropdown={handleValueOnBlurDropdown}
-                      >
-                      </c-od-datatable-input-generic>
-                    </template>
-                    <template if:false={options.length}>
-                      <span class="slds-p-around--xx-small slds-m-left--xx-small">
-                        There aren't any Text formula, constant or variable.
-                      </span>
-                    </template>
-                  </td>
+      <template lwc:if={noError}>
+        <span class="slds-align_absolute-center slds-p-bottom--x-small">
+          Select the Master-Detail fields for the object and the values
+        </span>
+        <c-od-datatable-input-generic
+          field-name="fields"
+          type={fieldTypes.SELECT}
+          editable
+          value={selectedFields}
+          options={fields}
+          placeholder="Search field..."
+          onupdatefield={handleSelectField}
+          opened={isSelectFieldsOpened}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+          is-multi
+          required
+          auto-focus
+        >
+        </c-od-datatable-input-generic>
+        <template lwc:if={fieldsToDisplayTable.length}>
+          <div class="slds-m-top--medium slds-p-around--xx-small">
+            <table class="columnsTable">
+              <thead>
+                <tr>
+                  <th class="slds-p-around--x-small" style="width: 200px">Field Label</th>
+                  <th class="slds-p-around--x-small" style="width: 200px">Field API Name</th>
+                  <th class="slds-p-around--x-small" style="width: 200px">
+                    Value
+                    <lightning-helptext
+                      class="help-text"
+                      content="You need to select a formula, constant or variable to pre-populate the field with a master-detail value"
+                    ></lightning-helptext>
+                  </th>
                 </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody class="">
+                <template for:each={fieldsToDisplayTable} for:item="field">
+                  <tr key={field.value}>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="label" value={field.label}>
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="apiName" value={field.apiName}>
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <template lwc:if={options.length}>
+                        <c-od-datatable-input-generic
+                          type={fieldTypes.SELECT}
+                          field-name="defaultValue"
+                          data-value={field.apiName}
+                          inside-popup-height={popupHeight}
+                          editable
+                          value={field.defaultValue}
+                          onupdatefield={handleUpdateField}
+                          options={options}
+                          opened={field.opened}
+                          onfocusdropdown={handleValueOnFocusDropdown}
+                          onblurdropdown={handleValueOnBlurDropdown}
+                        >
+                        </c-od-datatable-input-generic>
+                      </template>
+                      <template lwc:else>
+                        <span class="slds-p-around--xx-small slds-m-left--xx-small">
+                          There aren't any Text formula, constant or variable.
+                        </span>
+                      </template>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </template>
     </div>
     <div slot="footer" class="footer-popup slds-grid">

@@ -1,5 +1,5 @@
 <template>
-  <template if:true={errorMessage}>
+  <template lwc:if={errorMessage}>
     <span class={classNames} role="alert"> {errorMessage} </span>
   </template>
 </template>

@@ -1,9 +1,9 @@
 <template>
   <c-od-datatable-spinner text=" " show={isLoading}></c-od-datatable-spinner>
-  <template if:false={isLoading}>
+  <template lwc:if={loaded}>
     <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
     <c-od-datatable-spinner text=" " show={isSaving}></c-od-datatable-spinner>
-    <template if:true={fieldsThatChanged.length}>
+    <template lwc:if={fieldsThatChanged.length}>
       <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
         <div class="slds-p-around--medium slds-text-heading_medium">
           The following fields have changed, please reconfigure the table before using it as it can cause errors when
@@ -16,7 +16,7 @@
         </ul>
       </div>
     </template>
-    <template if:true={recordsToShow.length}>
+    <template lwc:if={recordsToShow.length}>
       <c-od-datatable-custom
         key-field="_id"
         class="od-datatable"
@@ -29,12 +29,12 @@
       >
       </c-od-datatable-custom>
     </template>
-    <template if:false={recordsToShow.length}>
+    <template lwc:else>
       <div class="slds-p-left--xx-small slds-text-heading--small">{noRecordsMessage}</div>
     </template>
     <div class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap">
-      <template if:true={showAddButton}>
-        <template if:true={addHasLabel}>
+      <template lwc:if={showAddButton}>
+        <template lwc:if={addHasLabel}>
           <lightning-button
             label={addLabel}
             title={addLabel}
@@ -44,7 +44,7 @@
           >
           </lightning-button>
         </template>
-        <template if:false={addHasLabel}>
+        <template lwc:else>
           <lightning-button-icon
             icon-name="utility:add"
             alternative-text="Add"
@@ -55,8 +55,8 @@
           </lightning-button-icon>
         </template>
       </template>
-      <template if:true={showBulkDeleteButton}>
-        <template if:true={bulkDeleteHasLabel}>
+      <template lwc:if={showBulkDeleteButton}>
+        <template lwc:if={bulkDeleteHasLabel}>
           <lightning-button
             class="slds-m-left--medium"
             label={bulkDeleteLabel}
@@ -67,7 +67,7 @@
           >
           </lightning-button>
         </template>
-        <template if:false={bulkDeleteHasLabel}>
+        <template lwc:else>
           <lightning-button-icon
             class="slds-m-left--medium"
             icon-name="utility:delete"
@@ -79,8 +79,8 @@
           </lightning-button-icon>
         </template>
       </template>
-      <template if:true={showBulkEditButton}>
-        <template if:true={bulkEditHasLabel}>
+      <template lwc:if={showBulkEditButton}>
+        <template lwc:if={bulkEditHasLabel}>
           <lightning-button
             class="slds-m-left--medium"
             label={bulkEditLabel}
@@ -91,7 +91,7 @@
           >
           </lightning-button>
         </template>
-        <template if:false={bulkEditHasLabel}>
+        <template lwc:else>
           <lightning-button-icon
             class="slds-m-left--medium"
             icon-name="utility:edit"
@@ -104,14 +104,14 @@
         </template>
       </template>
     </div>
-    <template if:true={showSaveButtons}>
+    <template lwc:if={showSaveButtons}>
       <div class="slds-align--absolute-center slds-grid slds-wrap">
         <lightning-button label="Cancel" onclick={handleCancel}> </lightning-button>
         <lightning-button class="slds-m-left--xx-small" label={saveLabel} variant="brand" onclick={handleSave}>
         </lightning-button>
       </div>
     </template>
-    <template if:true={showBulkEditPopup}>
+    <template lwc:if={showBulkEditPopup}>
       <c-od-datatable-bulk-edit
         title={bulkEditLabel}
         fields={columnsForBulkEdit}

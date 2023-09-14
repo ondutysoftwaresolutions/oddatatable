@@ -68,6 +68,10 @@ export default class OdDatatableConfigurationMasterDetailFields extends Lightnin
     return this.fieldsToDisplayTable.some((sf) => !sf.defaultValue);
   }
 
+  get noError() {
+    return !this.errorMessage;
+  }
+
   get bodyClasses() {
     return `slds-p-around--large ${getBodyPopupClasses(this)}`;
   }

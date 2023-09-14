@@ -83,6 +83,10 @@ export default class ODInputGeneric extends LightningElement {
     return this.label;
   }
 
+  get loaded() {
+    return !this.isLoading;
+  }
+
   get variantToggle() {
     return this.toggleLabel ? 'label-stacked' : 'label-hidden';
   }

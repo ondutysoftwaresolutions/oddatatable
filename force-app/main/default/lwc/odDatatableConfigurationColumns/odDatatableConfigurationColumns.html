@@ -29,7 +29,7 @@
         auto-focus
       >
       </c-od-datatable-input-generic>
-      <template if:true={fieldsToDisplayTable.length}>
+      <template lwc:if={fieldsToDisplayTable.length}>
         <div class="slds-m-top--medium slds-p-around--xx-small">
           <table class="columnsTable">
             <thead>
@@ -66,7 +66,7 @@
                   <td class="slds-grid slds-p-top--xx-small slds-wrap">
                     <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value={field.typeSpec}>
                     </c-od-datatable-input-generic>
-                    <template if:true={field.isLookup}>
+                    <template lwc:if={field.isLookup}>
                       <lightning-button
                         label="Configure"
                         title="Configure"
@@ -194,7 +194,7 @@
   </c-od-datatable-popup>
 
   <!-- Lookup configuration popup -->
-  <template if:true={showLookupConfiguration}>
+  <template lwc:if={showLookupConfiguration}>
     <c-od-datatable-configuration-column-lookup
       onclose={handleCloseLookupConfiguration}
       object-name={lookupObjectName}
