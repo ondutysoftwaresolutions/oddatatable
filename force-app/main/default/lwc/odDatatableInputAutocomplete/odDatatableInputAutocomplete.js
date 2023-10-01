@@ -27,6 +27,7 @@ export default class ODInputAutocomplete extends LightningElement {
   @api containerHeight = 0;
   @api currentRecordId;
   @api serverSideConfiguration;
+  @api afterValidate = false;
 
   // tracked
   isSearching = false;
@@ -37,6 +38,7 @@ export default class ODInputAutocomplete extends LightningElement {
   _searched = false;
   _wasSelected = false;
   _valueToCompare;
+  _alreadyRendered = false;
 
   // =======================================================================================================================================================================================================================================
   // lifecycle method
@@ -48,9 +50,21 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   renderedCallback() {
-    // if it's server search perform the search and then select, and we didn't already rendered
-    if (this.isServerSearch && this.value !== this._valueToCompare && !this.isSearching) {
-      this._doSearchSelectedRecord();
+    if (!this._alreadyRendered && this.afterValidate) {
+      // check the inputs
+      const elementInput = this.template.querySelector('lightning-input');
+
+      // inputs
+      if (elementInput) {
+        elementInput.reportValidity();
+      }
+
+      this._alreadyRendered = true;
+    } else {
+      // if it's server search perform the search and then select, and we didn't already rendered
+      if (this.isServerSearch && this.value !== this._valueToCompare && !this.isSearching) {
+        this._doSearchSelectedRecord();
+      }
     }
   }
 

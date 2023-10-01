@@ -92,7 +92,7 @@ export default class ODDatatable extends LightningElement {
       // check the required fields with value, return false on the first one (this is for fields that are required but not navigated to them)
       this.columnsToShow.every((col) => {
         this.recordsToShow.every((rec) => {
-          if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName]) {
+          if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
             isValid = false;
             return false;
           }
@@ -103,7 +103,7 @@ export default class ODDatatable extends LightningElement {
       });
 
       // check the save if it's inline
-      if (this.isInlineSave && this.hasChanges) {
+      if (this.isInlineSave && this.hasChanges && isValid && !this.isSaving) {
         isValid = false;
         errorMessage = 'You need to Save or cancel the changes to continue.';
       }
@@ -134,19 +134,19 @@ export default class ODDatatable extends LightningElement {
   // wire methods
   // =================================================================
   @wire(getFieldsForObject, { objectName: '$objectName' })
-  _getFields({ error, data }) {
-    if (data) {
+  _getFields(result) {
+    if (result.data) {
       this.isLoading = false;
       this.saveAndNext = false;
 
       // build the columns
-      this._buildColumns(data);
+      this._buildColumns(result.data);
 
       // build the records
       this._buildRecords(this.tableData);
-    } else if (error) {
+    } else if (result.error) {
       this.isLoading = false;
-      this.errorMessage = reduceErrors(error);
+      this.errorMessage = reduceErrors(result.error);
     }
   }
 
@@ -228,9 +228,14 @@ export default class ODDatatable extends LightningElement {
         this.afterValidate = true;
 
         // delete it from the storage
-        sessionStorage.removeItem(this._storageTag);
+        this._doRemoveSessionStorage();
       }
     }
+  }
+
+  _doRemoveSessionStorage() {
+    sessionStorage[this._storageTag] = null;
+    sessionStorage.removeItem(this._storageTag);
   }
 
   _setSessionStorage() {
@@ -572,6 +577,7 @@ export default class ODDatatable extends LightningElement {
     this.outputAddedRows = [];
     this.outputDeletedRows = [];
     this.outputEditedRows = [];
+    this._doRemoveSessionStorage();
   }
 
   _doRefreshDataAfterSave(records = [], deletedRecords = []) {
@@ -605,13 +611,12 @@ export default class ODDatatable extends LightningElement {
     // build the new set of records
     this._buildRecords(newRecords);
 
-    // if next is enabled and the save and next is enabled, navigate to next screen
-    if (this.navigateNextAfterSave === YES_NO.YES && this.availableActions.find((action) => action === 'NEXT')) {
+    // if save and next is enabled, navigate to next screen
+    if (this.navigateNextAfterSave === YES_NO.YES) {
       this.saveAndNext = true;
 
       // navigate to the next screen
-      const navigateNextEvent = new FlowNavigationNextEvent();
-      this.dispatchEvent(navigateNextEvent);
+      this._doNavigateNext();
     }
   }
 
@@ -627,6 +632,13 @@ export default class ODDatatable extends LightningElement {
     });
 
     return copyData;
+  }
+
+  _doNavigateNext() {
+    if (this.availableActions.find((action) => action === 'NEXT')) {
+      const navigateNextEvent = new FlowNavigationNextEvent();
+      this.dispatchEvent(navigateNextEvent);
+    }
   }
 
   // =================================================================
@@ -763,28 +775,39 @@ export default class ODDatatable extends LightningElement {
   handleSave() {
     this.isSaving = true;
 
-    // get a list of the fields separated by comma and remove the last comma
-    let fieldsToReturn = this._allColumns.map((fld) => fld.fieldName).join(',');
+    // validate
+    const validate = this.validate();
 
-    fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
+    if (validate.isValid) {
+      // get a list of the fields separated by comma and remove the last comma
+      let fieldsToReturn = this._allColumns.map((fld) => fld.fieldName).join(',');
 
-    saveRecords({
-      objectName: this.objectName,
-      fields: fieldsToReturn,
-      recordsToCreate: JSON.stringify(this._doCleanDataToSend(this.outputAddedRows)),
-      recordsToUpdate: JSON.stringify(this._doCleanDataToSend(this.outputEditedRows)),
-      recordsToDelete: JSON.stringify(this._doCleanDataToSend(this.outputDeletedRows)),
-    })
-      .then((rs) => {
-        this.isSaving = false;
-        this.errorMessage = false;
+      fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
 
-        // refresh the data in the table and clean the outputs
-        this._doRefreshDataAfterSave(rs, this.outputDeletedRows);
+      // delete it from the storage
+      this._doRemoveSessionStorage();
+
+      saveRecords({
+        objectName: this.objectName,
+        fields: fieldsToReturn,
+        recordsToCreate: JSON.stringify(this._doCleanDataToSend(this.outputAddedRows)),
+        recordsToUpdate: JSON.stringify(this._doCleanDataToSend(this.outputEditedRows)),
+        recordsToDelete: JSON.stringify(this._doCleanDataToSend(this.outputDeletedRows)),
       })
-      .catch((error) => {
-        this.isSaving = false;
-        this.errorMessage = reduceErrors(error);
-      });
+        .then((rs) => {
+          this.isSaving = false;
+          this.errorMessage = false;
+
+          // refresh the data in the table and clean the outputs
+          this._doRefreshDataAfterSave(rs, this.outputDeletedRows);
+        })
+        .catch((error) => {
+          this.isSaving = false;
+          this.errorMessage = reduceErrors(error);
+        });
+    } else {
+      // navigate to the next screen to trigger validations
+      this._doNavigateNext();
+    }
   }
 }
