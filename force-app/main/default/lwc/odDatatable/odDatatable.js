@@ -701,8 +701,10 @@ export default class ODDatatable extends LightningElement {
         break;
     }
 
-    // update the outputs
-    this._doUpdateOutputs(record, action);
+    if (!this._editWithFlow) {
+      // update the outputs
+      this._doUpdateOutputs(record, action);
+    }
   }
 
   handleAdd() {
