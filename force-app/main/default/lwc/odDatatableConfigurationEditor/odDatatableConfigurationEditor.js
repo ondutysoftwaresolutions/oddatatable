@@ -312,7 +312,11 @@ export default class OdConfigurationEditor extends LightningElement {
     }
 
     // check flow names if flow add
-    if (this.inputValues.addType.value === INLINE_FLOW.FLOW && !this.inputValues.addFlowName.value) {
+    if (
+      this.inputValues.canAdd.value === YES_NO.YES &&
+      this.inputValues.addType.value === INLINE_FLOW.FLOW &&
+      !this.inputValues.addFlowName.value
+    ) {
       validity.push({
         key: 'addFlowName',
         errorString: 'You must select a Flow if Add Type is Flow',
@@ -320,7 +324,11 @@ export default class OdConfigurationEditor extends LightningElement {
     }
 
     // check flow names if flow edit
-    if (this.inputValues.editType.value === INLINE_FLOW.FLOW && !this.inputValues.editFlowName.value) {
+    if (
+      this.inputValues.canEdit.value === YES_NO.YES &&
+      this.inputValues.editType.value === INLINE_FLOW.FLOW &&
+      !this.inputValues.editFlowName.value
+    ) {
       validity.push({
         key: 'editFlowName',
         errorString: 'You must select a Flow if Edit Type is Flow',
