@@ -6,6 +6,7 @@ export default class OdDatatableRowButton extends LightningElement {
   @api tooltip;
   @api name;
   @api label;
+  @api fieldName;
   @api isDeleted;
   @api disableIfDeleted;
 
@@ -26,6 +27,7 @@ export default class OdDatatableRowButton extends LightningElement {
       cancelable: true,
       detail: {
         recordId: this.recordId,
+        fieldName: this.fieldName,
         action: this.name,
       },
     });

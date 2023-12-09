@@ -22,6 +22,7 @@ export const FIELD_TYPES = {
   TEXTAREA: 'textarea',
   TOGGLE: 'toggle',
   URL: 'url',
+  CUSTOM: 'custom',
 };
 
 export const TEXT_FIELDS = [
@@ -42,6 +43,12 @@ export const LOCAL_SIDE_SEARCH = [FIELD_TYPES.SELECT, FIELD_TYPES.MULTISELECT];
 export const SERVER_SIDE_SEARCH = [FIELD_TYPES.LOOKUP];
 
 export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SIDE_SEARCH];
+
+export const CUSTOM_TYPES = {
+  SCREEN_FLOW: 'ScreenFlow',
+};
+
+export const BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW];
 
 export const FORMATTED_TYPE_TO_SHOW = {
   address: {
@@ -119,6 +126,16 @@ export const FORMATTED_TYPE_TO_SHOW = {
     label: 'URL',
     maxLength: true,
   },
+  custom: {
+    label: '',
+    options: [
+      {
+        value: CUSTOM_TYPES.SCREEN_FLOW,
+        label: 'Screen Flow',
+        flow: true,
+      },
+    ],
+  },
 };
 
 export const YES_NO = {
@@ -136,11 +153,17 @@ export const EMPTY_STRING = '--empty--';
 export const EVENTS = {
   ADD: 'add',
   CHANGE: 'change',
+  OPEN_FLOW: 'openFlow',
   DELETE: 'delete',
   UNDELETE: 'undelete',
 };
 
+export const ROW_BUTTON_TYPE = 'rowButtonType';
+
 export const ROW_BUTTON_CONFIGURATION = {
+  OPEN_FLOW: {
+    action: EVENTS.OPEN_FLOW,
+  },
   EDIT: {
     _editAction: EVENTS.CHANGE,
   },

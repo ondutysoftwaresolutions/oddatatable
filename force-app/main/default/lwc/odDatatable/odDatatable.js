@@ -4,11 +4,16 @@ import { FlowNavigationNextEvent } from 'lightning/flowSupport';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
-import { YES_NO, EMPTY_STRING, EVENTS, ROW_BUTTON_CONFIGURATION, INLINE_FLOW } from 'c/odDatatableConstants';
+import {
+  YES_NO,
+  EMPTY_STRING,
+  EVENTS,
+  ROW_BUTTON_CONFIGURATION,
+  INLINE_FLOW,
+  ROW_BUTTON_TYPE,
+} from 'c/odDatatableConstants';
 import { reduceErrors, getFieldType, getPrecision, generateRandomNumber } from 'c/odDatatableUtils';
 import OdDatatableFlow from 'c/odDatatableFlow';
-
-const ROW_BUTTON_TYPE = 'rowButtonType';
 
 export default class ODDatatable extends LightningElement {
   // internal use
@@ -478,7 +483,7 @@ export default class ODDatatable extends LightningElement {
     this._doUpdateOutputs(newRecord, EVENTS.ADD);
   }
 
-  async _doOpenFlow(record = undefined) {
+  _doAddEditWithFlow(record = undefined) {
     const modalProps = {
       size: 'small',
       label: 'Edit or Add from a flow',
@@ -493,7 +498,30 @@ export default class ODDatatable extends LightningElement {
       // this is an edit
       modalProps.flowName = this.editFlowName;
       modalProps.inputVariables = this.editFlowInputVariables ? JSON.parse(this.editFlowInputVariables) : [];
+    }
 
+    this._doOpenFlow(modalProps, record);
+  }
+
+  _doOpenFlowButton(fieldName, record) {
+    const modalProps = {
+      size: 'small',
+      label: 'Flow Button',
+    };
+
+    const column = this.columnsToShow.find((cl) => cl.fieldName === fieldName);
+
+    // this is an edit
+    modalProps.flowName = column.typeAttributes.config.flowName;
+    modalProps.inputVariables = column.typeAttributes.config.flowInputVariables
+      ? JSON.parse(column.typeAttributes.config.flowInputVariables)
+      : [];
+
+    this._doOpenFlow(modalProps, record);
+  }
+
+  async _doOpenFlow(modalProps, record = undefined) {
+    if (record) {
       modalProps.inputVariables.unshift({
         name: 'recordId',
         type: 'String',
@@ -685,7 +713,7 @@ export default class ODDatatable extends LightningElement {
         break;
       case EVENTS.CHANGE:
         if (this._editWithFlow) {
-          this._doOpenFlow(record);
+          this._doAddEditWithFlow(record);
         } else {
           this._doChangeField(recordIndex, fieldName, value);
 
@@ -696,6 +724,9 @@ export default class ODDatatable extends LightningElement {
           record = this.recordsToShow[recordIndex];
         }
 
+        break;
+      case EVENTS.OPEN_FLOW:
+        this._doOpenFlowButton(fieldName, record);
         break;
       default:
         break;
@@ -710,7 +741,7 @@ export default class ODDatatable extends LightningElement {
   handleAdd() {
     // add the record to the table with the defaults if inline, otherwise open the flow to add
     if (this._addWithFlow) {
-      this._doOpenFlow();
+      this._doAddEditWithFlow();
     } else {
       this._doAddRecord();
     }

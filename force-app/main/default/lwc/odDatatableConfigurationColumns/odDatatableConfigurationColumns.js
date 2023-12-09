@@ -7,18 +7,28 @@ import {
   sortArrayByProperty,
   getFieldType,
   getPrecision,
+  generateRandomNumber,
 } from 'c/odDatatableUtils';
-import { FIELD_TYPES, DATE_FIELDS, NUMERIC_FIELDS, FORMATTED_TYPE_TO_SHOW } from 'c/odDatatableConstants';
+import {
+  FIELD_TYPES,
+  DATE_FIELDS,
+  NUMERIC_FIELDS,
+  FORMATTED_TYPE_TO_SHOW,
+  BUTTON_TYPES,
+  ROW_BUTTON_TYPE,
+  ROW_BUTTON_CONFIGURATION,
+} from 'c/odDatatableConstants';
 
 export default class OdConfigurationColumns extends LightningElement {
   @api objectName;
   @api columns;
   @api builderContext;
+  @api flows;
 
   @track fieldsToDisplayTable = [];
   @track fields = [];
 
-  selectedFields = [];
+  @track selectedFields = [];
   popupHeight;
   isSelectFieldsOpened = false;
   isLoading = true;
@@ -31,6 +41,11 @@ export default class OdConfigurationColumns extends LightningElement {
   lookupConfiguration;
   lookupObjectName;
   lookupFieldName;
+
+  // flow input varianles
+  showFlowInputVariables = false;
+  flowInputs;
+  flowFieldName;
 
   // private variables
   _alreadyRendered = false;
@@ -148,6 +163,11 @@ export default class OdConfigurationColumns extends LightningElement {
       result += `(${field.parentObjectLabel})`;
     }
 
+    // options
+    if (formattedType.options?.length > 0) {
+      result = formattedType.options;
+    }
+
     return result;
   }
 
@@ -208,19 +228,30 @@ export default class OdConfigurationColumns extends LightningElement {
 
     parsedColumns.forEach((col) => {
       // get the field from the fields api
-      const fieldIndex = this._allFields.findIndex((fl) => fl.value === col.fieldName);
-
-      // get the field
-      const field = this._allFields[fieldIndex];
-
-      const type = getFieldType(field.type);
+      const fieldIndex = col.typeAttributes.config.isCustom
+        ? 0
+        : this._allFields.findIndex((fl) => fl.value === col.fieldName);
 
       if (fieldIndex !== -1) {
+        // get the field
+        const field = col.typeAttributes.config.isCustom
+          ? { type: FIELD_TYPES.CUSTOM, value: col.fieldName }
+          : this._allFields[fieldIndex];
+
+        const type = getFieldType(field.type);
+        const typeSpec = this._buildTypeSpec(type, field);
+
+        const selectedCustom = Array.isArray(typeSpec)
+          ? typeSpec.find((ts) => ts.value === col.typeAttributes.config.customType)
+          : {};
+
         result.push({
+          ...selectedCustom,
           ...field,
+          label: col.typeAttributes.config.isCustom ? `Custom: ${col.tableLabel}` : col.tableLabel || field.label,
           type: type,
           tableLabel: col.tableLabel,
-          typeSpec: this._buildTypeSpec(type, field),
+          typeSpec: typeSpec,
           precision: getPrecision(field),
           isMulti: this._isMulti(type),
           isEditable: col.typeAttributes.editable,
@@ -233,6 +264,11 @@ export default class OdConfigurationColumns extends LightningElement {
           options: type === FIELD_TYPES.LOOKUP ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : field.options,
           order: col.order,
           lookupConfig: col.typeAttributes.config.lookupConfig,
+          isCustom: col.typeAttributes.config.isCustom,
+          isFieldColumn: !col.typeAttributes.config.isCustom,
+          customType: col.typeAttributes.config.customType,
+          flowName: col.typeAttributes.config.flowName,
+          flowInputVariables: col.typeAttributes.config.flowInputVariables,
         });
       }
     });
@@ -242,7 +278,7 @@ export default class OdConfigurationColumns extends LightningElement {
   }
 
   _addDataAndOrderFields(fields) {
-    const result = sortArrayByProperty(fields, 'order');
+    let result = sortArrayByProperty(fields, 'order');
     const elementsWithOrder = result.filter((fl) => fl.order);
     let lastElement;
 
@@ -253,20 +289,41 @@ export default class OdConfigurationColumns extends LightningElement {
     }
 
     let iteration = 1;
-    result
-      .filter((fl) => !fl.order)
-      .forEach((fl) => {
-        fl.order = lastElement.order + 10 * iteration;
-        fl.tableLabel = fl.label;
-        fl.typeSpec = this._buildTypeSpec(fl.type, fl);
-        fl.precision = getPrecision(fl);
-        fl.isMulti = this._isMulti(fl.type);
-        fl.type = getFieldType(fl.type);
-        fl.isLookup = fl.type === FIELD_TYPES.LOOKUP;
-        fl.typeForDefault = fl.isLookup ? FIELD_TYPES.SELECT : fl.type;
-        fl.options = fl.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
+    result = result.map((fl) => {
+      if (!fl.order) {
+        const typeSpec = this._buildTypeSpec(fl.type, fl);
+
+        let newField = {};
+
+        newField.order = lastElement.order + 10 * iteration;
+        newField.isCustom = fl.type === FIELD_TYPES.CUSTOM;
+        newField.isFieldColumn = !newField.isCustom;
+        newField.tableLabel = fl.label;
+        newField.typeSpec = typeSpec;
+        newField.precision = getPrecision(fl);
+        newField.isMulti = this._isMulti(fl.type);
+        newField.type = getFieldType(fl.type);
+        newField.isLookup = fl.type === FIELD_TYPES.LOOKUP;
+        newField.typeForDefault = newField.isLookup ? FIELD_TYPES.SELECT : fl.type;
+        newField.options = newField.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
+
+        // if typespec is an array
+        if (Array.isArray(typeSpec)) {
+          // eslint-disable-next-line no-unused-vars
+          const { value, label, ...other } = typeSpec[0];
+          newField.customType = value;
+
+          newField = {
+            ...newField,
+            ...other,
+          };
+        }
         iteration++;
-      });
+
+        return { ...fl, ...newField };
+      }
+      return fl;
+    });
 
     return result;
   }
@@ -282,21 +339,23 @@ export default class OdConfigurationColumns extends LightningElement {
     this.isSelectFieldsOpened = false;
   }
 
-  handleDefaultOnFocusDropdown(e) {
+  handleColumnsOnFocusDropdown(e) {
     const value = e.target.dataset.value;
+    const fieldName = e.detail.fieldName;
 
     this.fieldsToDisplayTable.forEach((fl) => {
       if (fl.value === value) {
-        fl.opened = true;
+        fl[`opened_${fieldName}`] = true;
       } else {
-        fl.opened = false;
+        fl[`opened_${fieldName}`] = false;
       }
     });
   }
 
-  handleDefaultOnBlurDropdown() {
+  handleColumnsOnBlurDropdown(e) {
+    const fieldName = e.detail.fieldName;
     this.fieldsToDisplayTable.forEach((fl) => {
-      fl.opened = false;
+      fl[`opened_${fieldName}`] = false;
     });
   }
 
@@ -309,19 +368,45 @@ export default class OdConfigurationColumns extends LightningElement {
   handleUpdateField(event) {
     const { fieldName, value, ...other } = event.detail;
     const fieldAPIName = event.target.dataset.value;
+    const isCustom = event.target.dataset.custom === 'true';
+
+    let objectToUpdate = {
+      [fieldName]: value,
+    };
+
+    if (event.target.dataset.field) {
+      objectToUpdate[event.target.dataset.field] = value;
+    }
 
     // update the right field in the arrays
     // selected fields array
     const fieldIndexSelected = this.selectedFields.findIndex((fl) => fl.value === fieldAPIName);
+
+    // if custom search to determine the options
+    if (isCustom && this.selectedFields[fieldIndexSelected].typeSpec.length > 0) {
+      const {
+        // eslint-disable-next-line no-unused-vars
+        label,
+        // eslint-disable-next-line no-unused-vars
+        value: theValue,
+        // eslint-disable-next-line no-shadow
+        ...other
+      } = this.selectedFields[fieldIndexSelected].typeSpec.find((ts) => ts.value === value);
+      objectToUpdate = {
+        ...objectToUpdate,
+        ...other,
+      };
+    }
+
     this.selectedFields[fieldIndexSelected] = {
       ...this.selectedFields[fieldIndexSelected],
-      [fieldName]: value,
+      ...objectToUpdate,
       ...other,
     };
 
     // fields to display table array
     const fieldIndex = this.fieldsToDisplayTable.findIndex((fl) => fl.value === fieldAPIName);
-    this.fieldsToDisplayTable[fieldIndex] = { ...this.fieldsToDisplayTable[fieldIndex], [fieldName]: value, ...other };
+    this.fieldsToDisplayTable[fieldIndex] = { ...this.fieldsToDisplayTable[fieldIndex], ...objectToUpdate, ...other };
   }
 
   handleClose() {
@@ -334,41 +419,86 @@ export default class OdConfigurationColumns extends LightningElement {
 
     const result = [];
 
+    // common properties
     this.fieldsToDisplayTable.forEach((field) => {
-      const fieldToAdd = {
+      let fieldToAdd = {
         label: `${field.required ? '* ' : ''}${field.tableLabel}`,
         tableLabel: field.tableLabel,
         order: field.order,
         fieldName: field.value,
         wrapText: true,
         hideDefaultActions: true,
-        type: 'inputGeneric',
         typeAttributes: {
           type: field.type,
           recordId: { fieldName: '_id' },
           record: { fieldName: '_originalRecord' },
-          editable: field.isEditable,
-          required: field.required,
           fieldName: field.value,
           isNew: { fieldName: 'isNew' },
           isDeleted: { fieldName: 'isDeleted' },
-          config: {
-            maxLength: field.maxLength,
-            defaultValue: field.defaultValue,
-            parentObjectName: field.parentObjectName,
-            options: field.isLookup ? [] : field.options,
-            scale: field.scale,
-            precision: field.precision,
-            isHTML: field.isHTML,
-            isMulti: field.isMulti,
-            lookupConfig: field.lookupConfig,
-            hidden: field.hidden,
-          },
           value: {
             fieldName: field.value,
           },
         },
       };
+
+      // for object field columns
+      if (field.isFieldColumn) {
+        fieldToAdd = {
+          ...fieldToAdd,
+          type: 'inputGeneric',
+          typeAttributes: {
+            ...fieldToAdd.typeAttributes,
+            editable: field.isEditable,
+            required: field.required,
+            config: {
+              ...fieldToAdd.typeAttributes.config,
+              maxLength: field.maxLength,
+              defaultValue: field.defaultValue,
+              parentObjectName: field.parentObjectName,
+              options: field.isLookup ? [] : field.options,
+              scale: field.scale,
+              precision: field.precision,
+              isHTML: field.isHTML,
+              isMulti: field.isMulti,
+              lookupConfig: field.lookupConfig,
+              hidden: field.hidden,
+            },
+          },
+        };
+      } else {
+        // custom columns
+        fieldToAdd = {
+          ...fieldToAdd,
+          typeAttributes: {
+            ...fieldToAdd.typeAttributes,
+            disableIfDeleted: true,
+            label: field.tableLabel,
+            config: {
+              ...fieldToAdd.typeAttributes.config,
+              isCustom: field.isCustom,
+              customType: field.customType,
+            },
+          },
+        };
+
+        // for button types specifically
+        if (BUTTON_TYPES.includes(field.customType)) {
+          fieldToAdd = {
+            ...fieldToAdd,
+            cellAttributes: { alignment: 'center' },
+            type: ROW_BUTTON_TYPE,
+            typeAttributes: {
+              ...fieldToAdd.typeAttributes,
+              name: ROW_BUTTON_CONFIGURATION.OPEN_FLOW.action,
+              config: {
+                ...fieldToAdd.typeAttributes.config,
+                flowName: field.flowName,
+                flowInputVariables: field.flowInputVariables,
+              },
+            },
+          };
+        }
+      }
 
       // add the initial width
       if (field.initialWidth) {
@@ -385,7 +515,8 @@ export default class OdConfigurationColumns extends LightningElement {
   }
 
   handleReorder() {
-    this.fieldsToDisplayTable = sortArrayByProperty(this.fieldsToDisplayTable, 'order');
+    this.selectedFields = sortArrayByProperty(this.fieldsToDisplayTable, 'order');
+    this.fieldsToDisplayTable = JSON.parse(JSON.stringify(this.selectedFields));
   }
 
   handleOpenLookupConfiguration(event) {
@@ -405,5 +536,54 @@ export default class OdConfigurationColumns extends LightningElement {
     this.handleUpdateField(event);
 
     this.handleCloseLookupConfiguration();
+  }
+
+  handleAddNonObjectColumn() {
+    const fieldsPlusCustom = JSON.parse(JSON.stringify(this.selectedFields));
+
+    fieldsPlusCustom.push({
+      label: 'Custom Column',
+      type: FIELD_TYPES.CUSTOM,
+      value: generateRandomNumber(36, 2, 10),
+      isEditable: false,
+      required: false,
+      canEdit: false,
+      hidden: false,
+      defaultValue: null,
+      initialWidth: 80,
+    });
+
+    this.handleSelectField({ detail: { value: fieldsPlusCustom } });
+  }
+
+  handleOpenFlowInputVariables(event) {
+    this.flowFieldName = event.target.dataset.value;
+    const configuration = this.selectedFields.find((fl) => fl.value === this.flowFieldName);
+    this.flowInputs = configuration.flowInputVariables || null;
+    this.showFlowInputVariables = true;
+  }
+
+  handleCloseFlowInputVariables() {
+    this.flowInputs = null;
+    this.flowFieldName = null;
+    this.showFlowInputVariables = false;
+  }
+
+  handleSaveFlowInputVariables(event) {
+    if (event && event.detail) {
+      this.handleUpdateField({
+        target: {
+          dataset: {
+            value: this.flowFieldName,
+          },
+        },
+        detail: {
+          fieldName: 'flowInputVariables',
+          value: event.detail.value,
+        },
+      });
+
+      this.handleCloseFlowInputVariables();
+    }
   }
 }
