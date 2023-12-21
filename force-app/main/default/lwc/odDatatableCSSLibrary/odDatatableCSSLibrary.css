@@ -52,3 +52,7 @@
 .alignItemsCenter {
   align-items: center;
 }
+
+.flex {
+  flex: auto !important;
+}

@@ -269,6 +269,7 @@ export default class OdConfigurationColumns extends LightningElement {
           customType: col.typeAttributes.config.customType,
           flowName: col.typeAttributes.config.flowName,
           flowInputVariables: col.typeAttributes.config.flowInputVariables,
+          flowNavigateNext: col.typeAttributes.config.flowNavigateNext,
         });
       }
     });
@@ -494,6 +495,7 @@ export default class OdConfigurationColumns extends LightningElement {
                 ...fieldToAdd.typeAttributes.config,
                 flowName: field.flowName,
                 flowInputVariables: field.flowInputVariables,
+                flowNavigateNext: field.flowNavigateNext,
               },
             },
           };

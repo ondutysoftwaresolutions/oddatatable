@@ -106,6 +106,12 @@
             <property name="outputDeletedRows" label="Output Deleted Rows" type="{T[]}"
                 role="outputOnly"
                 description="Record Collection variable with all the deleted records in the datatable." />
+            <property name="rowRecordId" label="The record Id of the row" type="String"
+                role="outputOnly"
+                description="The record Id of the row after clicking one of the custom buttons and coming back from the flow. Only used if Navigate Next after flow is selected." />
+            <property name="rowButtonClicked" label="The Button label clicked" type="String"
+                role="outputOnly"
+                description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected." />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

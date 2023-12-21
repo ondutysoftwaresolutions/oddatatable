@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import { FlowNavigationNextEvent } from 'lightning/flowSupport';
+import { FlowNavigationNextEvent, FlowAttributeChangeEvent } from 'lightning/flowSupport';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
@@ -61,6 +61,8 @@ export default class ODDatatable extends LightningElement {
   @api outputAddedRows = [];
   @api outputEditedRows = [];
   @api outputDeletedRows = [];
+  @api rowRecordId;
+  @api rowButtonClicked;
 
   @track columnsToShow = [];
   @track columnsForBulkEdit = [];
@@ -142,7 +144,9 @@ export default class ODDatatable extends LightningElement {
   _getFields(result) {
     if (result.data) {
       this.isLoading = false;
-      this.saveAndNext = false;
+
+      // clean the output variables
+      this._doCleanOutputs();
 
       // build the columns
       this._buildColumns(result.data);
@@ -503,7 +507,7 @@ export default class ODDatatable extends LightningElement {
     this._doOpenFlow(modalProps, record);
   }
 
-  _doOpenFlowButton(fieldName, record) {
+  async _doOpenFlowButton(fieldName, record) {
     const modalProps = {
       size: 'small',
       label: 'Flow Button',
@@ -517,7 +521,17 @@ export default class ODDatatable extends LightningElement {
       ? JSON.parse(column.typeAttributes.config.flowInputVariables)
       : [];
 
-    this._doOpenFlow(modalProps, record);
+    const resultModal = await this._doOpenFlow(modalProps, record);
+
+    // if something came back from the flow and we have to navigate next
+    if (resultModal && column.typeAttributes.config.flowNavigateNext) {
+      // set the outputs
+      this._doDispatchAttributeChange('rowRecordId', record._id);
+      this._doDispatchAttributeChange('rowButtonClicked', column.typeAttributes.label);
+
+      // navigate next
+      this._doNavigateNext();
+    }
   }
 
   async _doOpenFlow(modalProps, record = undefined) {
@@ -551,6 +565,8 @@ export default class ODDatatable extends LightningElement {
         this._doUpdateRecord(99999, newRecord);
       }
     }
+
+    return resultModal;
   }
 
   // =================================================================
@@ -602,9 +618,13 @@ export default class ODDatatable extends LightningElement {
   }
 
   _doCleanOutputs() {
-    this.outputAddedRows = [];
-    this.outputDeletedRows = [];
-    this.outputEditedRows = [];
+    this._doDispatchAttributeChange('saveAndNext', false);
+    this._doDispatchAttributeChange('rowRecordId', null);
+    this._doDispatchAttributeChange('rowButtonClicked', null);
+    this._doDispatchAttributeChange('outputAddedRows', []);
+    this._doDispatchAttributeChange('outputDeletedRows', []);
+    this._doDispatchAttributeChange('outputEditedRows', []);
+
     this._doRemoveSessionStorage();
   }
 
@@ -641,7 +661,7 @@ export default class ODDatatable extends LightningElement {
 
     // if save and next is enabled, navigate to next screen
     if (this.navigateNextAfterSave === YES_NO.YES) {
-      this.saveAndNext = true;
+      this._doDispatchAttributeChange('saveAndNext', true);
 
       // navigate to the next screen
       this._doNavigateNext();
@@ -667,6 +687,11 @@ export default class ODDatatable extends LightningElement {
       const navigateNextEvent = new FlowNavigationNextEvent();
       this.dispatchEvent(navigateNextEvent);
     }
+  }
+
+  _doDispatchAttributeChange(name, value) {
+    const event = new FlowAttributeChangeEvent(name, value);
+    this.dispatchEvent(event);
   }
 
   // =================================================================

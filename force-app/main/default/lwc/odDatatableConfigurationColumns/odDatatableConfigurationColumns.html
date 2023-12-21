@@ -103,6 +103,7 @@
                         <c-od-datatable-input-generic
                           type={fieldTypes.SELECT}
                           field-name="customType"
+                          class="slds-size--1-of-2"
                           data-custom="true"
                           data-value={field.value}
                           inside-popup-height={popupHeight}
@@ -115,6 +116,21 @@
                           onblurdropdown={handleColumnsOnBlurDropdown}
                         >
                         </c-od-datatable-input-generic>
+                        <template lwc:if={field.flow}>
+                          <c-od-datatable-input-generic
+                            type={fieldTypes.CHECKBOX}
+                            field-name="flowNavigateNext"
+                            class="alignItemsCenter slds-grid slds-size--1-of-2 slds-wrap"
+                            data-value={field.value}
+                            extra-label-classes="slds-wrap flex"
+                            value={field.flowNavigateNext}
+                            editable
+                            label="Navigate Next?"
+                            help-text="Navigate Next after the flow finishes. This will do a NEXT navigation in the flow and output a variable with the row recordId (rowRecordId) and another one with the clicked button label (rowButtonClicked)"
+                            onupdatefield={handleUpdateField}
+                          >
+                          </c-od-datatable-input-generic>
+                        </template>
                       </template>
                     </div>
                   </td>
