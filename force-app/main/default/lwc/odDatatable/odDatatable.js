@@ -618,12 +618,15 @@ export default class ODDatatable extends LightningElement {
   }
 
   _doCleanOutputs() {
+    // this ones can react in the screen
     this._doDispatchAttributeChange('saveAndNext', false);
     this._doDispatchAttributeChange('rowRecordId', null);
     this._doDispatchAttributeChange('rowButtonClicked', null);
-    this._doDispatchAttributeChange('outputAddedRows', []);
-    this._doDispatchAttributeChange('outputDeletedRows', []);
-    this._doDispatchAttributeChange('outputEditedRows', []);
+
+    // doing it this way so it refreshes locally.
+    this.outputAddedRows = [];
+    this.outputDeletedRows = [];
+    this.outputEditedRows = [];
 
     this._doRemoveSessionStorage();
   }
