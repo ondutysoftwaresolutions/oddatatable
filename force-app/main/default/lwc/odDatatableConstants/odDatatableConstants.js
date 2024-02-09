@@ -193,3 +193,28 @@ export const FLOW_DATA_TYPES = [
     label: 'Boolean',
   },
 ];
+
+const BULK = 'Bulk Button';
+const BOTH = 'Both';
+
+export const BULK_BOTH_BUTTONS = [BULK, BOTH];
+
+export const SHOW_AS_OPTIONS = [
+  {
+    label: 'Column',
+    value: 'column',
+    default: true,
+    single: true,
+  },
+  {
+    label: BULK,
+    value: BULK.toLowerCase(),
+    multiple: true,
+  },
+  {
+    label: BOTH,
+    value: BOTH.toLowerCase(),
+    multiple: true,
+    single: true,
+  },
+];

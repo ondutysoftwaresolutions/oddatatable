@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import { FlowNavigationNextEvent, FlowAttributeChangeEvent } from 'lightning/flowSupport';
+import { FlowNavigationNextEvent } from 'lightning/flowSupport';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
@@ -62,6 +62,7 @@ export default class ODDatatable extends LightningElement {
   @api outputEditedRows = [];
   @api outputDeletedRows = [];
   @api rowRecordId;
+  @api rowRecordIds;
   @api rowButtonClicked;
 
   @track columnsToShow = [];
@@ -187,7 +188,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get notBulkOperation() {
-    return this.canBulkDelete === YES_NO.NO && this.canBulkEdit === YES_NO.NO;
+    return this.canBulkDelete === YES_NO.NO && this.canBulkEdit === YES_NO.NO && this.otherBulkFlowButtons.length === 0;
   }
 
   get bulkOperationDisabled() {
@@ -220,6 +221,12 @@ export default class ODDatatable extends LightningElement {
 
   get showSaveButtons() {
     return this.hasChanges && this.isInlineSave;
+  }
+
+  get otherBulkFlowButtons() {
+    return this._allColumns.filter(
+      (cl) => cl.typeAttributes.config && cl.typeAttributes.config.showAs && cl.typeAttributes.config.showAsMultiple,
+    );
   }
 
   // =================================================================
@@ -507,13 +514,13 @@ export default class ODDatatable extends LightningElement {
     this._doOpenFlow(modalProps, record);
   }
 
-  async _doOpenFlowButton(fieldName, record) {
+  async _doOpenFlowButton(fieldName, record, selectedIds = undefined) {
     const modalProps = {
       size: 'small',
       label: 'Flow Button',
     };
 
-    const column = this.columnsToShow.find((cl) => cl.fieldName === fieldName);
+    const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
 
     // this is an edit
     modalProps.flowName = column.typeAttributes.config.flowName;
@@ -521,20 +528,26 @@ export default class ODDatatable extends LightningElement {
       ? JSON.parse(column.typeAttributes.config.flowInputVariables)
       : [];
 
-    const resultModal = await this._doOpenFlow(modalProps, record);
+    const resultModal = await this._doOpenFlow(modalProps, record, selectedIds);
 
     // if something came back from the flow and we have to navigate next
-    if (resultModal && column.typeAttributes.config.flowNavigateNext) {
-      // set the outputs
-      this._doDispatchAttributeChange('rowRecordId', record._id);
-      this._doDispatchAttributeChange('rowButtonClicked', column.typeAttributes.label);
+    if (resultModal && resultModal.isSuccess) {
+      if (column.typeAttributes.config.flowNavigateNext) {
+        // set the outputs
+        this.rowRecordId = record ? record._id : undefined;
+        this.rowRecordIds = selectedIds;
+        this.rowButtonClicked = record ? column.typeAttributes.label : column.typeAttributes.config.bulkButtonLabel;
 
-      // navigate next
-      this._doNavigateNext();
+        // navigate next
+        this._doNavigateNext();
+      } else {
+        this._selectedRows = [];
+        this.selectedRowsIds = [];
+      }
     }
   }
 
-  async _doOpenFlow(modalProps, record = undefined) {
+  async _doOpenFlow(modalProps, record = undefined, selectedIds = undefined) {
     if (record) {
       modalProps.inputVariables.unshift({
         name: 'recordId',
@@ -543,26 +556,46 @@ export default class ODDatatable extends LightningElement {
       });
     }
 
+    if (selectedIds && selectedIds.length > 0) {
+      modalProps.inputVariables.unshift({
+        name: 'recordIds',
+        type: 'String',
+        value: selectedIds,
+      });
+    }
+
     // open the modal
     const resultModal = await OdDatatableFlow.open(modalProps);
 
-    if (resultModal) {
-      // add or modify the record in the tableData
-      const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === resultModal.Id);
+    if (resultModal && resultModal.isSuccess && resultModal.flowOutput) {
+      if (!Array.isArray(resultModal.flowOutput)) {
+        // add or modify the record in the tableData
+        const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === resultModal.flowOutput.Id);
 
-      if (recordIndex !== -1) {
-        this._doUpdateRecord(recordIndex, resultModal);
+        if (recordIndex !== -1) {
+          this._doUpdateRecord(recordIndex, resultModal.flowOutput);
+        } else {
+          // add delete and edit button
+          const newRecord = {
+            ...ROW_BUTTON_CONFIGURATION.DELETE,
+            ...ROW_BUTTON_CONFIGURATION.EDIT,
+            _editLabel: this.editLabel,
+            ...resultModal.flowOutput,
+            _id: resultModal.flowOutput.Id,
+          };
+
+          this._doUpdateRecord(99999, newRecord);
+        }
       } else {
-        // add delete and edit button
-        const newRecord = {
-          ...ROW_BUTTON_CONFIGURATION.DELETE,
-          ...ROW_BUTTON_CONFIGURATION.EDIT,
-          _editLabel: this.editLabel,
-          ...resultModal,
-          _id: resultModal.Id,
-        };
+        // multiple records
+        resultModal.flowOutput.forEach((rec) => {
+          // add or modify the record in the tableData
+          const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === rec.Id);
 
-        this._doUpdateRecord(99999, newRecord);
+          if (recordIndex !== -1) {
+            this._doUpdateRecord(recordIndex, rec);
+          }
+        });
       }
     }
 
@@ -618,12 +651,9 @@ export default class ODDatatable extends LightningElement {
   }
 
   _doCleanOutputs() {
-    // this ones can react in the screen
-    this._doDispatchAttributeChange('saveAndNext', false);
-    this._doDispatchAttributeChange('rowRecordId', null);
-    this._doDispatchAttributeChange('rowButtonClicked', null);
-
-    // doing it this way so it refreshes locally.
+    this.saveAndNext = false;
+    this.rowRecordId = null;
+    this.rowButtonClicked = null;
     this.outputAddedRows = [];
     this.outputDeletedRows = [];
     this.outputEditedRows = [];
@@ -664,7 +694,7 @@ export default class ODDatatable extends LightningElement {
 
     // if save and next is enabled, navigate to next screen
     if (this.navigateNextAfterSave === YES_NO.YES) {
-      this._doDispatchAttributeChange('saveAndNext', true);
+      this.saveAndNext = true;
 
       // navigate to the next screen
       this._doNavigateNext();
@@ -690,11 +720,6 @@ export default class ODDatatable extends LightningElement {
       const navigateNextEvent = new FlowNavigationNextEvent();
       this.dispatchEvent(navigateNextEvent);
     }
-  }
-
-  _doDispatchAttributeChange(name, value) {
-    const event = new FlowAttributeChangeEvent(name, value);
-    this.dispatchEvent(event);
   }
 
   // =================================================================
@@ -841,7 +866,15 @@ export default class ODDatatable extends LightningElement {
 
     if (validate.isValid) {
       // get a list of the fields separated by comma and remove the last comma
-      let fieldsToReturn = this._allColumns.map((fld) => fld.fieldName).join(',');
+      let fieldsToReturn = this._allColumns
+        .filter(
+          (fld) =>
+            (fld.typeAttributes && fld.typeAttributes.config && !fld.typeAttributes.config.isCustom) ||
+            !fld.typeAttributes ||
+            (fld.typeAttributes && !fld.typeAttributes.config),
+        )
+        .map((fld) => fld.fieldName)
+        .join(',');
 
       fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
 
@@ -870,5 +903,9 @@ export default class ODDatatable extends LightningElement {
       // navigate to the next screen to trigger validations
       this._doNavigateNext();
     }
+  }
+
+  handleOpenBulkFlow(event) {
+    this._doOpenFlowButton(event.target.dataset.name, undefined, this.selectedRowsIds);
   }
 }

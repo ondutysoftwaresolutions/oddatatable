@@ -8,6 +8,8 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
   @api type;
   @api inputs;
   @api builderContext;
+  @api single = false;
+  @api multiple = false;
 
   @track inputsToDisplayTable = [];
 
@@ -44,6 +46,10 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
   // =================================================================
   get bodyClasses() {
     return `slds-p-around--large ${getBodyPopupClasses(this)}`;
+  }
+
+  get multipleObjectName() {
+    return `${this.objectName}[]`;
   }
 
   get isEdit() {

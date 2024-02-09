@@ -204,6 +204,10 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   get searchTextToShow() {
+    if (this.disabled && this.value) {
+      return this.value;
+    }
+
     if (!isEmpty(this.searchText)) {
       return this.searchText;
     }

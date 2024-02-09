@@ -12,7 +12,7 @@
  * @version		1.0		2023-05-02		Pablo Martinez			Creation of the class
  *
  **************************************************************************************************************/
-public with sharing class OD_ConfigurationEditorController {
+public without sharing class OD_ConfigurationEditorController {
   /*********************************************************************************************************
    * @name			getObjects
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>

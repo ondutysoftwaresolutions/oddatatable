@@ -48,14 +48,15 @@
           <table class="columnsTable">
             <thead>
               <tr>
-                <th class="slds-p-around--x-small" style="width: 250px">Field API Name</th>
-                <th class="slds-p-around--x-small" style="width: 250px">Label</th>
+                <th class="slds-p-around--x-small" style="width: 200px">Field API Name</th>
+                <th class="slds-p-around--x-small" style="width: 200px">Label</th>
                 <th class="slds-p-around--x-small" style="width: 250px">Type</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Editable?</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Required?</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 100px">Hidden?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Editable?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Required?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Hidden?</th>
                 <th class="slds-p-around--x-small" style="width: 250px">Default Value / Custom Column Configuration</th>
-                <th class="slds-p-around--x-small" style="width: 140px">Initial Width (px)</th>
+                <th class="slds-p-around--x-small" style="width: 150px">Show As</th>
+                <th class="slds-p-around--x-small" style="width: 100px">Initial Width (px)</th>
                 <th class="slds-p-around--x-small" style="width: 80px">Order</th>
               </tr>
             </thead>
@@ -201,6 +202,7 @@
                             editable
                             value={field.flowName}
                             onupdatefield={handleUpdateField}
+                            placeholder="Select Flow..."
                             options={flows}
                             opened={field.opened_flowName}
                             onfocusdropdown={handleColumnsOnFocusDropdown}
@@ -221,6 +223,22 @@
                         </div>
                       </template>
                     </template>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.SELECT}
+                      field-name="showAs"
+                      data-value={field.value}
+                      inside-popup-height={popupHeight}
+                      editable={field.isCustom}
+                      value={field.showAs}
+                      onupdatefield={handleUpdateField}
+                      options={showAsOptions}
+                      opened={field.opened_showAs}
+                      onfocusdropdown={handleColumnsOnFocusDropdown}
+                      onblurdropdown={handleColumnsOnBlurDropdown}
+                    >
+                    </c-od-datatable-input-generic>
                   </td>
                   <td>
                     <c-od-datatable-input-generic
@@ -300,6 +318,8 @@
       onclose={handleCloseFlowInputVariables}
       inputs={flowInputs}
       object-name={objectName}
+      single={flowSingle}
+      multiple={flowMultiple}
       onsave={handleSaveFlowInputVariables}
     >
     </c-od-datatable-configuration-flow-input-variables>

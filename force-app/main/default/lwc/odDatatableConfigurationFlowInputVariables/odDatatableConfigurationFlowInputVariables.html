@@ -27,20 +27,38 @@
           </thead>
           <tbody class="">
             <template lwc:if={isEdit}>
-              <tr>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordId">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Current Record Id">
-                  </c-od-datatable-input-generic>
-                </td>
-              </tr>
+              <template lwc:if={single}>
+                <tr>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordId">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Current Record Id">
+                    </c-od-datatable-input-generic>
+                  </td>
+                </tr>
+              </template>
+              <template lwc:if={multiple}>
+                <tr>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordIds">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Selected Record Ids">
+                    </c-od-datatable-input-generic>
+                  </td>
+                </tr>
+              </template>
             </template>
             <template for:each={inputsToDisplayTable} for:item="input">
               <tr key={input.id}>
@@ -121,7 +139,7 @@
           </lightning-button>
         </div>
       </div>
-      <span class="slds-p-bottom--x-small slds-text-heading--medium"> Flow Output Variable </span>
+      <span class="slds-p-bottom--x-small slds-text-heading--medium"> Flow Output Variables</span>
       <div class="slds-m-top--medium slds-p-around--xx-small">
         <table class="columnsTable">
           <thead>
@@ -132,20 +150,38 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordOutput">
-                </c-od-datatable-input-generic>
-              </td>
-              <td>
-                <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Record">
-                </c-od-datatable-input-generic>
-              </td>
-              <td>
-                <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={objectName}>
-                </c-od-datatable-input-generic>
-              </td>
-            </tr>
+            <template lwc:if={single}>
+              <tr>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordOutput">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Record">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={objectName}>
+                  </c-od-datatable-input-generic>
+                </td>
+              </tr>
+            </template>
+            <template lwc:if={multiple}>
+              <tr>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
+                  </c-od-datatable-input-generic>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>

@@ -17,6 +17,7 @@ import {
   BUTTON_TYPES,
   ROW_BUTTON_TYPE,
   ROW_BUTTON_CONFIGURATION,
+  SHOW_AS_OPTIONS,
 } from 'c/odDatatableConstants';
 
 export default class OdConfigurationColumns extends LightningElement {
@@ -35,6 +36,7 @@ export default class OdConfigurationColumns extends LightningElement {
   loadingMessage = 'Getting the columns. Please wait...';
   errorMessage = false;
   fieldTypes = FIELD_TYPES;
+  showAsOptions = SHOW_AS_OPTIONS;
 
   // lookup configuration
   showLookupConfiguration = false;
@@ -46,6 +48,8 @@ export default class OdConfigurationColumns extends LightningElement {
   showFlowInputVariables = false;
   flowInputs;
   flowFieldName;
+  flowSingle;
+  flowMultiple;
 
   // private variables
   _alreadyRendered = false;
@@ -267,6 +271,9 @@ export default class OdConfigurationColumns extends LightningElement {
           isCustom: col.typeAttributes.config.isCustom,
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
+          showAs: col.typeAttributes.config.showAs,
+          showAsSingle: col.typeAttributes.config.showAsSingle,
+          showAsMultiple: col.typeAttributes.config.showAsMultiple,
           flowName: col.typeAttributes.config.flowName,
           flowInputVariables: col.typeAttributes.config.flowInputVariables,
           flowNavigateNext: col.typeAttributes.config.flowNavigateNext,
@@ -289,6 +296,9 @@ export default class OdConfigurationColumns extends LightningElement {
       lastElement = { order: 0 };
     }
 
+    // get the default show as option
+    const defaultShowAs = this.showAsOptions.find((cl) => cl.default);
+
     let iteration = 1;
     result = result.map((fl) => {
       if (!fl.order) {
@@ -307,6 +317,9 @@ export default class OdConfigurationColumns extends LightningElement {
         newField.isLookup = fl.type === FIELD_TYPES.LOOKUP;
         newField.typeForDefault = newField.isLookup ? FIELD_TYPES.SELECT : fl.type;
         newField.options = newField.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
+        newField.showAs = newField.isCustom ? defaultShowAs.value : 'Column';
+        newField.showAsSingle = newField.isCustom ? defaultShowAs.single : false;
+        newField.showAsMultiple = newField.isCustom ? defaultShowAs.multiple : false;
 
         // if typespec is an array
         if (Array.isArray(typeSpec)) {
@@ -377,6 +390,13 @@ export default class OdConfigurationColumns extends LightningElement {
 
     if (event.target.dataset.field) {
       objectToUpdate[event.target.dataset.field] = value;
+    }
+
+    // check if it exists in the showas options and use that to populate the single/multiple
+    const showAsOption = this.showAsOptions.find((sw) => sw.value === value);
+    if (showAsOption) {
+      objectToUpdate.showAsSingle = showAsOption.single;
+      objectToUpdate.showAsMultiple = showAsOption.multiple;
     }
 
     // update the right field in the arrays
@@ -478,6 +498,7 @@ export default class OdConfigurationColumns extends LightningElement {
               ...fieldToAdd.typeAttributes.config,
               isCustom: field.isCustom,
               customType: field.customType,
+              showAs: field.showAs,
             },
           },
         };
@@ -496,6 +517,11 @@ export default class OdConfigurationColumns extends LightningElement {
                 flowName: field.flowName,
                 flowInputVariables: field.flowInputVariables,
                 flowNavigateNext: field.flowNavigateNext,
+                showAsSingle: field.showAsSingle,
+                showAsMultiple: field.showAsMultiple,
+                bulkButtonLabel:
+                  field.showAsMultiple && field.showAsSingle ? `Bulk ${field.tableLabel}` : field.tableLabel,
+                hidden: !field.showAsSingle,
               },
             },
           };
@@ -562,12 +588,16 @@ export default class OdConfigurationColumns extends LightningElement {
     this.flowFieldName = event.target.dataset.value;
     const configuration = this.selectedFields.find((fl) => fl.value === this.flowFieldName);
     this.flowInputs = configuration.flowInputVariables || null;
+    this.flowSingle = configuration.showAsSingle || false;
+    this.flowMultiple = configuration.showAsMultiple || false;
     this.showFlowInputVariables = true;
   }
 
   handleCloseFlowInputVariables() {
     this.flowInputs = null;
     this.flowFieldName = null;
+    this.flowSingle = false;
+    this.flowMultiple = false;
     this.showFlowInputVariables = false;
   }
 

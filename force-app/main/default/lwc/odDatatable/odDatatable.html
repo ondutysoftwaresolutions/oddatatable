@@ -103,6 +103,20 @@
           </lightning-button-icon>
         </template>
       </template>
+      <template lwc:if={otherBulkFlowButtons.length}>
+        <template for:each={otherBulkFlowButtons} for:item="btn">
+          <lightning-button
+            key={btn.fieldName}
+            class="slds-m-left--medium"
+            label={btn.typeAttributes.config.bulkButtonLabel}
+            title={btn.label}
+            data-name={btn.fieldName}
+            onclick={handleOpenBulkFlow}
+            disabled={bulkOperationDisabled}
+          >
+          </lightning-button>
+        </template>
+      </template>
     </div>
     <template lwc:if={showSaveButtons}>
       <div class="slds-align--absolute-center slds-grid slds-wrap">

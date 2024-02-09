@@ -13,11 +13,21 @@ export default class OdDatatableFlow extends LightningModal {
         (output) => output.dataType === 'SOBJECT' && output.name === 'recordOutput',
       );
 
-      if (!recordOutput) {
-        this.errorMessage = "The flow needs to return a SObject Record variable named 'recordOutput'";
+      const recordsOutput = event.detail.outputVariables.find(
+        (output) => output.dataType === 'SOBJECT' && output.name === 'recordsOutput',
+      );
+
+      if (
+        (!recordOutput || (recordOutput && !recordOutput.value)) &&
+        (!recordsOutput || (recordsOutput && !recordsOutput.value))
+      ) {
+        this.close({ isSuccess: true });
       } else {
         this.errorMessage = false;
-        this.close(recordOutput.value);
+        this.close({
+          isSuccess: true,
+          flowOutput: (recordOutput && recordOutput.value) || (recordsOutput && recordsOutput.value),
+        });
       }
     }
   }
