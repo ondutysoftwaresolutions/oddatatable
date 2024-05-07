@@ -1,15 +1,18 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import { FlowNavigationNextEvent } from 'lightning/flowSupport';
+import { subscribe, unsubscribe } from 'lightning/empApi';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
+import getRecords from '@salesforce/apex/OD_ConfigurationEditorController.getRecords';
 import {
   YES_NO,
   EMPTY_STRING,
   EVENTS,
   ROW_BUTTON_CONFIGURATION,
   INLINE_FLOW,
+  PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
 } from 'c/odDatatableConstants';
 import { reduceErrors, getFieldType, getPrecision, generateRandomNumber } from 'c/odDatatableUtils';
@@ -56,6 +59,11 @@ export default class ODDatatable extends LightningElement {
   @api saveLabel = 'Save';
   @api navigateNextAfterSave;
 
+  // platform event
+  @api listenToPlatformEvent;
+  @api platformEventMatchingFieldName;
+  @api platformEventMatchingId;
+
   // outputs
   @api saveAndNext = false;
   @api outputAddedRows = [];
@@ -73,6 +81,7 @@ export default class ODDatatable extends LightningElement {
   isLoading = true;
   errorMessage = false;
   isSaving = false;
+  savingMessage = ' ';
 
   fieldsThatChanged = [];
 
@@ -82,6 +91,9 @@ export default class ODDatatable extends LightningElement {
   _validInvalidFields = {};
   afterValidate = false;
   _selectedRows = [];
+
+  // platform event
+  _subscription;
 
   // =================================================================
   // validate flow method
@@ -134,8 +146,20 @@ export default class ODDatatable extends LightningElement {
   connectedCallback() {
     Promise.all([loadStyle(this, CSSStyles)]);
 
+    // subscribe to platform event
+    if (this._listeningToPlatformEvent) {
+      this._subscribeToPlatformEvent();
+    }
+
     // get the variables from the session storage if any
     this._getSessionStoredVariables();
+  }
+
+  disconnectedCallback() {
+    // unsubscribe from platform event
+    if (this._listeningToPlatformEvent) {
+      this._unsubscribeFromPlatformEvent();
+    }
   }
 
   // =================================================================
@@ -146,14 +170,14 @@ export default class ODDatatable extends LightningElement {
     if (result.data) {
       this.isLoading = false;
 
-      // clean the output variables
-      this._doCleanOutputs();
-
       // build the columns
       this._buildColumns(result.data);
 
       // build the records
       this._buildRecords(this.tableData);
+
+      // clean the output variables
+      this._doCleanOutputs();
     } else if (result.error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(result.error);
@@ -192,7 +216,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get bulkOperationDisabled() {
-    return this._selectedRows.length === 0;
+    return this._selectedRows.length === 0 || this.hasChanges;
   }
 
   get showBulkEditButton() {
@@ -216,7 +240,10 @@ export default class ODDatatable extends LightningElement {
   }
 
   get hasChanges() {
-    return this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0;
+    return (
+      (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
+      this.recordsToShow.filter((rec) => rec._hasChanges).length > 0
+    );
   }
 
   get showSaveButtons() {
@@ -227,6 +254,16 @@ export default class ODDatatable extends LightningElement {
     return this._allColumns.filter(
       (cl) => cl.typeAttributes.config && cl.typeAttributes.config.showAs && cl.typeAttributes.config.showAsMultiple,
     );
+  }
+
+  get bottomNavButtons() {
+    return this._allColumns.filter(
+      (cl) => cl.typeAttributes.config && cl.typeAttributes.config.showAs && cl.typeAttributes.config.showInBottomNav,
+    );
+  }
+
+  get _listeningToPlatformEvent() {
+    return this.listenToPlatformEvent === YES_NO.YES;
   }
 
   // =================================================================
@@ -261,6 +298,33 @@ export default class ODDatatable extends LightningElement {
       deleted: this.outputDeletedRows,
     };
     sessionStorage[this._storageTag] = JSON.stringify(objectToSave);
+  }
+
+  _subscribeToPlatformEvent() {
+    // Invoke subscribe method of empApi. and manage the message
+    subscribe(PLATFORM_EVENT_CHANNEL_NAME, -1, (response) => {
+      console.log(`Subscription request sent to: ${response.channel}`);
+      this._subscription = response;
+
+      const recordId = response.data.payload.Record_Id__c;
+
+      // if it's the same record
+      if (this.platformEventMatchingId === recordId) {
+        this._doGetUpdatedData();
+      }
+    });
+  }
+
+  _unsubscribeFromPlatformEvent() {
+    if (this._subscription) {
+      unsubscribe(this._subscription, (response) => {
+        const result = JSON.parse(JSON.stringify(response));
+        console.log(
+          `Unsubscribe response from: ${result.subscription} was ${result.successful ? 'successful' : 'unsuccessful'}`,
+        );
+        this._subscription = undefined;
+      });
+    }
   }
 
   _buildRecords(data) {
@@ -353,7 +417,7 @@ export default class ODDatatable extends LightningElement {
 
         if (addField) {
           this.columnsForBulkEdit.push({
-            label: col.tableLabel,
+            label: `${col.typeAttributes.required ? '* ' : ''}${col.tableLabel}`,
             order: col.order,
             fieldName: col.fieldName,
             type: col.typeAttributes.type,
@@ -382,7 +446,7 @@ export default class ODDatatable extends LightningElement {
           name: { fieldName: '_editAction' },
           label: { fieldName: '_editLabel' },
           isDeleted: { fieldName: 'isDeleted' },
-          disableIfDeleted: true,
+          hasChanges: { fieldName: '_hasChanges' },
         },
       });
     }
@@ -399,6 +463,7 @@ export default class ODDatatable extends LightningElement {
           iconName: { fieldName: '_deleteIcon' },
           tooltip: { fieldName: '_deleteTooltip' },
           name: { fieldName: '_deleteAction' },
+          hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
         },
       });
@@ -524,11 +589,13 @@ export default class ODDatatable extends LightningElement {
 
     // this is an edit
     modalProps.flowName = column.typeAttributes.config.flowName;
+    modalProps.bottomNavFlow = column.typeAttributes.config.showInBottomNav;
     modalProps.inputVariables = column.typeAttributes.config.flowInputVariables
       ? JSON.parse(column.typeAttributes.config.flowInputVariables)
       : [];
+    const waitForPlatformEvent = column.typeAttributes.config.waitForPlatformEvent || false;
 
-    const resultModal = await this._doOpenFlow(modalProps, record, selectedIds);
+    const resultModal = await this._doOpenFlow(modalProps, record, selectedIds, waitForPlatformEvent);
 
     // if something came back from the flow and we have to navigate next
     if (resultModal && resultModal.isSuccess) {
@@ -547,7 +614,7 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  async _doOpenFlow(modalProps, record = undefined, selectedIds = undefined) {
+  async _doOpenFlow(modalProps, record = undefined, selectedIds = undefined, waitForPlatformEvent = false) {
     if (record) {
       modalProps.inputVariables.unshift({
         name: 'recordId',
@@ -567,39 +634,118 @@ export default class ODDatatable extends LightningElement {
     // open the modal
     const resultModal = await OdDatatableFlow.open(modalProps);
 
-    if (resultModal && resultModal.isSuccess && resultModal.flowOutput) {
-      if (!Array.isArray(resultModal.flowOutput)) {
-        // add or modify the record in the tableData
-        const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === resultModal.flowOutput.Id);
-
-        if (recordIndex !== -1) {
-          this._doUpdateRecord(recordIndex, resultModal.flowOutput);
-        } else {
-          // add delete and edit button
-          const newRecord = {
-            ...ROW_BUTTON_CONFIGURATION.DELETE,
-            ...ROW_BUTTON_CONFIGURATION.EDIT,
-            _editLabel: this.editLabel,
-            ...resultModal.flowOutput,
-            _id: resultModal.flowOutput.Id,
-          };
-
-          this._doUpdateRecord(99999, newRecord);
-        }
-      } else {
-        // multiple records
-        resultModal.flowOutput.forEach((rec) => {
+    if (resultModal && resultModal.isSuccess) {
+      if (resultModal.flowOutput) {
+        if (!Array.isArray(resultModal.flowOutput)) {
           // add or modify the record in the tableData
-          const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === rec.Id);
+          const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === resultModal.flowOutput.Id);
 
           if (recordIndex !== -1) {
-            this._doUpdateRecord(recordIndex, rec);
+            this._doUpdateRecord(recordIndex, resultModal.flowOutput);
+          } else {
+            // add delete and edit button
+            const newRecord = {
+              ...ROW_BUTTON_CONFIGURATION.DELETE,
+              ...ROW_BUTTON_CONFIGURATION.EDIT,
+              _editLabel: this.editLabel,
+              ...resultModal.flowOutput,
+              _id: resultModal.flowOutput.Id,
+            };
+
+            this._doUpdateRecord(99999, newRecord);
           }
-        });
+        } else {
+          // multiple records
+
+          // bulk edition
+          if (!resultModal.bottomNavFlow) {
+            resultModal.flowOutput.forEach((rec) => {
+              // add or modify the record in the tableData
+              const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === rec.Id);
+
+              if (recordIndex !== -1) {
+                this._doUpdateRecord(recordIndex, rec);
+              }
+            });
+          } else {
+            // bottom nav flow, replace all the records
+            const newRecords = [];
+            resultModal.flowOutput.forEach((rec) => {
+              newRecords.push({
+                ...rec,
+                _id: rec.Id,
+                _originalRecord: rec,
+                ...ROW_BUTTON_CONFIGURATION.DELETE,
+                ...ROW_BUTTON_CONFIGURATION.EDIT,
+                _editLabel: this.editLabel,
+              });
+            });
+
+            this.recordsToShow = newRecords;
+          }
+        }
+      }
+
+      // add an extra check on the column configuration
+      if (this._listeningToPlatformEvent && waitForPlatformEvent) {
+        this.isSaving = true;
+        this.savingMessage = 'We are processing the records. Please wait...';
       }
     }
 
     return resultModal;
+  }
+
+  _doGetListOfIdsToRefreshPlatformEvent() {
+    let result = [];
+
+    this.recordsToShow.forEach((rec) => {
+      if (rec[this.platformEventMatchingFieldName]) {
+        result.push(rec[this.platformEventMatchingFieldName]);
+      }
+    });
+
+    result = [...new Set(result)];
+
+    return result;
+  }
+
+  _getFieldsToReturn() {
+    // get a list of the fields separated by comma and remove the last comma (move to method)
+    let fieldsToReturn = this._allColumns
+      .filter(
+        (fld) =>
+          (fld.typeAttributes && fld.typeAttributes.config && !fld.typeAttributes.config.isCustom) ||
+          !fld.typeAttributes ||
+          (fld.typeAttributes && !fld.typeAttributes.config),
+      )
+      .map((fld) => fld.fieldName)
+      .join(',');
+
+    fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
+
+    return fieldsToReturn;
+  }
+
+  _doGetUpdatedData() {
+    getRecords({
+      objectName: this.objectName,
+      fields: this._getFieldsToReturn(),
+      fieldNameFilter: this.platformEventMatchingFieldName,
+      idsToQuery: this._doGetListOfIdsToRefreshPlatformEvent(),
+    })
+      .then((rs) => {
+        this.isSaving = false;
+        this.savingMessage = ' ';
+        this.errorMessage = false;
+
+        // refresh the data in the table and clean the outputs
+        this._buildRecords(rs);
+      })
+      .catch((error) => {
+        this.isSaving = false;
+        this.errorMessage = reduceErrors(error);
+      });
   }
 
   // =================================================================
@@ -648,15 +794,27 @@ export default class ODDatatable extends LightningElement {
       default:
         break;
     }
+
+    // update all the rows with the _hasChanges
+    this.recordsToShow.forEach((rec) => {
+      rec._hasChanges = true;
+    });
   }
 
-  _doCleanOutputs() {
-    this.saveAndNext = false;
-    this.rowRecordId = null;
-    this.rowButtonClicked = null;
-    this.outputAddedRows = [];
-    this.outputDeletedRows = [];
-    this.outputEditedRows = [];
+  _doCleanOutputs(emptyOutputs = true) {
+    if (emptyOutputs) {
+      this.saveAndNext = false;
+      this.rowRecordId = null;
+      this.rowButtonClicked = null;
+      this.outputAddedRows = [];
+      this.outputDeletedRows = [];
+      this.outputEditedRows = [];
+    }
+
+    // update all the rows with the _hasChanges
+    this.recordsToShow.forEach((rec) => {
+      rec._hasChanges = false;
+    });
 
     this._doRemoveSessionStorage();
   }
@@ -687,7 +845,7 @@ export default class ODDatatable extends LightningElement {
     });
 
     // clean the outputs
-    this._doCleanOutputs();
+    this._doCleanOutputs(false);
 
     // build the new set of records
     this._buildRecords(newRecords);
@@ -865,25 +1023,12 @@ export default class ODDatatable extends LightningElement {
     const validate = this.validate();
 
     if (validate.isValid) {
-      // get a list of the fields separated by comma and remove the last comma
-      let fieldsToReturn = this._allColumns
-        .filter(
-          (fld) =>
-            (fld.typeAttributes && fld.typeAttributes.config && !fld.typeAttributes.config.isCustom) ||
-            !fld.typeAttributes ||
-            (fld.typeAttributes && !fld.typeAttributes.config),
-        )
-        .map((fld) => fld.fieldName)
-        .join(',');
-
-      fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
-
       // delete it from the storage
       this._doRemoveSessionStorage();
 
       saveRecords({
         objectName: this.objectName,
-        fields: fieldsToReturn,
+        fields: this._getFieldsToReturn(),
         recordsToCreate: JSON.stringify(this._doCleanDataToSend(this.outputAddedRows)),
         recordsToUpdate: JSON.stringify(this._doCleanDataToSend(this.outputEditedRows)),
         recordsToDelete: JSON.stringify(this._doCleanDataToSend(this.outputDeletedRows)),
@@ -901,11 +1046,16 @@ export default class ODDatatable extends LightningElement {
         });
     } else {
       // navigate to the next screen to trigger validations
+      this.isSaving = false;
       this._doNavigateNext();
     }
   }
 
   handleOpenBulkFlow(event) {
     this._doOpenFlowButton(event.target.dataset.name, undefined, this.selectedRowsIds);
+  }
+
+  handleOpenBottomNavFlow(event) {
+    this._doOpenFlowButton(event.target.dataset.name, undefined);
   }
 }

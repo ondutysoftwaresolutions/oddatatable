@@ -2,7 +2,7 @@
   <c-od-datatable-spinner text=" " show={isLoading}></c-od-datatable-spinner>
   <template lwc:if={loaded}>
     <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
-    <c-od-datatable-spinner text=" " show={isSaving}></c-od-datatable-spinner>
+    <c-od-datatable-spinner text={savingMessage} show={isSaving}></c-od-datatable-spinner>
     <template lwc:if={fieldsThatChanged.length}>
       <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
         <div class="slds-p-around--medium slds-text-heading_medium">
@@ -41,6 +41,7 @@
             icon-name="utility:add"
             onclick={handleAdd}
             variant="brand"
+            disabled={hasChanges}
           >
           </lightning-button>
         </template>
@@ -51,6 +52,7 @@
             title="Add"
             onclick={handleAdd}
             variant="brand"
+            disabled={hasChanges}
           >
           </lightning-button-icon>
         </template>
@@ -113,6 +115,20 @@
             data-name={btn.fieldName}
             onclick={handleOpenBulkFlow}
             disabled={bulkOperationDisabled}
+          >
+          </lightning-button>
+        </template>
+      </template>
+      <template lwc:if={bottomNavButtons.length}>
+        <template for:each={bottomNavButtons} for:item="btn">
+          <lightning-button
+            key={btn.fieldName}
+            class="slds-m-left--medium"
+            label={btn.label}
+            title={btn.label}
+            data-name={btn.fieldName}
+            onclick={handleOpenBottomNavFlow}
+            disabled={hasChanges}
           >
           </lightning-button>
         </template>

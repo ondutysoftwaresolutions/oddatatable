@@ -45,10 +45,11 @@ export const SERVER_SIDE_SEARCH = [FIELD_TYPES.LOOKUP];
 export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SIDE_SEARCH];
 
 export const CUSTOM_TYPES = {
-  SCREEN_FLOW: 'ScreenFlow',
+  SCREEN_FLOW: 'Flow',
+  AUTOLAUNCHED_FLOW: 'AutoLaunchedFlow',
 };
 
-export const BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW];
+export const BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW, CUSTOM_TYPES.AUTOLAUNCHED_FLOW];
 
 export const FORMATTED_TYPE_TO_SHOW = {
   address: {
@@ -134,6 +135,11 @@ export const FORMATTED_TYPE_TO_SHOW = {
         label: 'Screen Flow',
         flow: true,
       },
+      {
+        value: CUSTOM_TYPES.AUTOLAUNCHED_FLOW,
+        label: 'Autolaunched Flow',
+        flow: true,
+      },
     ],
   },
 };
@@ -203,18 +209,56 @@ export const SHOW_AS_OPTIONS = [
   {
     label: 'Column',
     value: 'column',
+    column: true,
     default: true,
     single: true,
+    showInField: true,
+    showInCustom: true,
   },
   {
     label: BULK,
     value: BULK.toLowerCase(),
     multiple: true,
+    showInCustom: true,
   },
   {
     label: BOTH,
     value: BOTH.toLowerCase(),
     multiple: true,
     single: true,
+    showInCustom: true,
+  },
+  {
+    label: 'Bottom Nav.',
+    value: 'bottomNav',
+    bottomNav: true,
+    showInCustom: true,
+  },
+  {
+    label: 'Tooltip Icon',
+    value: 'tooltipIcon',
+    showInField: true,
+    icon: true,
   },
 ];
+
+export const ICON_VARIANTS = [
+  {
+    label: 'Bare',
+    value: 'bare',
+  },
+  {
+    label: 'Error',
+    value: 'error',
+  },
+  {
+    label: 'Inverse',
+    value: 'inverse',
+  },
+  {
+    label: 'Warning',
+    value: 'warning',
+  },
+];
+
+export const PLATFORM_EVENT_CHANNEL_NAME = '/event/OD_Refresh_Datatable__e';

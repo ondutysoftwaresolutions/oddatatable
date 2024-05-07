@@ -83,6 +83,17 @@
                 role="inputOnly"
                 default="No"
                 description="If enabled, after clicking Save it will execute the Next button navigation of the screen and it will output the variable 'saveAndNext' = true." />
+            <property name="listenToPlatformEvent" label="Listen to Platform Event?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id" />
+            <property name="platformEventMatchingFieldName" label="Refresh Matching Field"
+                type="String"
+                role="inputOnly"
+                description="The fieldName to use when matching and refreshing with Platform event" />
+            <property name="platformEventMatchingId" label="Refresh Matching Id" type="String"
+                role="inputOnly"
+                description="Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event" />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

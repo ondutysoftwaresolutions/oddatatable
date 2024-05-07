@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getConfiguration from '@salesforce/apex/OD_ConfigurationEditorController.getConfiguration';
+import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import { FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
 import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
 
@@ -27,7 +28,12 @@ export default class OdConfigurationEditor extends LightningElement {
     tableData: false,
     addFlowName: false,
     editFlowName: false,
+    platformEventMatchingFieldName: false,
+    platformEventMatchingId: false,
   };
+
+  @track fields = [];
+  @track fieldsForPlatformEvent = [];
 
   inlineFlowOptions = [
     {
@@ -235,6 +241,28 @@ export default class OdConfigurationEditor extends LightningElement {
       helpText:
         "If enabled, after clicking Save it will execute the Next button navigation of the screen and it will output the variable 'saveAndNext' = true.",
     },
+    listenToPlatformEvent: {
+      label: 'Listen to Platform Event?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id',
+    },
+    platformEventMatchingFieldName: {
+      label: 'Refresh Matching Field',
+      type: FIELD_TYPES.STRING,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection',
+    },
+    platformEventMatchingId: {
+      label: 'Refresh Matching Id',
+      type: FIELD_TYPES.STRING,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event',
+    },
 
     // internal use
     uniqueTableName: {
@@ -287,9 +315,10 @@ export default class OdConfigurationEditor extends LightningElement {
   @wire(getConfiguration)
   _getConfiguration({ error, data }) {
     if (data) {
-      this.isLoading = false;
       this.objectTypes = data.objects;
       this.flows = data.flows;
+
+      this._getFieldsForObject();
     } else if (error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(error);
@@ -402,6 +431,57 @@ export default class OdConfigurationEditor extends LightningElement {
     return result;
   }
 
+  get matchingIdOptions() {
+    const result = [];
+
+    // variables
+    const variables = this.builderContext.variables;
+    if (variables.length > 0) {
+      const variablesPerType = variables.filter((vr) => vr.dataType.toLowerCase() === 'string');
+
+      if (variablesPerType.length > 0) {
+        variablesPerType.forEach((vpo) => {
+          result.push({
+            label: vpo.name,
+            value: `{!${vpo.name}}`,
+          });
+        });
+      }
+    }
+
+    // formulas
+    const formulas = this.builderContext.formulas;
+    if (formulas.length > 0) {
+      const formulasPerType = formulas.filter((fml) => fml.dataType.toLowerCase() === 'string');
+
+      if (formulasPerType.length > 0) {
+        formulasPerType.forEach((fml) => {
+          result.push({
+            label: fml.name,
+            value: `{!${fml.name}}`,
+          });
+        });
+      }
+    }
+
+    // constants
+    const constants = this.builderContext.constants;
+    if (constants.length > 0) {
+      const constantsPerType = constants.filter((cnt) => cnt.dataType.toLowerCase() === 'string');
+
+      if (constantsPerType.length > 0) {
+        constantsPerType.forEach((cnt) => {
+          result.push({
+            label: cnt.name,
+            value: `{!${cnt.name}}`,
+          });
+        });
+      }
+    }
+
+    return result;
+  }
+
   // =================================================================
   // setter for inputs
   // =================================================================
@@ -474,9 +554,29 @@ export default class OdConfigurationEditor extends LightningElement {
     return this.inputValues.inlineSave.value === YES_NO.YES;
   }
 
+  get listenToPlatformEvent() {
+    return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
+  }
+
   // =================================================================
   // private methods
   // =================================================================
+  _getFieldsForObject() {
+    getFieldsForObject({ objectName: this.inputType })
+      .then((res) => {
+        this.isLoading = false;
+        this.fields = res;
+
+        this.fieldsForPlatformEvent = JSON.parse(JSON.stringify(this.fields)).map((fl) => {
+          return { label: fl.value, value: fl.value };
+        });
+      })
+      .catch((error) => {
+        this.isLoading = false;
+        this.errorMessage = reduceErrors(error);
+      });
+  }
+
   _initializeValues() {
     // initialise from previous saves
     this._inputVariables.forEach((input) => {

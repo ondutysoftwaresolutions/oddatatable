@@ -1,0 +1,11 @@
+<template>
+  <template lwc:if={typeAttributes.value}>
+    <lightning-helptext
+      class="slds-align--absolute-center"
+      icon-name={typeAttributes.config.iconName}
+      content={typeAttributes.value}
+      icon-variant={typeAttributes.config.iconVariant}
+    >
+    </lightning-helptext>
+  </template>
+</template>

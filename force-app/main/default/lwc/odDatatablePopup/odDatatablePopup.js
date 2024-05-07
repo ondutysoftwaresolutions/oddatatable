@@ -23,22 +23,6 @@ export default class Popup extends LightningElement {
     return `slds-backdrop slds-backdrop_open modalBackdrops ${this.backdropClasses}`;
   }
 
-  get showTitleClose() {
-    return !this.hideTitleClose;
-  }
-
-  get showTitle() {
-    return !this.hideTitle;
-  }
-
-  get showFooter() {
-    return !this.hideFooter;
-  }
-
-  get noError() {
-    return !this.showError;
-  }
-
   get style() {
     return this.hideTitle ? 'padding: 0; border: 0' : '';
   }

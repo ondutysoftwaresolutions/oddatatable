@@ -420,11 +420,81 @@
       </template>
     </fieldset>
 
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Automatic Refresh Behaviour</h1>
+    </div>
+
+    <!-- Platform Event -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Platform Event</legend>
+      <c-od-datatable-input-generic
+        field-name="listenToPlatformEvent"
+        type={inputValues.listenToPlatformEvent.type}
+        editable
+        extra-container-classes="slds-align--absolute-center"
+        toggle-value-active={yesNo.YES}
+        toggle-value-inactive={yesNo.NO}
+        extra-label-classes="slds-align--absolute-center"
+        extra-checkbox-classes="slds-text-align--center"
+        class="slds-size--1-of-2"
+        value={inputValues.listenToPlatformEvent.value}
+        label={inputValues.listenToPlatformEvent.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.listenToPlatformEvent.helpText}
+      >
+      </c-od-datatable-input-generic>
+      <template lwc:if={listenToPlatformEvent}>
+        <c-od-datatable-input-generic
+          field-name="platFormEventName"
+          type={fieldTypes.STRING}
+          class="slds-size--1-of-1"
+          value="OD_Refresh_Datatable__e"
+          label="Platform Event Name"
+          help-text="The API Name of the Platform Event that needs to be published for the component to refresh"
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="platformEventMatchingFieldName"
+          type={fieldTypes.SELECT}
+          editable
+          options={fieldsForPlatformEvent}
+          placeholder="Select Field..."
+          class="slds-size--1-of-1"
+          value={inputValues.platformEventMatchingFieldName.value}
+          label={inputValues.platformEventMatchingFieldName.label}
+          onupdatefield={handleInputChange}
+          required
+          help-text={inputValues.platformEventMatchingFieldName.helpText}
+          opened={dropdowns.platformEventMatchingFieldName}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="platformEventMatchingId"
+          type={fieldTypes.SELECT}
+          editable
+          options={matchingIdOptions}
+          class="slds-size--1-of-1"
+          value={inputValues.platformEventMatchingId.value}
+          label={inputValues.platformEventMatchingId.label}
+          onupdatefield={handleInputChange}
+          required
+          help-text={inputValues.platformEventMatchingId.helpText}
+          opened={dropdowns.platformEventMatchingId}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+        >
+        </c-od-datatable-input-generic>
+      </template>
+    </fieldset>
+
     <!-- Configuration Columns Popup -->
     <template lwc:if={showConfigureColumns}>
       <c-od-datatable-configuration-columns
         object-name={inputType}
         builder-context={builderContext}
+        all-fields={fields}
         onclose={handleCloseColumnsConfigurator}
         class="configurator"
         flows={flows}

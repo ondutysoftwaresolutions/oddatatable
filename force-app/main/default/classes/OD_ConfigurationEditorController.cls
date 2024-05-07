@@ -44,15 +44,15 @@ public without sharing class OD_ConfigurationEditorController {
 
     // flows
     List<FlowDefinitionView> listFlows = [
-      SELECT Label, ApiName
+      SELECT Label, ApiName, ProcessType
       FROM FlowDefinitionView
-      WHERE IsActive = TRUE AND ProcessType = 'Flow'
+      WHERE IsActive = TRUE AND ProcessType IN ('AutoLaunchedFlow', 'Flow') AND RecordTriggerType = NULL
       ORDER BY Label
     ];
 
     if (listFlows?.size() > 0) {
       for (FlowDefinitionView flow : listFlows) {
-        result.flows.add(new RecordWrapper(flow.ApiName, flow.Label));
+        result.flows.add(new RecordWrapper(flow.ApiName, flow.Label, flow.ProcessType));
       }
     }
 
@@ -347,7 +347,13 @@ public without sharing class OD_ConfigurationEditorController {
    * @param			Set<Id> idsToQuery : Set of record ids to retrieve
    * @return			List of found records
    **********************************************************************************************************/
-  private static List<SObject> getRecords(String objectName, String fields, Set<Id> idsToQuery) {
+  @AuraEnabled
+  public static List<SObject> getRecords(
+    String objectName,
+    String fields,
+    String fieldNameFilter,
+    List<Id> idsToQuery
+  ) {
     // build the query
     String query = 'SELECT Id';
 
@@ -356,7 +362,7 @@ public without sharing class OD_ConfigurationEditorController {
       query += ', ' + String.escapeSingleQuotes(fields);
     }
 
-    query += ' FROM ' + objectName + ' WHERE Id IN :idsToQuery';
+    query += ' FROM ' + objectName + ' WHERE ' + fieldNameFilter + ' IN :idsToQuery';
 
     SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, Database.query(query));
 
@@ -433,12 +439,12 @@ public without sharing class OD_ConfigurationEditorController {
         delete listToDelete;
       }
 
-      Set<Id> setIdsToQuery = new Set<Id>();
+      List<Id> listIdsToQuery = new List<Id>();
       for (SObject record : result) {
-        setIdsToQuery.add(record.Id);
+        listIdsToQuery.add(record.Id);
       }
 
-      return getRecords(objectName, fields, setIdsToQuery);
+      return getRecords(objectName, fields, 'Id', listIdsToQuery);
     } catch (AuraHandledException e) {
       throw e;
     } catch (Exception exc) {
@@ -473,9 +479,19 @@ public without sharing class OD_ConfigurationEditorController {
     @AuraEnabled
     public String value;
 
+    @AuraEnabled
+    public String type;
+
     public RecordWrapper(String value, String label) {
       this.label = label;
       this.value = value;
+      this.type = null;
+    }
+
+    public RecordWrapper(String value, String label, String type) {
+      this.label = label;
+      this.value = value;
+      this.type = type;
     }
   }
 

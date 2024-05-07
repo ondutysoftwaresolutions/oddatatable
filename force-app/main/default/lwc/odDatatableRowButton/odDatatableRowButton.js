@@ -8,7 +8,7 @@ export default class OdDatatableRowButton extends LightningElement {
   @api label;
   @api fieldName;
   @api isDeleted;
-  @api disableIfDeleted;
+  @api hasChanges;
 
   get isIconButton() {
     return this.iconName;
@@ -16,7 +16,7 @@ export default class OdDatatableRowButton extends LightningElement {
 
   get cellClasses() {
     return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${
-      this.disableIfDeleted && this.isDeleted ? '' : 'enabled'
+      this.hasChanges ? 'disabled' : 'enabled'
     }`;
   }
 

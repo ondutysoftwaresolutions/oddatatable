@@ -10,7 +10,7 @@
   >
     <div class={modalContainerClasses}>
       <header class="slds-modal__header" style={style}>
-        <template lwc:if={showTitleClose}>
+        <template if:false={hideTitleClose}>
           <button
             class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
             title="Close"
@@ -20,7 +20,7 @@
             <span class="slds-assistive-text">Close</span>
           </button>
         </template>
-        <template lwc:if={showTitle}>
+        <template if:false={hideTitle}>
           <h2 id="generic-popup-heading" class="slds-modal__title slds-hyphenate">
             <slot name="title"></slot>
           </h2>
@@ -28,12 +28,12 @@
       </header>
       <div class="slds-modal__content slds-is-relative" id="generic-popup-content">
         <c-od-datatable-error error-message={showError}></c-od-datatable-error>
-        <template lwc:if={noError}>
+        <template if:false={showError}>
           <slot name="body"></slot>
         </template>
         <c-od-datatable-spinner text={spinnerMessage} show={showSpinner}></c-od-datatable-spinner>
       </div>
-      <template lwc:if={showFooter}>
+      <template if:false={hideFooter}>
         <footer class="slds-modal__footer slds-modal__footer_directional">
           <slot name="footer"></slot>
         </footer>

@@ -117,6 +117,11 @@ export default class ODInputGeneric extends LightningElement {
         }
       }
 
+      // if it's a percentage field, divide by 100
+      if (this.isPercentage && this.value) {
+        return this.value / 100;
+      }
+
       return this.value;
     }
 

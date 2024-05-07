@@ -8,3 +8,8 @@
   opacity: 1;
   pointer-events: all;
 }
+
+.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}

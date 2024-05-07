@@ -147,6 +147,7 @@
               <th class="slds-p-around--x-small" style="width: 300px">Output Variable Name</th>
               <th class="slds-p-around--x-small" style="width: 150px">Type</th>
               <th class="slds-p-around--x-small" style="width: 300px">SObject</th>
+              <th class="slds-p-around--x-small" style="width: 300px">Description</th>
             </tr>
           </thead>
           <tbody>
@@ -164,6 +165,14 @@
                   <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={objectName}>
                   </c-od-datatable-input-generic>
                 </td>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.TEXT}
+                    field-name="description"
+                    value="This will be used to update the record in the table"
+                  >
+                  </c-od-datatable-input-generic>
+                </td>
               </tr>
             </template>
             <template lwc:if={multiple}>
@@ -178,6 +187,38 @@
                 </td>
                 <td>
                   <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.TEXT}
+                    field-name="description"
+                    value="This will be used to update the records in the table"
+                  >
+                  </c-od-datatable-input-generic>
+                </td>
+              </tr>
+            </template>
+            <template lwc:if={bottomNav}>
+              <tr>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.TEXT}
+                    field-name="description"
+                    value="This will replace all the records in the table"
+                  >
                   </c-od-datatable-input-generic>
                 </td>
               </tr>

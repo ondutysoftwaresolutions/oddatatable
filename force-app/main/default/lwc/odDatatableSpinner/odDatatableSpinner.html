@@ -1,5 +1,5 @@
 <template>
-  <template lwc:if={show}>
+  <template if:true={show}>
     <div class={spinnerContainerClasses}>
       <lightning-spinner variant={variant} alternative-text={text} size={size}> </lightning-spinner>
       <span class="slds-text-heading--small spinner-text"> {text} </span>

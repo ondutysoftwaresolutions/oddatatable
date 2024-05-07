@@ -1,7 +1,5 @@
-import { LightningElement, api, wire, track } from 'lwc';
-import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
+import { LightningElement, api, track } from 'lwc';
 import {
-  reduceErrors,
   getPopupHeight,
   getBodyPopupClasses,
   sortArrayByProperty,
@@ -11,11 +9,10 @@ import {
 } from 'c/odDatatableUtils';
 import {
   FIELD_TYPES,
-  DATE_FIELDS,
-  NUMERIC_FIELDS,
   FORMATTED_TYPE_TO_SHOW,
   BUTTON_TYPES,
   ROW_BUTTON_TYPE,
+  ICON_VARIANTS,
   ROW_BUTTON_CONFIGURATION,
   SHOW_AS_OPTIONS,
 } from 'c/odDatatableConstants';
@@ -25,18 +22,18 @@ export default class OdConfigurationColumns extends LightningElement {
   @api columns;
   @api builderContext;
   @api flows;
+  @api allFields;
 
   @track fieldsToDisplayTable = [];
   @track fields = [];
 
   @track selectedFields = [];
+
+  iconVariants = ICON_VARIANTS;
   popupHeight;
   isSelectFieldsOpened = false;
-  isLoading = true;
-  loadingMessage = 'Getting the columns. Please wait...';
   errorMessage = false;
   fieldTypes = FIELD_TYPES;
-  showAsOptions = SHOW_AS_OPTIONS;
 
   // lookup configuration
   showLookupConfiguration = false;
@@ -44,12 +41,13 @@ export default class OdConfigurationColumns extends LightningElement {
   lookupObjectName;
   lookupFieldName;
 
-  // flow input varianles
+  // flow input variables
   showFlowInputVariables = false;
   flowInputs;
   flowFieldName;
   flowSingle;
   flowMultiple;
+  flowBottomNav;
 
   // private variables
   _alreadyRendered = false;
@@ -58,32 +56,26 @@ export default class OdConfigurationColumns extends LightningElement {
   // =================================================================
   // lifecycle methods
   // =================================================================
+  connectedCallback() {
+    if (this.allFields && this.allFields.length > 0) {
+      this._allFields = JSON.parse(JSON.stringify(this.allFields));
+
+      this._selectFields();
+
+      this._buildFieldsAvailable();
+    } else {
+      this.errorMessage = 'At least 1 field is required to be able to do Column Configuration';
+    }
+  }
+
   renderedCallback() {
-    if (!this._alreadyRendered && !this.isLoading) {
+    if (!this._alreadyRendered) {
       const bodyRendered = this.template.querySelector('.body-popup');
 
       if (bodyRendered) {
         this._alreadyRendered = true;
         this.popupHeight = getPopupHeight(this);
       }
-    }
-  }
-
-  // =================================================================
-  // wire methods
-  // =================================================================
-  @wire(getFieldsForObject, { objectName: '$objectName' })
-  _getFields({ error, data }) {
-    if (data) {
-      this.isLoading = false;
-      this._allFields = JSON.parse(JSON.stringify(data));
-
-      this._selectFields();
-
-      this._buildFieldsAvailable();
-    } else if (error) {
-      this.isLoading = false;
-      this.errorMessage = reduceErrors(error);
     }
   }
 
@@ -113,15 +105,6 @@ export default class OdConfigurationColumns extends LightningElement {
     const result = JSON.parse(JSON.stringify(this._allFields));
 
     result.forEach((rs) => {
-      if (
-        DATE_FIELDS.includes(rs.type) ||
-        NUMERIC_FIELDS.includes(rs.type) ||
-        rs.type === FIELD_TYPES.CURRENCY ||
-        rs.type === FIELD_TYPES.PERCENTAGE
-      ) {
-        rs.initialWidth = 120;
-      }
-
       // add the the is multiple for multi picklist
       rs.isMulti = this._isMulti(rs.type);
     });
@@ -272,11 +255,23 @@ export default class OdConfigurationColumns extends LightningElement {
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
           showAs: col.typeAttributes.config.showAs,
+          column: col.typeAttributes.config.column,
+          icon: col.typeAttributes.config.icon,
           showAsSingle: col.typeAttributes.config.showAsSingle,
+          showInBottomNav: col.typeAttributes.config.showInBottomNav,
           showAsMultiple: col.typeAttributes.config.showAsMultiple,
           flowName: col.typeAttributes.config.flowName,
+          iconName: col.typeAttributes.config.iconName,
+          iconVariant: col.typeAttributes.config.iconVariant,
           flowInputVariables: col.typeAttributes.config.flowInputVariables,
           flowNavigateNext: col.typeAttributes.config.flowNavigateNext,
+          flowOptions: this.flows.filter((fl) => fl.type === col.typeAttributes.config.customType),
+          waitForPlatformEvent: col.typeAttributes.config.waitForPlatformEvent,
+          showAsOptions: SHOW_AS_OPTIONS.filter(
+            (opt) =>
+              (col.typeAttributes.config.isCustom && opt.showInCustom) ||
+              (!col.typeAttributes.config.isCustom && opt.showInField),
+          ),
         });
       }
     });
@@ -297,7 +292,7 @@ export default class OdConfigurationColumns extends LightningElement {
     }
 
     // get the default show as option
-    const defaultShowAs = this.showAsOptions.find((cl) => cl.default);
+    const defaultShowAs = SHOW_AS_OPTIONS.find((cl) => cl.default);
 
     let iteration = 1;
     result = result.map((fl) => {
@@ -317,15 +312,22 @@ export default class OdConfigurationColumns extends LightningElement {
         newField.isLookup = fl.type === FIELD_TYPES.LOOKUP;
         newField.typeForDefault = newField.isLookup ? FIELD_TYPES.SELECT : fl.type;
         newField.options = newField.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
-        newField.showAs = newField.isCustom ? defaultShowAs.value : 'Column';
-        newField.showAsSingle = newField.isCustom ? defaultShowAs.single : false;
-        newField.showAsMultiple = newField.isCustom ? defaultShowAs.multiple : false;
+        newField.showAs = defaultShowAs.value;
+        newField.column = defaultShowAs.column;
+        newField.icon = false;
+        newField.showAsOptions = SHOW_AS_OPTIONS.filter(
+          (opt) => (newField.isCustom && opt.showInCustom) || (!newField.isCustom && opt.showInField),
+        );
+        newField.showAsSingle = defaultShowAs.single;
+        newField.showAsMultiple = false;
+        newField.showInBottomNav = false;
 
         // if typespec is an array
         if (Array.isArray(typeSpec)) {
           // eslint-disable-next-line no-unused-vars
           const { value, label, ...other } = typeSpec[0];
           newField.customType = value;
+          newField.flowOptions = this.flows.filter((flow) => flow.type === value);
 
           newField = {
             ...newField,
@@ -392,11 +394,18 @@ export default class OdConfigurationColumns extends LightningElement {
       objectToUpdate[event.target.dataset.field] = value;
     }
 
-    // check if it exists in the showas options and use that to populate the single/multiple
-    const showAsOption = this.showAsOptions.find((sw) => sw.value === value);
+    // check if it exists in the showas options and use that to populate the single/multiple and more
+    const showAsOption = SHOW_AS_OPTIONS.find((sw) => sw.value === value);
     if (showAsOption) {
       objectToUpdate.showAsSingle = showAsOption.single;
       objectToUpdate.showAsMultiple = showAsOption.multiple;
+      objectToUpdate.showInBottomNav = showAsOption.bottomNav;
+      objectToUpdate.icon = showAsOption.icon;
+      objectToUpdate.column = showAsOption.column;
+
+      if (showAsOption.icon) {
+        objectToUpdate.iconVariant = ICON_VARIANTS[0];
+      }
     }
 
     // update the right field in the arrays
@@ -416,6 +425,7 @@ export default class OdConfigurationColumns extends LightningElement {
       objectToUpdate = {
         ...objectToUpdate,
         ...other,
+        flowOptions: this.flows.filter((fl) => fl.type === theValue),
       };
     }
 
@@ -455,9 +465,13 @@ export default class OdConfigurationColumns extends LightningElement {
           record: { fieldName: '_originalRecord' },
           fieldName: field.value,
           isNew: { fieldName: 'isNew' },
+          hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
           value: {
             fieldName: field.value,
+          },
+          config: {
+            showAs: field.showAs,
           },
         },
       };
@@ -483,22 +497,30 @@ export default class OdConfigurationColumns extends LightningElement {
               isMulti: field.isMulti,
               lookupConfig: field.lookupConfig,
               hidden: field.hidden,
+              column: field.column,
+              icon: field.icon,
             },
           },
         };
+
+        // if it's a tooltip icon column
+        if (field.icon) {
+          fieldToAdd.cellAttributes = { alignment: 'center' };
+          fieldToAdd.type = 'rowTooltipIconType';
+          fieldToAdd.typeAttributes.config.iconName = field.iconName;
+          fieldToAdd.typeAttributes.config.iconVariant = field.iconVariant;
+        }
       } else {
         // custom columns
         fieldToAdd = {
           ...fieldToAdd,
           typeAttributes: {
             ...fieldToAdd.typeAttributes,
-            disableIfDeleted: true,
             label: field.tableLabel,
             config: {
               ...fieldToAdd.typeAttributes.config,
               isCustom: field.isCustom,
               customType: field.customType,
-              showAs: field.showAs,
             },
           },
         };
@@ -517,8 +539,10 @@ export default class OdConfigurationColumns extends LightningElement {
                 flowName: field.flowName,
                 flowInputVariables: field.flowInputVariables,
                 flowNavigateNext: field.flowNavigateNext,
+                waitForPlatformEvent: field.waitForPlatformEvent,
                 showAsSingle: field.showAsSingle,
                 showAsMultiple: field.showAsMultiple,
+                showInBottomNav: field.showInBottomNav,
                 bulkButtonLabel:
                   field.showAsMultiple && field.showAsSingle ? `Bulk ${field.tableLabel}` : field.tableLabel,
                 hidden: !field.showAsSingle,
@@ -590,6 +614,7 @@ export default class OdConfigurationColumns extends LightningElement {
     this.flowInputs = configuration.flowInputVariables || null;
     this.flowSingle = configuration.showAsSingle || false;
     this.flowMultiple = configuration.showAsMultiple || false;
+    this.flowBottomNav = configuration.showInBottomNav || false;
     this.showFlowInputVariables = true;
   }
 
