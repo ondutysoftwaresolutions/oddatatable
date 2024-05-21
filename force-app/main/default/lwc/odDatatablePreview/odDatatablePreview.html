@@ -1,0 +1,42 @@
+<template>
+  <lightning-modal-body class="slds-is-relative">
+    <c-od-datatable
+      unique-table-name={configuration.uniqueTableName.value}
+      object-name={configuration.objectName.value}
+      table-data={dummyData}
+      columns={configuration.columns.value}
+      no-records-message={configuration.noRecordsMessage.value}
+      is-master-detail={configuration.isMasterDetail.value}
+      master-detail-configuration={configuration.masterDetailConfiguration.value}
+      master-detail-field1={configuration.masterDetailField1.value}
+      master-detail-field2={configuration.masterDetailField2.value}
+      can-add={configuration.canAdd.value}
+      add-label={configuration.addLabel.value}
+      add-type={configuration.addType.value}
+      add-flow-name={configuration.addFlowName.value}
+      add-flow-input-variables={configuration.addFlowInputVariables.value}
+      can-edit={configuration.canEdit.value}
+      edit-type={configuration.editType.value}
+      edit-label={configuration.editLabel.value}
+      edit-flow-name={configuration.editFlowName.value}
+      edit-flow-input-variables={configuration.editFlowInputVariables.value}
+      can-delete={configuration.canDelete.value}
+      can-bulk-delete={configuration.canBulkDelete.value}
+      bulk-delete-label={configuration.bulkDeleteLabel.value}
+      can-bulk-edit={configuration.canBulkEdit.value}
+      bulk-edit-label={configuration.bulkEditLabel.value}
+      inline-save={configuration.inlineSave.value}
+      save-label={configuration.saveLabel.value}
+      navigate-next-after-save={configuration.navigateNextAfterSave.value}
+      preview
+    >
+    </c-od-datatable>
+  </lightning-modal-body>
+  <lightning-modal-footer>
+    <div class="slds-grid">
+      <div class="slds-align--absolute-center slds-size--12-of-12">
+        <lightning-button name="close" label="Close" title="Close" onclick={handleClose}> </lightning-button>
+      </div>
+    </div>
+  </lightning-modal-footer>
+</template>

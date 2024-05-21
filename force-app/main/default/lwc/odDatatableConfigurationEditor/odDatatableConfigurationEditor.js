@@ -5,6 +5,7 @@ import getConfiguration from '@salesforce/apex/OD_ConfigurationEditorController.
 import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
 import { FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
 import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
+import OdDatatablePreview from 'c/odDatatablePreview';
 
 export default class OdConfigurationEditor extends LightningElement {
   @api genericTypeMappings;
@@ -315,10 +316,16 @@ export default class OdConfigurationEditor extends LightningElement {
   @wire(getConfiguration)
   _getConfiguration({ error, data }) {
     if (data) {
+      this.isLoading = false;
+
       this.objectTypes = data.objects;
       this.flows = data.flows;
 
-      this._getFieldsForObject();
+      // if there is already a saved configuration
+      if (this.inputType) {
+        // get the fields for the object
+        this._getFieldsForObject(this.inputType);
+      }
     } else if (error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(error);
@@ -561,11 +568,12 @@ export default class OdConfigurationEditor extends LightningElement {
   // =================================================================
   // private methods
   // =================================================================
-  _getFieldsForObject() {
-    getFieldsForObject({ objectName: this.inputType })
+  _getFieldsForObject(objectName) {
+    getFieldsForObject({ objectName: objectName })
       .then((res) => {
         this.isLoading = false;
         this.fields = res;
+        this.errorMessage = null;
 
         this.fieldsForPlatformEvent = JSON.parse(JSON.stringify(this.fields)).map((fl) => {
           return { label: fl.value, value: fl.value };
@@ -699,6 +707,9 @@ export default class OdConfigurationEditor extends LightningElement {
         newValue: newValue,
         newValueDataType: 'string',
       });
+
+      // get the fields for the object
+      this._getFieldsForObject(newValue);
     }
   }
 
@@ -797,5 +808,13 @@ export default class OdConfigurationEditor extends LightningElement {
 
       this.handleCloseMasterDetailFields();
     }
+  }
+
+  async handleShowPreview() {
+    // open the modal
+    await OdDatatablePreview.open({
+      size: 'medium',
+      configuration: this.inputValues,
+    });
   }
 }

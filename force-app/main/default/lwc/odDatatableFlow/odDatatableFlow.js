@@ -5,8 +5,23 @@ export default class OdDatatableFlow extends LightningModal {
   @api flowName;
   @api inputVariables = [];
   @api bottomNavFlow = false;
+  @api preview = false;
 
   errorMessage = false;
+
+  get inputVariablesToUse() {
+    const result = [];
+
+    this.inputVariables.forEach((iv) => {
+      result.push({
+        name: iv.name,
+        type: iv.type,
+        value: iv.value || iv.fixedValue,
+      });
+    });
+
+    return result;
+  }
 
   handleStatusChange(event) {
     if (event.detail.status === 'FINISHED' || event.detail.status === 'FINISHED_SCREEN') {
@@ -36,5 +51,9 @@ export default class OdDatatableFlow extends LightningModal {
         this.close({ isSuccess: true });
       }
     }
+  }
+
+  handleClose() {
+    this.close();
   }
 }

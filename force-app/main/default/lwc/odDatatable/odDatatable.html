@@ -38,6 +38,7 @@
           <lightning-button
             label={addLabel}
             title={addLabel}
+            class="slds-m-bottom--small slds-m-right--medium"
             icon-name="utility:add"
             onclick={handleAdd}
             variant="brand"
@@ -49,6 +50,7 @@
           <lightning-button-icon
             icon-name="utility:add"
             alternative-text="Add"
+            class="slds-m-bottom--small slds-m-right--medium"
             title="Add"
             onclick={handleAdd}
             variant="brand"
@@ -60,7 +62,7 @@
       <template lwc:if={showBulkDeleteButton}>
         <template lwc:if={bulkDeleteHasLabel}>
           <lightning-button
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             label={bulkDeleteLabel}
             title={bulkDeleteLabel}
             icon-name="utility:delete"
@@ -71,7 +73,7 @@
         </template>
         <template lwc:else>
           <lightning-button-icon
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             icon-name="utility:delete"
             alternative-text={bulkDeleteLabel}
             title={bulkDeleteLabel}
@@ -84,7 +86,7 @@
       <template lwc:if={showBulkEditButton}>
         <template lwc:if={bulkEditHasLabel}>
           <lightning-button
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             label={bulkEditLabel}
             title={bulkEditLabel}
             icon-name="utility:edit"
@@ -95,7 +97,7 @@
         </template>
         <template lwc:else>
           <lightning-button-icon
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             icon-name="utility:edit"
             alternative-text={bulkEditLabel}
             title={bulkEditLabel}
@@ -109,7 +111,7 @@
         <template for:each={otherBulkFlowButtons} for:item="btn">
           <lightning-button
             key={btn.fieldName}
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             label={btn.typeAttributes.config.bulkButtonLabel}
             title={btn.label}
             data-name={btn.fieldName}
@@ -123,7 +125,7 @@
         <template for:each={bottomNavButtons} for:item="btn">
           <lightning-button
             key={btn.fieldName}
-            class="slds-m-left--medium"
+            class="slds-m-bottom--small slds-m-right--medium"
             label={btn.label}
             title={btn.label}
             data-name={btn.fieldName}

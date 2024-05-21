@@ -365,13 +365,17 @@ export default class ODInputAutocomplete extends LightningElement {
 
     getLookupRecord(objectToSend)
       .then((res) => {
-        this.searchText = res.label;
         this._valueToCompare = this.value;
         this.isSearching = false;
 
-        this._doDispatchSelectLabelLookup(res.label);
+        if (res) {
+          this.searchText = res.label;
+
+          this._doDispatchSelectLabelLookup(res.label);
+        }
       })
       .catch((error) => {
+        this.isSearching = false;
         this.filteredOptions = [{ value: '', label: reduceErrors(error) }];
       });
   }

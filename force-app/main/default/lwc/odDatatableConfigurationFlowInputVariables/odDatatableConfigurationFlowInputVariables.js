@@ -65,7 +65,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
         disabled = true;
       } else {
         this.inputsToDisplayTable.forEach((input) => {
-          if (!input.name || !input.type || !input.value) {
+          if (!input.name || !input.type || (!input.value && !input.fixedValue)) {
             disabled = true;
           }
         });
@@ -206,6 +206,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
       name: '',
       type: '',
       value: '',
+      fixedValue: '',
       showEmptyValueOptions: false,
       availableValues: [],
     });
@@ -223,6 +224,13 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     } else {
       this.errorMessage = false;
     }
+
+    this._doUpdateField(id, { [fieldName]: value, ...other });
+  }
+
+  handleUpdateFixedValue(event) {
+    const { fieldName, value, ...other } = event.detail;
+    const id = event.target.dataset.id;
 
     this._doUpdateField(id, { [fieldName]: value, ...other });
   }
@@ -271,9 +279,9 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     const result = [];
 
     this.inputsToDisplayTable.forEach((input) => {
-      const { name, type, value } = input;
+      const { name, type, value, fixedValue } = input;
 
-      result.push({ name, type, value });
+      result.push({ name, type, value, fixedValue });
     });
 
     // dispatch the save

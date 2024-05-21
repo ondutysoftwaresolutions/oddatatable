@@ -1,12 +1,25 @@
 <template>
   <lightning-modal-body class="slds-is-relative">
     <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
-    <lightning-flow
-      flow-input-variables={inputVariables}
-      flow-api-name={flowName}
-      class="slds-is-relative"
-      onstatuschange={handleStatusChange}
-    >
-    </lightning-flow>
+    <template lwc:if={preview}>
+      <div class="slds-align--absolute-center slds-p-around--large">
+        Your flow {flowName} will be displayed in this popup.
+      </div>
+    </template>
+    <template lwc:else>
+      <lightning-flow
+        flow-input-variables={inputVariablesToUse}
+        flow-api-name={flowName}
+        class="slds-is-relative"
+        onstatuschange={handleStatusChange}
+        flow-finish-behavior="NONE"
+      >
+      </lightning-flow>
+    </template>
   </lightning-modal-body>
+  <template lwc:if={preview}>
+    <lightning-modal-footer>
+      <lightning-button name="close" label="Close" title="Close" onclick={handleClose}> </lightning-button>
+    </lightning-modal-footer>
+  </template>
 </template>

@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import { EVENTS } from 'c/odDatatableConstants';
 
 export default class OdDatatableRowButton extends LightningElement {
   @api recordId;
@@ -15,9 +16,9 @@ export default class OdDatatableRowButton extends LightningElement {
   }
 
   get cellClasses() {
-    return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${
-      this.hasChanges ? 'disabled' : 'enabled'
-    }`;
+    const disableClass =
+      this.name !== EVENTS.DELETE && this.name !== EVENTS.UNDELETE && this.hasChanges ? 'disabled' : 'enabled';
+    return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${disableClass}`;
   }
 
   handleClick() {

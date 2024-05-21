@@ -22,6 +22,7 @@
                   content="You need to select a formula, constant or variable to pre-populate the input field that will go through to the selected flow"
                 ></lightning-helptext>
               </th>
+              <th class="slds-p-around--x-small" style="width: 300px">Fixed value</th>
               <th class="slds-p-around--x-small" style="width: 50px"></th>
             </tr>
           </thead>
@@ -113,6 +114,17 @@
                     >
                     </c-od-datatable-input-generic>
                   </template>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.TEXT}
+                    field-name="fixedValue"
+                    editable
+                    value={input.fixedValue}
+                    data-id={input.id}
+                    onupdatefield={handleUpdateFixedValue}
+                  >
+                  </c-od-datatable-input-generic>
                 </td>
                 <td class="slds-text-align--center">
                   <lightning-button-icon

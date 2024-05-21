@@ -64,6 +64,9 @@ export default class ODDatatable extends LightningElement {
   @api platformEventMatchingFieldName;
   @api platformEventMatchingId;
 
+  // preview
+  @api preview = false;
+
   // outputs
   @api saveAndNext = false;
   @api outputAddedRows = [];
@@ -327,7 +330,7 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  _buildRecords(data) {
+  _buildRecords(data, afterSave = false) {
     let result = [];
 
     JSON.parse(JSON.stringify(data)).forEach((rec) => {
@@ -335,9 +338,9 @@ export default class ODDatatable extends LightningElement {
       const indexEdited = this.outputEditedRows.findIndex((ed) => ed._id === rec.Id);
       const indexDeleted = this.outputDeletedRows.findIndex((dl) => dl._id === rec.Id);
 
-      if (indexEdited !== -1) {
+      if (indexEdited !== -1 && !afterSave) {
         result.push(this.outputEditedRows[indexEdited]);
-      } else if (indexDeleted !== -1) {
+      } else if (indexDeleted !== -1 && !afterSave) {
         result.push(this.outputDeletedRows[indexDeleted]);
       } else {
         let record = {
@@ -359,7 +362,7 @@ export default class ODDatatable extends LightningElement {
     });
 
     // add the added rows if any
-    if (this.outputAddedRows.length > 0) {
+    if (this.outputAddedRows.length > 0 && !afterSave) {
       result = result.concat(this.outputAddedRows);
     }
 
@@ -583,6 +586,7 @@ export default class ODDatatable extends LightningElement {
     const modalProps = {
       size: 'small',
       label: 'Flow Button',
+      preview: this.preview,
     };
 
     const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
@@ -848,7 +852,7 @@ export default class ODDatatable extends LightningElement {
     this._doCleanOutputs(false);
 
     // build the new set of records
-    this._buildRecords(newRecords);
+    this._buildRecords(newRecords, true);
 
     // if save and next is enabled, navigate to next screen
     if (this.navigateNextAfterSave === YES_NO.YES) {
@@ -1017,6 +1021,11 @@ export default class ODDatatable extends LightningElement {
   }
 
   handleSave() {
+    if (this.preview) {
+      this._doCleanOutputs();
+      return;
+    }
+
     this.isSaving = true;
 
     // validate

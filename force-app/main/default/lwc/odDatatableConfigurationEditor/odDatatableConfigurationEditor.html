@@ -1,4 +1,18 @@
 <template>
+  <template lwc:if={inputValues.columns.value}>
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Preview</h1>
+    </div>
+    <fieldset class="slds-box slds-align--absolute-center">
+      <lightning-button
+        label="Preview Datatable"
+        icon-name="utility:preview"
+        onclick={handleShowPreview}
+        variant="brand"
+      >
+      </lightning-button>
+    </fieldset>
+  </template>
   <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
     <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Configure Datatable</h1>
   </div>
