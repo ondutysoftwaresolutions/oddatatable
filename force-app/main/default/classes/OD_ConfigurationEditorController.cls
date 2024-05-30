@@ -262,7 +262,7 @@ public without sharing class OD_ConfigurationEditorController {
       String whereFilter = String.isBlank(whereCondition) ? '' : ' WHERE ' + whereCondition;
       String orderBy = String.isBlank(orderCondition) ? '' : ' ORDER BY ' + orderCondition;
       String limitToUse = limitRecords == null ? '' : ' LIMIT ' + limitRecords;
-      String textToSearch = '*' + searchText.replace(' ', '*') + '*';
+      String textToSearch = '*' + searchText.replace(' ', '* ') + '*';
 
       // perform the query
       String searchQuery =
