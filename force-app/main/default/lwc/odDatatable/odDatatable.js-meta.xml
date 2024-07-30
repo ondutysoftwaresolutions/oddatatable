@@ -127,6 +127,10 @@
             <property name="rowButtonClicked" label="The Button label clicked" type="String"
                 role="outputOnly"
                 description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected." />
+            <property name="wasChanged" label="Was the data change is same shape or form?"
+                type="Boolean"
+                role="outputOnly"
+                description="True if the data was changed (added/edited/deleted)." />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

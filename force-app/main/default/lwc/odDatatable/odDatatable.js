@@ -75,6 +75,7 @@ export default class ODDatatable extends LightningElement {
   @api rowRecordId;
   @api rowRecordIds;
   @api rowButtonClicked;
+  @api wasChanged = false;
 
   @track columnsToShow = [];
   @track columnsForBulkEdit = [];
@@ -799,6 +800,9 @@ export default class ODDatatable extends LightningElement {
         break;
     }
 
+    // output the changed flag
+    this.wasChanged = true;
+
     // update all the rows with the _hasChanges
     this.recordsToShow.forEach((rec) => {
       rec._hasChanges = true;
@@ -810,10 +814,12 @@ export default class ODDatatable extends LightningElement {
       this.saveAndNext = false;
       this.rowRecordId = null;
       this.rowButtonClicked = null;
-      this.outputAddedRows = [];
-      this.outputDeletedRows = [];
-      this.outputEditedRows = [];
+      this.wasChanged = false;
     }
+
+    this.outputAddedRows = [];
+    this.outputDeletedRows = [];
+    this.outputEditedRows = [];
 
     // update all the rows with the _hasChanges
     this.recordsToShow.forEach((rec) => {
