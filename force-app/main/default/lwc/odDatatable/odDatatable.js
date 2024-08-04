@@ -220,7 +220,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get bulkOperationDisabled() {
-    return this._selectedRows.length === 0 || this.hasChanges;
+    return this._selectedRows.length === 0 || this.standardButtonsDisabled;
   }
 
   get showBulkEditButton() {
@@ -248,6 +248,10 @@ export default class ODDatatable extends LightningElement {
       (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
       this.recordsToShow.filter((rec) => rec._hasChanges).length > 0
     );
+  }
+
+  get standardButtonsDisabled() {
+    return this.hasChanges && this.isInlineSave && this._addWithFlow;
   }
 
   get showSaveButtons() {
