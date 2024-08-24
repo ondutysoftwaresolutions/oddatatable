@@ -67,6 +67,11 @@ It has a custom editor that allows you to specify the Object, the columns, the s
 - You can specify if you want to navigate to next node in the flow if Inline Save is enabled.
 - You can specify a Message when no records are found.
 
+## Support
+If you want to support my work, feel free to buy me a coffee 😀
+
+<a href="https://www.buymeacoffee.com/ondutysoftwaresolutions"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=ondutysoftwaresolutions&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+
 ## Live Demo
 
 Live Demo on a Scratch Org: <a href="https://hosted-scratch.herokuapp.com/launch?template=https://github.com/ondutysoftwaresolutions/oddatatable">CLICK HERE</a>
