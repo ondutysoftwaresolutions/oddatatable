@@ -1,0 +1,13 @@
+<template>
+  <template lwc:if={showIcon}>
+    <template lwc:if={content}>
+      <lightning-helptext
+        class="slds-align--absolute-center"
+        icon-name={config.iconName}
+        content={content}
+        icon-variant={config.iconVariant}
+      >
+      </lightning-helptext>
+    </template>
+  </template>
+</template>

@@ -2,3 +2,13 @@
   --lwc-tableColorBackgroundHeader: rgb(243, 243, 243);
   --slds-c-button-neutral-color-border: rgb(201 201 201);
 }
+
+.pagination .current {
+  font-weight: bold;
+  border-bottom: 1px solid
+    var(--slds-c-button-text-color, var(--sds-c-button-text-color, var(--lwc-brandAccessible, rgb(1, 118, 211))));
+  border-radius: 0px;
+  line-height: 1.1rem;
+  outline: none;
+  box-shadow: none;
+}

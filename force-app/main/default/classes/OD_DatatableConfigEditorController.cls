@@ -1,9 +1,9 @@
 /*************************************************************************************************************
- * @name			OD_ConfigurationEditorController
+ * @name			OD_DatatableConfigEditorController
  * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
  * @created			02 / 05 / 2023
  * @description		Controller for the OnDuty Data table Configuration Editor
- * @TestClass		OD_ConfigurationEditorControllerTest
+ * @TestClass		OD_DatatableConfigEditorControllerTest
  *
  * Changes (version)
  * -----------------------------------------------------------------------------------------------------------
@@ -12,7 +12,7 @@
  * @version		1.0		2023-05-02		Pablo Martinez			Creation of the class
  *
  **************************************************************************************************************/
-public without sharing class OD_ConfigurationEditorController {
+public without sharing class OD_DatatableConfigEditorController {
   /*********************************************************************************************************
    * @name			getObjects
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>

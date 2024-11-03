@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
-import getRecordsForLookup from '@salesforce/apex/OD_ConfigurationEditorController.getRecordsForLookup';
-import getLookupRecord from '@salesforce/apex/OD_ConfigurationEditorController.getLookupRecord';
+import getRecordsForLookup from '@salesforce/apex/OD_DatatableConfigEditorController.getRecordsForLookup';
+import getLookupRecord from '@salesforce/apex/OD_DatatableConfigEditorController.getLookupRecord';
 import { SERVER_SIDE_SEARCH } from 'c/odDatatableConstants';
 import { isEmpty, reduceErrors } from 'c/odDatatableUtils';
 

@@ -138,7 +138,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get requiredStar() {
-    return this.required ? '*' : '';
+    return this.editable && this.required ? '*' : '';
   }
 
   get hasHelpText() {
@@ -294,7 +294,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get containerClasses() {
-    return `slds-is-relative container ${this.extraContainerClasses}`;
+    return `slds-is-relative container ${this.extraContainerClasses || ''}`;
   }
 
   // =======================================================================================================================================================================================================================================

@@ -219,7 +219,10 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     const id = event.target.dataset.id;
 
     // check there is not another input with same name
-    if ((value === 'recordId' && !this.bottomNav) || this.inputsToDisplayTable.some((input) => input.name === value)) {
+    if (
+      (value === 'recordId' && !this.bottomNav && this.isEdit) ||
+      this.inputsToDisplayTable.some((input) => input.name === value)
+    ) {
       this.errorMessage = 'There is already another input with the same name.';
     } else {
       this.errorMessage = false;

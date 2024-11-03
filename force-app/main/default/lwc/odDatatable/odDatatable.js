@@ -3,14 +3,17 @@ import { loadStyle } from 'lightning/platformResourceLoader';
 import { FlowNavigationNextEvent } from 'lightning/flowSupport';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
-import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
-import saveRecords from '@salesforce/apex/OD_ConfigurationEditorController.saveRecords';
-import getRecords from '@salesforce/apex/OD_ConfigurationEditorController.getRecords';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
+import saveRecords from '@salesforce/apex/OD_DatatableConfigEditorController.saveRecords';
+import getRecords from '@salesforce/apex/OD_DatatableConfigEditorController.getRecords';
 import {
   YES_NO,
+  ALIGNMENT_OPTIONS,
   EMPTY_STRING,
   EVENTS,
+  CUSTOM_FIELD_TYPES,
   ROW_BUTTON_CONFIGURATION,
+  HIDDEN_TYPE_OPTIONS,
   INLINE_FLOW,
   PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
@@ -27,7 +30,7 @@ export default class ODDatatable extends LightningElement {
 
   // table configuration
   @api objectName;
-  @api tableData = [];
+  //@api tableData = [];
   @api columns;
   @api noRecordsMessage;
 
@@ -67,6 +70,12 @@ export default class ODDatatable extends LightningElement {
   // preview
   @api preview = false;
 
+  // pagination
+  @api pagination;
+  @api paginationAlignment;
+  @api pageSize;
+  @api paginationShowOptions;
+
   // outputs
   @api saveAndNext = false;
   @api outputAddedRows = [];
@@ -86,6 +95,7 @@ export default class ODDatatable extends LightningElement {
   errorMessage = false;
   isSaving = false;
   savingMessage = ' ';
+  currentPage = 0;
 
   fieldsThatChanged = [];
 
@@ -115,7 +125,7 @@ export default class ODDatatable extends LightningElement {
     if (isValid) {
       // check the required fields with value, return false on the first one (this is for fields that are required but not navigated to them)
       this.columnsToShow.every((col) => {
-        this.recordsToShow.every((rec) => {
+        this._tableData.every((rec) => {
           if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
             isValid = false;
             return false;
@@ -177,7 +187,6 @@ export default class ODDatatable extends LightningElement {
       // build the columns
       this._buildColumns(result.data);
 
-      // build the records
       this._buildRecords(this.tableData);
 
       // clean the output variables
@@ -191,6 +200,32 @@ export default class ODDatatable extends LightningElement {
   // =================================================================
   // getter methods
   // =================================================================
+  _tableData;
+
+  @api
+  get tableData() {
+    return this._tableData || [];
+  }
+
+  set tableData(data = []) {
+    if (!this.isLoading) {
+      this._buildRecords(data);
+    } else {
+      this._tableData = data;
+    }
+  }
+
+  get dataToShow() {
+    if (this.showPagination) {
+      return this._tableData.slice(
+        this.currentPage * this._pageSizeNumber,
+        this._pageSizeNumber * (this.currentPage + 1),
+      );
+    }
+
+    return this._tableData;
+  }
+
   get loaded() {
     return !this.isLoading;
   }
@@ -246,7 +281,7 @@ export default class ODDatatable extends LightningElement {
   get hasChanges() {
     return (
       (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
-      this.recordsToShow.filter((rec) => rec._hasChanges).length > 0
+      this._tableData.filter((rec) => rec._hasChanges).length > 0
     );
   }
 
@@ -272,6 +307,58 @@ export default class ODDatatable extends LightningElement {
 
   get _listeningToPlatformEvent() {
     return this.listenToPlatformEvent === YES_NO.YES;
+  }
+
+  get isThereAnyButton() {
+    return (
+      this.showAddButton ||
+      this.showBulkDeleteButton ||
+      this.showBulkEditButton ||
+      this.otherBulkFlowButtons.length > 0 ||
+      this.bottomNavButtons.length > 0 ||
+      this.showSaveButtons
+    );
+  }
+
+  get showPagination() {
+    return this.pagination === YES_NO.YES && this.totalPages > 1;
+  }
+
+  get _pageSizeNumber() {
+    return parseInt(this.pageSize, 10);
+  }
+
+  get showPaginationNavigationOptions() {
+    return this.paginationShowOptions === YES_NO.YES;
+  }
+
+  get paginationClasses() {
+    return `slds-p-top--x-small slds-size--1-of-1 slds-text-align--${this.paginationAlignment} pagination`;
+  }
+
+  get totalPages() {
+    return Math.ceil(this._tableData.length / this._pageSizeNumber);
+  }
+
+  get pages() {
+    const result = [];
+    for (let i = 0; i < this.totalPages; i++) {
+      result.push({
+        page: i + 1,
+        value: i,
+        classes: `slds-button slds-m-right_xx-small${this.currentPage === i ? ' current' : ''}`,
+      });
+    }
+
+    return result;
+  }
+
+  get isFirstPage() {
+    return this.currentPage === 0;
+  }
+
+  get isLastPage() {
+    return this.currentPage + 1 === this.totalPages;
   }
 
   // =================================================================
@@ -371,11 +458,11 @@ export default class ODDatatable extends LightningElement {
       result = result.concat(this.outputAddedRows);
     }
 
-    this.recordsToShow = result;
+    this._tableData = result;
   }
 
   _buildColumns(columnsFromObject) {
-    const columnsConfiguration = JSON.parse(this.columns);
+    let columnsConfiguration = JSON.parse(this.columns);
 
     // add the after validate to all the columns
     if (this.afterValidate) {
@@ -384,7 +471,16 @@ export default class ODDatatable extends LightningElement {
       });
     }
 
-    // set editable to all false if the whole table is not editable or if the edit type is NO (which means flow)
+    // filter custom column field types
+    if (this.isInlineSave || this.canEdit === YES_NO.NO || this._editWithFlow) {
+      columnsConfiguration = columnsConfiguration.filter(
+        (col) =>
+          (col.typeAttributes.config.isCustom && !CUSTOM_FIELD_TYPES.includes(col.typeAttributes.type)) ||
+          !col.typeAttributes.config.isCustom,
+      );
+    }
+
+    // set editable to all false if the whole table is not editable or if the edit type is Flow
     if (this.canEdit === YES_NO.NO || this._editWithFlow) {
       columnsConfiguration.forEach((col) => {
         col.typeAttributes.editable = false;
@@ -448,13 +544,13 @@ export default class ODDatatable extends LightningElement {
         type: ROW_BUTTON_TYPE,
         initialWidth: 80,
         hideDefaultActions: true,
-        cellAttributes: { alignment: 'center' },
         typeAttributes: {
           recordId: { fieldName: '_id' },
           name: { fieldName: '_editAction' },
           label: { fieldName: '_editLabel' },
           isDeleted: { fieldName: 'isDeleted' },
           hasChanges: { fieldName: '_hasChanges' },
+          config: { cellClasses: 'slds-text-align--center' },
         },
       });
     }
@@ -465,7 +561,6 @@ export default class ODDatatable extends LightningElement {
         type: ROW_BUTTON_TYPE,
         initialWidth: 50,
         hideDefaultActions: true,
-        cellAttributes: { alignment: 'center' },
         typeAttributes: {
           recordId: { fieldName: '_id' },
           iconName: { fieldName: '_deleteIcon' },
@@ -473,39 +568,52 @@ export default class ODDatatable extends LightningElement {
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
+          config: { cellClasses: 'slds-text-align--center' },
         },
       });
     }
 
+    // check for hidden property
+    columnsConfiguration.forEach((col) => {
+      if (col.typeAttributes.config && col.typeAttributes.config.hidden) {
+        // if it's not a record based condition, hide it
+        if (col.typeAttributes.config.hiddenType !== HIDDEN_TYPE_OPTIONS.RECORD.value) {
+          col.hidden = true;
+        }
+      }
+    });
+
     this._allColumns = columnsConfiguration;
-    this.columnsToShow = columnsConfiguration.filter(
-      (col) => (col.typeAttributes.config && !col.typeAttributes.config.hidden) || !col.typeAttributes.config,
-    );
+    this.columnsToShow = columnsConfiguration.filter((cl) => !cl.hidden);
   }
 
   _doUpdateRecord(recordIndex, newObject) {
-    this.recordsToShow = [
-      ...this.recordsToShow.slice(0, recordIndex),
+    this._tableData = [
+      ...this._tableData.slice(0, recordIndex),
       {
-        ...this.recordsToShow[recordIndex],
+        ...this._tableData[recordIndex],
         ...newObject,
       },
-      ...this.recordsToShow.slice(recordIndex + 1),
+      ...this._tableData.slice(recordIndex + 1),
     ];
   }
 
   _doDelete(recordIndex) {
     if (recordIndex !== -1) {
       // if it's a new add, delete the record from the collection
-      if (this.recordsToShow[recordIndex].isNew) {
+      if (this._tableData[recordIndex].isNew) {
         // if it's the last one just do an assignment, otherwise do the slice for the second part
-        if (recordIndex === this.recordsToShow.length - 1) {
-          this.recordsToShow = this.recordsToShow.slice(0, recordIndex);
+        if (recordIndex === this._tableData.length - 1) {
+          this._tableData = this._tableData.slice(0, recordIndex);
         } else {
-          this.recordsToShow = [
-            ...this.recordsToShow.slice(0, recordIndex),
-            ...this.recordsToShow.slice(recordIndex + 1),
-          ];
+          this._tableData = [...this._tableData.slice(0, recordIndex), ...this._tableData.slice(recordIndex + 1)];
+        }
+
+        if (this.showPagination) {
+          // if the current page is greater than the total, it means we deleted one from the last page and need to go 1 page down
+          if (this.currentPage >= this.totalPages) {
+            this.handleLastPage();
+          }
         }
       } else {
         const newObj = {
@@ -565,6 +673,11 @@ export default class ODDatatable extends LightningElement {
     this._doUpdateRecord(99999, newRecord);
 
     this._doUpdateOutputs(newRecord, EVENTS.ADD);
+
+    // check pagination and set current page to last one
+    if (this.showPagination) {
+      this.handleLastPage();
+    }
   }
 
   _doAddEditWithFlow(record = undefined) {
@@ -592,6 +705,7 @@ export default class ODDatatable extends LightningElement {
       size: 'small',
       label: 'Flow Button',
       preview: this.preview,
+      currentRecord: record,
     };
 
     const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
@@ -647,7 +761,7 @@ export default class ODDatatable extends LightningElement {
       if (resultModal.flowOutput) {
         if (!Array.isArray(resultModal.flowOutput)) {
           // add or modify the record in the tableData
-          const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === resultModal.flowOutput.Id);
+          const recordIndex = this._tableData.findIndex((rc) => rc._id === resultModal.flowOutput.Id);
 
           if (recordIndex !== -1) {
             this._doUpdateRecord(recordIndex, resultModal.flowOutput);
@@ -670,7 +784,7 @@ export default class ODDatatable extends LightningElement {
           if (!resultModal.bottomNavFlow) {
             resultModal.flowOutput.forEach((rec) => {
               // add or modify the record in the tableData
-              const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === rec.Id);
+              const recordIndex = this._tableData.findIndex((rc) => rc._id === rec.Id);
 
               if (recordIndex !== -1) {
                 this._doUpdateRecord(recordIndex, rec);
@@ -690,7 +804,7 @@ export default class ODDatatable extends LightningElement {
               });
             });
 
-            this.recordsToShow = newRecords;
+            this._tableData = newRecords;
           }
         }
       }
@@ -708,7 +822,7 @@ export default class ODDatatable extends LightningElement {
   _doGetListOfIdsToRefreshPlatformEvent() {
     let result = [];
 
-    this.recordsToShow.forEach((rec) => {
+    this._tableData.forEach((rec) => {
       if (rec[this.platformEventMatchingFieldName]) {
         result.push(rec[this.platformEventMatchingFieldName]);
       }
@@ -808,9 +922,20 @@ export default class ODDatatable extends LightningElement {
     this.wasChanged = true;
 
     // update all the rows with the _hasChanges
-    this.recordsToShow.forEach((rec) => {
+    this._tableData.forEach((rec) => {
       rec._hasChanges = true;
     });
+
+    // dispatch the outputs to parent in case someone is listening to it
+    this.dispatchEvent(
+      new CustomEvent('changevalues', {
+        detail: {
+          deleted: JSON.parse(JSON.stringify(this.outputDeletedRows)),
+          added: JSON.parse(JSON.stringify(this.outputAddedRows)),
+          edited: JSON.parse(JSON.stringify(this.outputEditedRows)),
+        },
+      }),
+    );
   }
 
   _doCleanOutputs(emptyOutputs = true) {
@@ -826,7 +951,7 @@ export default class ODDatatable extends LightningElement {
     this.outputEditedRows = [];
 
     // update all the rows with the _hasChanges
-    this.recordsToShow.forEach((rec) => {
+    this._tableData.forEach((rec) => {
       rec._hasChanges = false;
     });
 
@@ -837,7 +962,7 @@ export default class ODDatatable extends LightningElement {
     const newRecords = [];
 
     // this is for updates and deletes
-    this.recordsToShow.forEach((rec) => {
+    this._tableData.forEach((rec) => {
       const recordIndexEdit = records.findIndex((rc) => rec._id === rc.Id);
       const recordIndexDelete = deletedRecords.findIndex((rc) => rec._id === rc._id);
 
@@ -908,6 +1033,7 @@ export default class ODDatatable extends LightningElement {
     this.selectedRowsIds = this._selectedRows.map((sr) => sr._id);
   }
 
+  @api
   handleRowAction(event) {
     const action = event.detail.action;
     const recordId = event.detail.recordId;
@@ -915,9 +1041,9 @@ export default class ODDatatable extends LightningElement {
     const value = event.detail.value;
     const isValid = event.detail.isValid;
 
-    const recordIndex = this.recordsToShow.findIndex((rc) => rc._id === recordId);
+    const recordIndex = this._tableData.findIndex((rc) => rc._id === recordId);
     // doing it here as if we delete, then we don't have that index anymore (if it's new)
-    let record = this.recordsToShow[recordIndex];
+    let record = this._tableData[recordIndex];
 
     switch (action) {
       case EVENTS.DELETE:
@@ -925,7 +1051,7 @@ export default class ODDatatable extends LightningElement {
 
         if (!record.isNew) {
           // reassigning the record here, for the new values
-          record = this.recordsToShow[recordIndex];
+          record = this._tableData[recordIndex];
         }
 
         break;
@@ -933,7 +1059,7 @@ export default class ODDatatable extends LightningElement {
         this._doUndelete(recordIndex);
 
         // reassigning the record here, for the new values
-        record = this.recordsToShow[recordIndex];
+        record = this._tableData[recordIndex];
 
         break;
       case EVENTS.CHANGE:
@@ -946,7 +1072,7 @@ export default class ODDatatable extends LightningElement {
           this._validInvalidFields[`${recordId}-${fieldName}`] = isValid;
 
           // reassigning the record here, for the new values
-          record = this.recordsToShow[recordIndex];
+          record = this._tableData[recordIndex];
         }
 
         break;
@@ -973,7 +1099,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   handleBulkDelete() {
-    const recordsAvailable = JSON.parse(JSON.stringify(this.recordsToShow));
+    const recordsAvailable = JSON.parse(JSON.stringify(this._tableData));
     this._selectedRows.forEach((row) => {
       const recordIndex = recordsAvailable.findIndex((rc) => rc._id === row._id);
 
@@ -1027,7 +1153,7 @@ export default class ODDatatable extends LightningElement {
   handleCancel() {
     this._doCleanOutputs();
 
-    this._buildRecords(this.tableData);
+    this._buildRecords(this._tableData);
   }
 
   handleSave() {
@@ -1076,5 +1202,25 @@ export default class ODDatatable extends LightningElement {
 
   handleOpenBottomNavFlow(event) {
     this._doOpenFlowButton(event.target.dataset.name, undefined);
+  }
+
+  handlePrevPage() {
+    this.currentPage--;
+  }
+
+  handleNextPage() {
+    this.currentPage++;
+  }
+
+  handleFirstPage() {
+    this.currentPage = 0;
+  }
+
+  handleLastPage() {
+    this.currentPage = this.totalPages - 1;
+  }
+
+  handleChangePage(e) {
+    this.currentPage = parseInt(e.target.dataset.value, 10);
   }
 }

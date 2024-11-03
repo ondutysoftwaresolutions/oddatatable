@@ -8,10 +8,15 @@ import {
   generateRandomNumber,
 } from 'c/odDatatableUtils';
 import {
+  ALIGNMENT_OPTIONS,
+  BUTTON_VARIANTS,
   FIELD_TYPES,
   FORMATTED_TYPE_TO_SHOW,
-  BUTTON_TYPES,
+  CUSTOM_BUTTON_TYPES,
+  INPUT_GENERIC_TYPE,
+  CUSTOM_FIELD_TYPES,
   ROW_BUTTON_TYPE,
+  HIDDEN_TYPE_OPTIONS,
   ICON_VARIANTS,
   ROW_BUTTON_CONFIGURATION,
   SHOW_AS_OPTIONS,
@@ -26,10 +31,12 @@ export default class OdConfigurationColumns extends LightningElement {
 
   @track fieldsToDisplayTable = [];
   @track fields = [];
+  @track booleanFields = [];
 
   @track selectedFields = [];
 
   iconVariants = ICON_VARIANTS;
+  buttonVariants = BUTTON_VARIANTS;
   popupHeight;
   isSelectFieldsOpened = false;
   errorMessage = false;
@@ -82,10 +89,6 @@ export default class OdConfigurationColumns extends LightningElement {
   // =================================================================
   // getters methods
   // =================================================================
-  get theType() {
-    return FIELD_TYPES.SELECT;
-  }
-
   get disabledSave() {
     return this.selectedFields.length === 0;
   }
@@ -110,6 +113,7 @@ export default class OdConfigurationColumns extends LightningElement {
     });
 
     this.fields = result.filter((fld) => !fld.isMasterDetail);
+    this.booleanFields = result.filter((fld) => fld.type === FIELD_TYPES.CHECKBOX);
   }
 
   _buildTypeSpec(type, field) {
@@ -245,7 +249,12 @@ export default class OdConfigurationColumns extends LightningElement {
           required: col.typeAttributes.required,
           defaultValue: col.typeAttributes.config.defaultValue,
           initialWidth: col.initialWidth,
+          alignment: col.alignment,
           hidden: col.typeAttributes.config.hidden,
+          hiddenType: col.typeAttributes.config.hiddenType,
+          hiddenConditionField: col.typeAttributes.config.hiddenConditionField,
+          hiddenIsRecordBased: col.typeAttributes.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value,
+          buttonVariant: col.typeAttributes.config.buttonVariant,
           isLookup: type === FIELD_TYPES.LOOKUP,
           typeForDefault: type === FIELD_TYPES.LOOKUP ? FIELD_TYPES.SELECT : type,
           options: type === FIELD_TYPES.LOOKUP ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : field.options,
@@ -267,6 +276,8 @@ export default class OdConfigurationColumns extends LightningElement {
           flowNavigateNext: col.typeAttributes.config.flowNavigateNext,
           flowOptions: this.flows.filter((fl) => fl.type === col.typeAttributes.config.customType),
           waitForPlatformEvent: col.typeAttributes.config.waitForPlatformEvent,
+          alignmentOptions: Object.values(ALIGNMENT_OPTIONS),
+          hiddenTypeOptions: Object.values(HIDDEN_TYPE_OPTIONS),
           showAsOptions: SHOW_AS_OPTIONS.filter(
             (opt) =>
               (col.typeAttributes.config.isCustom && opt.showInCustom) ||
@@ -314,7 +325,11 @@ export default class OdConfigurationColumns extends LightningElement {
         newField.options = newField.isLookup ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : fl.options;
         newField.showAs = defaultShowAs.value;
         newField.column = defaultShowAs.column;
+        newField.alignment = ALIGNMENT_OPTIONS.LEFT.value;
+        newField.hiddenType = HIDDEN_TYPE_OPTIONS.COLUMN.value;
         newField.icon = false;
+        newField.alignmentOptions = Object.values(ALIGNMENT_OPTIONS);
+        newField.hiddenTypeOptions = Object.values(HIDDEN_TYPE_OPTIONS);
         newField.showAsOptions = SHOW_AS_OPTIONS.filter(
           (opt) => (newField.isCustom && opt.showInCustom) || (!newField.isCustom && opt.showInField),
         );
@@ -425,8 +440,23 @@ export default class OdConfigurationColumns extends LightningElement {
       objectToUpdate = {
         ...objectToUpdate,
         ...other,
-        flowOptions: this.flows.filter((fl) => fl.type === theValue),
       };
+
+      // if it's a flow
+      if (other.flow) {
+        objectToUpdate.classesType = 'slds-size--1-of-1';
+        objectToUpdate.flowOptions = this.flows.filter((fl) => fl.type === theValue);
+      } else {
+        objectToUpdate.classesType = 'slds-size--10-of-12';
+      }
+    }
+
+    // if it's a hidden field
+    if (this.selectedFields[fieldIndexSelected].hidden) {
+      // check the hidden type
+      objectToUpdate.hiddenIsRecordBased =
+        (objectToUpdate.hiddenType || this.selectedFields[fieldIndexSelected].hiddenType) ===
+        HIDDEN_TYPE_OPTIONS.RECORD.value;
     }
 
     this.selectedFields[fieldIndexSelected] = {
@@ -453,10 +483,11 @@ export default class OdConfigurationColumns extends LightningElement {
     // common properties
     this.fieldsToDisplayTable.forEach((field) => {
       let fieldToAdd = {
-        label: `${field.required ? '* ' : ''}${field.tableLabel}`,
+        label: `${field.required && field.isEditable ? '* ' : ''}${field.tableLabel}`,
         tableLabel: field.tableLabel,
         order: field.order,
         fieldName: field.value,
+        alignment: field.alignment,
         wrapText: true,
         hideDefaultActions: true,
         typeAttributes: {
@@ -472,6 +503,10 @@ export default class OdConfigurationColumns extends LightningElement {
           },
           config: {
             showAs: field.showAs,
+            cellClasses: `slds-text-align--${field.alignment || ALIGNMENT_OPTIONS.LEFT.value}`,
+            hidden: field.hidden,
+            hiddenConditionField: field.hiddenConditionField,
+            hiddenType: field.hiddenType || HIDDEN_TYPE_OPTIONS.COLUMN.value,
           },
         },
       };
@@ -480,15 +515,15 @@ export default class OdConfigurationColumns extends LightningElement {
       if (field.isFieldColumn) {
         fieldToAdd = {
           ...fieldToAdd,
-          type: 'inputGeneric',
+          type: INPUT_GENERIC_TYPE,
           typeAttributes: {
             ...fieldToAdd.typeAttributes,
             editable: field.isEditable,
             required: field.required,
             config: {
               ...fieldToAdd.typeAttributes.config,
-              maxLength: field.maxLength,
               defaultValue: field.defaultValue,
+              maxLength: field.maxLength,
               parentObjectName: field.parentObjectName,
               options: field.isLookup ? [] : field.options,
               scale: field.scale,
@@ -496,7 +531,6 @@ export default class OdConfigurationColumns extends LightningElement {
               isHTML: field.isHTML,
               isMulti: field.isMulti,
               lookupConfig: field.lookupConfig,
-              hidden: field.hidden,
               column: field.column,
               icon: field.icon,
             },
@@ -505,7 +539,6 @@ export default class OdConfigurationColumns extends LightningElement {
 
         // if it's a tooltip icon column
         if (field.icon) {
-          fieldToAdd.cellAttributes = { alignment: 'center' };
           fieldToAdd.type = 'rowTooltipIconType';
           fieldToAdd.typeAttributes.config.iconName = field.iconName;
           fieldToAdd.typeAttributes.config.iconVariant = field.iconVariant;
@@ -526,10 +559,10 @@ export default class OdConfigurationColumns extends LightningElement {
         };
 
         // for button types specifically
-        if (BUTTON_TYPES.includes(field.customType)) {
+        if (CUSTOM_BUTTON_TYPES.includes(field.customType)) {
           fieldToAdd = {
             ...fieldToAdd,
-            cellAttributes: { alignment: 'center' },
+            label: '',
             type: ROW_BUTTON_TYPE,
             typeAttributes: {
               ...fieldToAdd.typeAttributes,
@@ -545,7 +578,33 @@ export default class OdConfigurationColumns extends LightningElement {
                 showInBottomNav: field.showInBottomNav,
                 bulkButtonLabel:
                   field.showAsMultiple && field.showAsSingle ? `Bulk ${field.tableLabel}` : field.tableLabel,
-                hidden: !field.showAsSingle,
+                hidden: !field.showAsSingle || field.hidden,
+                buttonVariant: field.buttonVariant,
+              },
+            },
+          };
+        } else if (CUSTOM_FIELD_TYPES.includes(field.customType)) {
+          const customFieldName = `custom_${field.tableLabel.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_')}`;
+
+          fieldToAdd = {
+            ...fieldToAdd,
+            fieldName: customFieldName,
+            type: INPUT_GENERIC_TYPE,
+            typeAttributes: {
+              ...fieldToAdd.typeAttributes,
+              editable: true,
+              type: field.customType,
+              fieldName: customFieldName,
+              value: {
+                fieldName: customFieldName,
+              },
+              config: {
+                ...fieldToAdd.typeAttributes.config,
+                defaultValue: field.defaultValue,
+                scale: field.scale,
+                valueActive: field.valueActive,
+                valueInactive: field.valueInactive,
+                extraContainerClasses: field.extraContainerClasses || '',
               },
             },
           };
@@ -602,7 +661,6 @@ export default class OdConfigurationColumns extends LightningElement {
       canEdit: false,
       hidden: false,
       defaultValue: null,
-      initialWidth: 80,
     });
 
     this.handleSelectField({ detail: { value: fieldsPlusCustom } });

@@ -1,9 +1,9 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
-import getConfiguration from '@salesforce/apex/OD_ConfigurationEditorController.getConfiguration';
-import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
-import { FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
+import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
+import { ALIGNMENT_OPTIONS, FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
 import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
 import OdDatatablePreview from 'c/odDatatablePreview';
 
@@ -31,6 +31,7 @@ export default class OdConfigurationEditor extends LightningElement {
     editFlowName: false,
     platformEventMatchingFieldName: false,
     platformEventMatchingId: false,
+    paginationAlignment: false,
   };
 
   @track fields = [];
@@ -58,6 +59,8 @@ export default class OdConfigurationEditor extends LightningElement {
 
   // private
   _inputVariables = [];
+  _elementInfo;
+  _automaticOutputVariables;
 
   @track inputValues = {
     tableData: {
@@ -151,7 +154,6 @@ export default class OdConfigurationEditor extends LightningElement {
       value: 'Edit',
       helpText: 'Label to show in the Edit button when Editing with a flow.',
     },
-
     editFlowName: {
       label: 'Flow Name',
       type: FIELD_TYPES.TEXT,
@@ -263,6 +265,35 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       helpText:
         'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event',
+    },
+    pagination: {
+      label: 'Pagination Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the data will be paginated and a control for the pagination will be displayed',
+    },
+    pageSize: {
+      label: 'Page Size',
+      type: FIELD_TYPES.INTEGER,
+      valueType: FIELD_TYPES.STRING,
+      value: 10,
+      helpText: 'Number of records to display per page',
+    },
+    paginationShowOptions: {
+      label: 'Display Navigation Options?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.YES,
+      helpText:
+        'If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers',
+    },
+    paginationAlignment: {
+      label: 'Alignment',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: ALIGNMENT_OPTIONS.CENTER.value,
+      helpText: 'Alignment for the pagination controls',
     },
 
     // internal use
@@ -382,12 +413,26 @@ export default class OdConfigurationEditor extends LightningElement {
     return this._inputVariables;
   }
 
+  @api
+  get elementInfo() {
+    return this._elementInfo;
+  }
+
+  @api
+  get automaticOutputVariables() {
+    return this._automaticOutputVariables;
+  }
+
   get emptyColumns() {
     return !this.inputValues.columns.value;
   }
 
   get emptyMasterDetailColumns() {
     return !this.inputValues.masterDetailConfiguration.value;
+  }
+
+  get paginationAlignmentOptions() {
+    return Object.values(ALIGNMENT_OPTIONS);
   }
 
   get inputType() {
@@ -431,8 +476,45 @@ export default class OdConfigurationEditor extends LightningElement {
             label: lro.label,
             value: lro.name,
           });
+
+          // add collection processors here if any (for Filter elements e.g.)
+          const collectionProcessors = this.builderContext.collectionProcessors.filter(
+            (cp) => cp.collectionReference === lro.name,
+          );
+          if (collectionProcessors.length > 0) {
+            collectionProcessors.forEach((cpo) => {
+              result.push({
+                label: cpo.label,
+                value: cpo.name,
+              });
+            });
+          }
         });
       }
+    }
+
+    // add here the output variables (this supports the data fetcher component e.g.)
+    const automaticVariables = Object.keys(this.automaticOutputVariables).filter(
+      (av) => av !== this.elementInfo.apiName,
+    );
+    if (automaticVariables.length > 0) {
+      // traverse each key and check if there is an output value, collection for same object type
+      automaticVariables.forEach((av) => {
+        const screenComponent = this.automaticOutputVariables[av];
+
+        const outputVariableForObject = screenComponent.filter(
+          (sc) => sc.dataType === 'sobject' && sc.isOutput && sc.maxOccurs > 1 && sc.subtype === this.inputType,
+        );
+
+        if (outputVariableForObject.length > 0) {
+          outputVariableForObject.forEach((ovo) => {
+            result.push({
+              label: `${av} => ${ovo.label || ovo.apiName}`,
+              value: `${av}.${ovo.apiName}`,
+            });
+          });
+        }
+      });
     }
 
     return result;
@@ -496,6 +578,15 @@ export default class OdConfigurationEditor extends LightningElement {
   set inputVariables(variables) {
     this._inputVariables = variables || [];
     this._initializeValues();
+  }
+
+  // Set a local variable with the data that was stored from flow.
+  set elementInfo(info) {
+    this._elementInfo = info || {};
+  }
+
+  set automaticOutputVariables(value) {
+    this._automaticOutputVariables = value || {};
   }
 
   // =================================================================
@@ -563,6 +654,10 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get listenToPlatformEvent() {
     return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
+  }
+
+  get paginationEnabled() {
+    return this.inputValues.pagination.value === YES_NO.YES;
   }
 
   // =================================================================

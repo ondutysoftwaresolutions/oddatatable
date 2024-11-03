@@ -1,5 +1,5 @@
 @IsTest
-public class OD_ConfigurationEditorControllerTest {
+public class OD_DatatableConfigEditorControllerTest {
   @TestSetup
   static void setup() {
     Account acc = new Account(Name = 'Test');
@@ -22,7 +22,7 @@ public class OD_ConfigurationEditorControllerTest {
   static void testGetConfigurationSuccess() {
     Test.startTest();
 
-    OD_ConfigurationEditorController.ConfigurationWrapper result = OD_ConfigurationEditorController.getConfiguration();
+    OD_DatatableConfigEditorController.ConfigurationWrapper result = OD_DatatableConfigEditorController.getConfiguration();
 
     Test.stopTest();
 
@@ -34,7 +34,7 @@ public class OD_ConfigurationEditorControllerTest {
   static void testGetFieldsForObjectSuccess() {
     Test.startTest();
 
-    List<OD_ConfigurationEditorController.FieldWrapper> result = OD_ConfigurationEditorController.getFieldsForObject(
+    List<OD_DatatableConfigEditorController.FieldWrapper> result = OD_DatatableConfigEditorController.getFieldsForObject(
       'Account'
     );
 
@@ -48,7 +48,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      List<OD_ConfigurationEditorController.FieldWrapper> result = OD_ConfigurationEditorController.getFieldsForObject(
+      List<OD_DatatableConfigEditorController.FieldWrapper> result = OD_DatatableConfigEditorController.getFieldsForObject(
         null
       );
     } catch (AuraHandledException e) {
@@ -69,7 +69,7 @@ public class OD_ConfigurationEditorControllerTest {
     Id[] fixedSearchResults = new List<Id>{ con.Id };
     Test.setFixedSearchResults(fixedSearchResults);
 
-    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
+    List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getRecordsForLookup(
       'Contact',
       'test',
       null,
@@ -93,14 +93,12 @@ public class OD_ConfigurationEditorControllerTest {
     Id[] fixedSearchResults = new List<Id>{ con[0].Id, con[1].Id };
     Test.setFixedSearchResults(fixedSearchResults);
 
-    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
+    List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getRecordsForLookup(
       'Contact',
       'test',
       'NAME FIELDS',
       'FirstName',
-      'AccountId = \'' +
-      con[0].AccountId +
-      '\'',
+      'AccountId = \'' + con[0].AccountId + '\'',
       'LastName ASC',
       2
     );
@@ -121,7 +119,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.setFixedSearchResults(fixedSearchResults);
 
     try {
-      List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getRecordsForLookup(
+      List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getRecordsForLookup(
         null,
         't',
         null,
@@ -145,7 +143,7 @@ public class OD_ConfigurationEditorControllerTest {
     Contact con = [SELECT Id, Name FROM Contact WHERE LastName = 'LastName' LIMIT 1];
     Test.startTest();
 
-    OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
+    OD_DatatableConfigEditorController.PicklistOption result = OD_DatatableConfigEditorController.getLookupRecord(
       'Contact',
       con.Id,
       null
@@ -161,7 +159,7 @@ public class OD_ConfigurationEditorControllerTest {
     Contact con = [SELECT Id, FirstName, LastName FROM Contact WHERE LastName = 'LastName' LIMIT 1];
     Test.startTest();
 
-    OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
+    OD_DatatableConfigEditorController.PicklistOption result = OD_DatatableConfigEditorController.getLookupRecord(
       'Contact',
       con.Id,
       'FirstName'
@@ -177,7 +175,7 @@ public class OD_ConfigurationEditorControllerTest {
     Case theCase = [SELECT Id, CaseNumber FROM Case LIMIT 1];
     Test.startTest();
 
-    OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
+    OD_DatatableConfigEditorController.PicklistOption result = OD_DatatableConfigEditorController.getLookupRecord(
       'Case',
       theCase.Id,
       null
@@ -194,7 +192,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      OD_ConfigurationEditorController.PicklistOption result = OD_ConfigurationEditorController.getLookupRecord(
+      OD_DatatableConfigEditorController.PicklistOption result = OD_DatatableConfigEditorController.getLookupRecord(
         'Contact',
         null,
         null
@@ -213,7 +211,7 @@ public class OD_ConfigurationEditorControllerTest {
   static void testGetMasterDetailFieldsForObjectSuccessFound() {
     Test.startTest();
 
-    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+    List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getMasterDetailFieldsForObject(
       'OpportunityLineItem'
     );
 
@@ -226,7 +224,7 @@ public class OD_ConfigurationEditorControllerTest {
   static void testGetMasterDetailFieldsForObjectSuccessNotFound() {
     Test.startTest();
 
-    List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+    List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getMasterDetailFieldsForObject(
       'Account'
     );
 
@@ -240,7 +238,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      List<OD_ConfigurationEditorController.PicklistOption> result = OD_ConfigurationEditorController.getMasterDetailFieldsForObject(
+      List<OD_DatatableConfigEditorController.PicklistOption> result = OD_DatatableConfigEditorController.getMasterDetailFieldsForObject(
         'OpportunityProduct'
       );
     } catch (AuraHandledException e) {
@@ -261,16 +259,12 @@ public class OD_ConfigurationEditorControllerTest {
 
     Test.startTest();
 
-    List<SObject> result = OD_ConfigurationEditorController.saveRecords(
+    List<SObject> result = OD_DatatableConfigEditorController.saveRecords(
       'Contact',
       'FirstName,LastName',
       '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
-      '[{ "Id": "' +
-      contacts[0].Id +
-      '", "LastName": "LastName Updated"}]',
-      '[{ "Id": "' +
-      contacts[1].Id +
-      '"}]'
+      '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
+      '[{ "Id": "' + contacts[1].Id + '"}]'
     );
 
     Test.stopTest();
@@ -291,16 +285,12 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_ConfigurationEditorController.saveRecords(
+      List<SObject> result = OD_DatatableConfigEditorController.saveRecords(
         null,
         'FirstName,LastName',
         '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
-        '[{ "Id": "' +
-        contacts[0].Id +
-        '", "LastName": "LastName Updated"}]',
-        '[{ "Id": "' +
-        contacts[1].Id +
-        '"}]'
+        '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
+        '[{ "Id": "' + contacts[1].Id + '"}]'
       );
     } catch (AuraHandledException e) {
       Assert.isTrue(
@@ -319,7 +309,7 @@ public class OD_ConfigurationEditorControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_ConfigurationEditorController.saveRecords('Contact', null, null, null, null);
+      List<SObject> result = OD_DatatableConfigEditorController.saveRecords('Contact', null, null, null, null);
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('A list of records to add, edit and/or delete are needed to do the save'),

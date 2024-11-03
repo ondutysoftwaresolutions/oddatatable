@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import { EVENTS } from 'c/odDatatableConstants';
+import { EVENTS, HIDDEN_TYPE_OPTIONS } from 'c/odDatatableConstants';
 
 export default class OdDatatableRowButton extends LightningElement {
   @api recordId;
@@ -10,15 +10,26 @@ export default class OdDatatableRowButton extends LightningElement {
   @api fieldName;
   @api isDeleted;
   @api hasChanges;
+  @api config;
+  @api record;
 
   get isIconButton() {
     return this.iconName;
   }
 
-  get cellClasses() {
+  get cellClassesToUse() {
     const disableClass =
       this.name !== EVENTS.DELETE && this.name !== EVENTS.UNDELETE && this.hasChanges ? 'disabled' : 'enabled';
-    return `slds-align--absolute-center ${this.isDeleted ? 'deleted-record' : ''} ${disableClass}`;
+    return `rowButton ${this.config.cellClasses} ${this.isDeleted ? 'deleted-record' : ''} ${disableClass}`;
+  }
+
+  get showButton() {
+    let hidden = this.config.hidden;
+    if (this.config.hidden && this.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value) {
+      hidden = this.record[this.config.hiddenConditionField];
+    }
+
+    return !hidden;
   }
 
   handleClick() {

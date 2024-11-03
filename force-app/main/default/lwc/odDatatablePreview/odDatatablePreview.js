@@ -11,6 +11,7 @@ export default class OdDatatablePreview extends LightningModal {
 
     for (let index = 0; index < 4; index++) {
       const newRecord = { Id: generateRandomNumber() };
+
       JSON.parse(this.configuration.columns.value).forEach((cl) => {
         let value;
         // text
@@ -28,7 +29,7 @@ export default class OdDatatablePreview extends LightningModal {
 
         // date
         if (DATE_FIELDS.includes(cl.typeAttributes.type)) {
-          value = Date.now().toLocaleString();
+          value = new Date().toISOString();
         }
 
         // numeric / currency / percentage

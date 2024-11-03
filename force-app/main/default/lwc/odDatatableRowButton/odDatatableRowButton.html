@@ -1,17 +1,25 @@
 <template>
-  <div class={cellClasses}>
-    <template lwc:if={isIconButton}>
-      <lightning-button-icon
-        icon-name={iconName}
-        variant="bare"
-        class="icon-inside-table-row"
-        onclick={handleClick}
-        tooltip={tooltip}
-      >
-      </lightning-button-icon>
-    </template>
-    <template lwc:else>
-      <lightning-button class="btn-inside-table-row" onclick={handleClick} label={label}> </lightning-button>
-    </template>
-  </div>
+  <template lwc:if={showButton}>
+    <div class={cellClassesToUse}>
+      <template lwc:if={isIconButton}>
+        <lightning-button-icon
+          icon-name={iconName}
+          variant="bare"
+          class="icon-inside-table-row"
+          onclick={handleClick}
+          tooltip={tooltip}
+        >
+        </lightning-button-icon>
+      </template>
+      <template lwc:else>
+        <lightning-button
+          class="btn-inside-table-row"
+          onclick={handleClick}
+          label={label}
+          variant={config.buttonVariant}
+        >
+        </lightning-button>
+      </template>
+    </div>
+  </template>
 </template>

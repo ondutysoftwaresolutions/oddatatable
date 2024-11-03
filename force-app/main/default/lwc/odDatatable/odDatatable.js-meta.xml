@@ -94,6 +94,20 @@
             <property name="platformEventMatchingId" label="Refresh Matching Id" type="String"
                 role="inputOnly"
                 description="Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event" />
+            <property name="pagination" label="Pagination Enabled?" type="String" role="inputOnly"
+                default="Yes"
+                description="If enabled, the data will be paginated and a control for the pagination will be displayed" />
+            <property name="pageSize" label="Page Size" type="String" role="inputOnly"
+                default="10"
+                description="Number of records to display per page" />
+            <property name="paginationAlignment" label="Pagination Alignment" type="String"
+                role="inputOnly"
+                default="center"
+                description="Alignment for the pagination controls" />
+            <property name="paginationShowOptions" label="Display Navigation Options?" type="String"
+                role="inputOnly"
+                default="Yes"
+                description="If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers" />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

@@ -1,25 +1,30 @@
 <template>
-  <div class={cellClasses}>
-    <c-od-datatable-input-generic
-      type={type}
-      editable={isEditable}
-      field-name={fieldName}
-      value={value}
-      options={config.options}
-      default-value={defaultValue}
-      onupdatefield={handleUpdateField}
-      inside-datatable
-      current-record-id={recordId}
-      required={required}
-      parent-object-name={config.parentObjectName}
-      lookup-configuration={lookupConfig}
-      precision={config.precision}
-      is-html={config.isHtml}
-      scale={config.scale}
-      max-length={config.maxLength}
-      is-multi={config.isMulti}
-      after-validate={config.afterValidate}
-    >
-    </c-od-datatable-input-generic>
-  </div>
+  <template lwc:if={showField}>
+    <div class={cellClasses}>
+      <c-od-datatable-input-generic
+        type={type}
+        editable={isEditable}
+        field-name={fieldName}
+        value={value}
+        options={config.options}
+        default-value={defaultValue}
+        onupdatefield={handleUpdateField}
+        inside-datatable
+        current-record-id={recordId}
+        required={required}
+        parent-object-name={config.parentObjectName}
+        lookup-configuration={lookupConfig}
+        precision={config.precision}
+        is-html={config.isHtml}
+        scale={config.scale}
+        max-length={config.maxLength}
+        is-multi={config.isMulti}
+        after-validate={config.afterValidate}
+        extra-container-classes={config.extraContainerClasses}
+        toggle-value-active={config.valueActive}
+        toggle-value-inactive={config.valueInactive}
+      >
+      </c-od-datatable-input-generic>
+    </div>
+  </template>
 </template>

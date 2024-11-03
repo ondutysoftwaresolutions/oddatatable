@@ -49,6 +49,11 @@
   align-items: center;
 }
 
+.rowButton.deleted-record {
+  justify-content: center;
+  background: rgb(229 229 229 / 30%);
+}
+
 .alignItemsCenter {
   align-items: center;
 }

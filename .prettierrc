@@ -4,6 +4,7 @@
   "printWidth": 120,
   "apexInsertFinalNewline": false,
   "trailingComma": "all",
+  "plugins": ["prettier-plugin-apex"],
   "overrides": [
     {
       "files": "**/lwc/**/*.html",

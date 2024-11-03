@@ -142,3 +142,16 @@ export function getPrecision(field) {
 export function generateRandomNumber(stringLength = 36, sliceStart = 2, sliceEnd = 12) {
   return Math.random().toString(stringLength).slice(sliceStart, sliceEnd);
 }
+
+export function getFieldsFromString(string) {
+  return string.match(/(?<={{)(.*?)(?=}})/g);
+}
+
+export function doReplaceMergeField(value, fieldToReplace, record) {
+  const regex = new RegExp('{{' + fieldToReplace + '}}', 'g');
+
+  // get the field name
+  const fieldName = fieldToReplace.replace(`Record.`, '');
+
+  return value.replace(regex, record[fieldName]);
+}

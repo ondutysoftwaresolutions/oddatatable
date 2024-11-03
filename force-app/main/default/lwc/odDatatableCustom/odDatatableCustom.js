@@ -24,12 +24,23 @@ export default class ODCustomDatatable extends LightningDatatable {
     rowButtonType: {
       template: rowButtonTemplate,
       standardCellLayout: false,
-      typeAttributes: ['recordId', 'iconName', 'tooltip', 'name', 'label', 'isDeleted', 'fieldName', 'hasChanges'],
+      typeAttributes: [
+        'recordId',
+        'record',
+        'iconName',
+        'tooltip',
+        'name',
+        'label',
+        'isDeleted',
+        'fieldName',
+        'hasChanges',
+        'config',
+      ],
     },
     rowTooltipIconType: {
       template: rowTooltipIconTemplate,
       standardCellLayout: false,
-      typeAttributes: ['value', 'config'],
+      typeAttributes: ['value', 'config', 'record'],
     },
   };
 }

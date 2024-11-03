@@ -49,7 +49,16 @@ export const CUSTOM_TYPES = {
   AUTOLAUNCHED_FLOW: 'AutoLaunchedFlow',
 };
 
-export const BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW, CUSTOM_TYPES.AUTOLAUNCHED_FLOW];
+export const CUSTOM_BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW, CUSTOM_TYPES.AUTOLAUNCHED_FLOW];
+export const CUSTOM_FIELD_TYPES = [
+  FIELD_TYPES.CHECKBOX,
+  FIELD_TYPES.CURRENCY,
+  FIELD_TYPES.DATE,
+  FIELD_TYPES.LONG,
+  FIELD_TYPES.PERCENTAGE,
+  FIELD_TYPES.TEXT,
+  FIELD_TYPES.TOGGLE,
+];
 
 export const FORMATTED_TYPE_TO_SHOW = {
   address: {
@@ -140,6 +149,47 @@ export const FORMATTED_TYPE_TO_SHOW = {
         label: 'Autolaunched Flow',
         flow: true,
       },
+      {
+        value: FIELD_TYPES.CHECKBOX,
+        label: 'Checkbox Field',
+        flow: false,
+        extraContainerClasses: 'slds-align--absolute-center',
+      },
+      {
+        value: FIELD_TYPES.CURRENCY,
+        label: 'Currency Field',
+        flow: false,
+        scale: 2,
+      },
+      {
+        value: FIELD_TYPES.DATE,
+        label: 'Date Field',
+        flow: false,
+      },
+      {
+        value: FIELD_TYPES.LONG,
+        label: 'Number Field',
+        flow: false,
+      },
+      {
+        value: FIELD_TYPES.PERCENTAGE,
+        label: 'Percentage Field',
+        flow: false,
+        scale: 2,
+      },
+      {
+        value: FIELD_TYPES.TEXT,
+        label: 'Text Field',
+        flow: false,
+      },
+      {
+        value: FIELD_TYPES.TOGGLE,
+        label: 'Toggle Field',
+        flow: false,
+        valueActive: ' ',
+        valueInactive: ' ',
+        extraContainerClasses: 'slds-align--absolute-center',
+      },
     ],
   },
 };
@@ -212,8 +262,17 @@ export const SHOW_AS_OPTIONS = [
     column: true,
     default: true,
     single: true,
-    showInField: true,
+    showInField: false,
     showInCustom: true,
+  },
+  {
+    label: 'Field Value',
+    value: 'column',
+    column: true,
+    default: true,
+    single: true,
+    showInField: true,
+    showInCustom: false,
   },
   {
     label: BULK,
@@ -224,6 +283,7 @@ export const SHOW_AS_OPTIONS = [
   {
     label: BOTH,
     value: BOTH.toLowerCase(),
+    column: true,
     multiple: true,
     single: true,
     showInCustom: true,
@@ -261,4 +321,67 @@ export const ICON_VARIANTS = [
   },
 ];
 
+export const BUTTON_VARIANTS = [
+  {
+    label: 'Base',
+    value: 'base',
+  },
+  {
+    label: 'Brand',
+    value: 'brand',
+  },
+  {
+    label: 'Brand Outline',
+    value: 'brand-outline',
+  },
+  {
+    label: 'Destructive',
+    value: 'destructive',
+  },
+  {
+    label: 'Destructive Text',
+    value: 'destructive-text',
+  },
+  {
+    label: 'Inverse',
+    value: 'inverse',
+  },
+  {
+    label: 'Neutral',
+    value: 'neutral',
+  },
+  {
+    label: 'Success',
+    value: 'success',
+  },
+];
+
+export const ALIGNMENT_OPTIONS = {
+  LEFT: {
+    label: 'Left',
+    value: 'left',
+  },
+  CENTER: {
+    label: 'Center',
+    value: 'center',
+  },
+  RIGHT: {
+    label: 'Right',
+    value: 'right',
+  },
+};
+
+export const HIDDEN_TYPE_OPTIONS = {
+  COLUMN: {
+    label: 'Entire Column',
+    value: 'column',
+  },
+  RECORD: {
+    label: 'Record Based',
+    value: 'record',
+  },
+};
+
 export const PLATFORM_EVENT_CHANNEL_NAME = '/event/OD_Refresh_Datatable__e';
+
+export const INPUT_GENERIC_TYPE = 'inputGeneric';

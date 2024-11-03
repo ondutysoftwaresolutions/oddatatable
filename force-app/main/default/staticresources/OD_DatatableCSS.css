@@ -13,7 +13,28 @@
   box-shadow: none !important;
 }
 
-.od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .od-datatable .slds-form-element__control .slds-checkbox {
+.od-datatable tbody tr {
+  height: 42px;
+}
+
+.od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .slds-form-element__control .slds-checkbox {
   display: inline-block;
+}
+
+.sharedColumn .slds-form-element__control .slds-checkbox {
   margin-right: 2rem;
+}
+
+.configurator  lightning-datepicker .slds-form-element__help,
+.od-datatable lightning-datepicker .slds-form-element__help {
+  display: none;
+}
+
+.od-datatable .slds-rich-text-editor__output img {
+  margin-bottom: 0;
+}
+
+.od-datatable .rowButton .slds-button {
+  box-shadow: none;
+  outline: none;
 }
