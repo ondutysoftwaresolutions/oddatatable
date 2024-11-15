@@ -562,6 +562,44 @@
       </template>
     </fieldset>
 
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">More</h1>
+    </div>
+
+    <!-- Configuration Copy / Paste -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Copy</legend>
+      <lightning-button
+        label="Copy Configuration JSON"
+        icon-name="utility:copy"
+        onclick={handleCopyConfigurationToClipboard}
+        variant="brand"
+      >
+      </lightning-button>
+    </fieldset>
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Paste</legend>
+      <c-od-datatable-input-generic
+        field-name="configurationJSON"
+        type={fieldTypes.TEXTAREA}
+        editable
+        class="slds-size--1-of-1"
+        value={configurationJSON}
+        label="Configuration JSON"
+        max-length="999999999"
+        onupdatefield={handleConfigurationChange}
+        help-text="Paste a fully configuration JSON from another Datatable (Using the Copy Configuration JSON button)"
+      >
+      </c-od-datatable-input-generic>
+      <lightning-button
+        label="Process Configuration JSON"
+        icon-name="utility:paste"
+        onclick={handleProcessConfigurationToClipboard}
+        variant="brand"
+      >
+      </lightning-button>
+    </fieldset>
+
     <!-- Configuration Columns Popup -->
     <template lwc:if={showConfigureColumns}>
       <c-od-datatable-configuration-columns

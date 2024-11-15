@@ -264,7 +264,7 @@ export default class OdConfigurationColumns extends LightningElement {
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
           showAs: col.typeAttributes.config.showAs,
-          column: col.typeAttributes.config.column,
+          column: col.typeAttributes.config.column || col.typeAttributes.config.showAsSingle,
           icon: col.typeAttributes.config.icon,
           showAsSingle: col.typeAttributes.config.showAsSingle,
           showInBottomNav: col.typeAttributes.config.showInBottomNav,
@@ -452,7 +452,7 @@ export default class OdConfigurationColumns extends LightningElement {
     }
 
     // if it's a hidden field
-    if (this.selectedFields[fieldIndexSelected].hidden) {
+    if (objectToUpdate.hidden) {
       // check the hidden type
       objectToUpdate.hiddenIsRecordBased =
         (objectToUpdate.hiddenType || this.selectedFields[fieldIndexSelected].hiddenType) ===
@@ -562,7 +562,7 @@ export default class OdConfigurationColumns extends LightningElement {
         if (CUSTOM_BUTTON_TYPES.includes(field.customType)) {
           fieldToAdd = {
             ...fieldToAdd,
-            label: '',
+            label: field.showInBottomNav ? field.tableLabel : '',
             type: ROW_BUTTON_TYPE,
             typeAttributes: {
               ...fieldToAdd.typeAttributes,

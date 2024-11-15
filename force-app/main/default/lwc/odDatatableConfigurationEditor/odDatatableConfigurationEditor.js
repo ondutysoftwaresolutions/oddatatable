@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
+import Toast from 'lightning/toast';
 import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
 import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
@@ -18,6 +19,7 @@ export default class OdConfigurationEditor extends LightningElement {
   fieldTypes = FIELD_TYPES;
   yesNo = YES_NO;
   inlineFlow = INLINE_FLOW;
+  configurationJSON;
 
   // state
   isLoading = true;
@@ -911,5 +913,66 @@ export default class OdConfigurationEditor extends LightningElement {
       size: 'medium',
       configuration: this.inputValues,
     });
+  }
+
+  // configuration copy and paste
+  handleConfigurationChange(evt) {
+    this.configurationJSON = evt.detail.value;
+  }
+
+  handleCopyConfigurationToClipboard() {
+    const valueToCopy = JSON.stringify(this.inputValues);
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(valueToCopy);
+    } else {
+      const input = document.createElement('textarea');
+      input.innerHTML = valueToCopy;
+      document.body.appendChild(input);
+      input.select();
+
+      // deprecated but still a good fallback because it is supported in most of the browsers
+      document.execCommand('copy');
+
+      document.body.removeChild(input);
+    }
+
+    // display a success toast
+    Toast.show(
+      {
+        label: 'Copied!',
+        message: 'The configuration was copied to your clipboard',
+        mode: 'dismissible',
+        variant: 'success',
+      },
+      this,
+    );
+  }
+
+  handleProcessConfigurationToClipboard() {
+    if (!this.configurationJSON) {
+      Toast.show(
+        {
+          label: 'Field Required!',
+          message: 'Please paste the JSON in the above field to be able to process it',
+          mode: 'dismissible',
+          variant: 'error',
+        },
+        this,
+      );
+    } else {
+      this.inputValues = JSON.parse(this.configurationJSON);
+
+      // display a success toast
+      Toast.show(
+        {
+          label: 'Processed!',
+          message: 'The configuration was process successfully',
+          mode: 'dismissible',
+          variant: 'success',
+        },
+        this,
+      );
+    }
   }
 }

@@ -8,7 +8,6 @@ import saveRecords from '@salesforce/apex/OD_DatatableConfigEditorController.sav
 import getRecords from '@salesforce/apex/OD_DatatableConfigEditorController.getRecords';
 import {
   YES_NO,
-  ALIGNMENT_OPTIONS,
   EMPTY_STRING,
   EVENTS,
   CUSTOM_FIELD_TYPES,
@@ -772,6 +771,7 @@ export default class ODDatatable extends LightningElement {
               ...ROW_BUTTON_CONFIGURATION.EDIT,
               _editLabel: this.editLabel,
               ...resultModal.flowOutput,
+              _originalRecord: resultModal.flowOutput,
               _id: resultModal.flowOutput.Id,
             };
 
