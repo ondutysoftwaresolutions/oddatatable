@@ -7,7 +7,7 @@ import {
   sortArrayByProperty,
   getFieldType,
   getPrecision,
-  generateRandomNumber,
+  generateRandomString,
 } from 'c/odDatatableUtils';
 import {
   ALIGNMENT_OPTIONS,
@@ -242,19 +242,13 @@ export default class OdConfigurationColumns extends LightningElement {
           ? typeSpec.find((ts) => ts.value === col.typeAttributes.config.customType)
           : {};
 
-        const isCustomButton = CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType);
-
         result.push({
           ...selectedCustom,
           ...field,
           label: col.typeAttributes.config.isCustom ? `Custom: ${col.tableLabel}` : col.tableLabel || field.label,
           type: type,
           tableLabel: col.tableLabel,
-          classesType: selectedCustom.flow
-            ? 'slds-size--1-of-1'
-            : selectedCustom.sendToCaller || !isCustomButton
-              ? 'slds-size--10-of-12'
-              : 'slds-size--1-of-1',
+          classesType: selectedCustom.flow ? 'slds-size--1-of-1' : 'slds-size--10-of-12',
           typeSpec: typeSpec,
           precision: getPrecision(field),
           isMulti: this._isMulti(type),
@@ -278,7 +272,7 @@ export default class OdConfigurationColumns extends LightningElement {
           isCustom: col.typeAttributes.config.isCustom,
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
-          isButton: isCustomButton,
+          isButton: CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType),
           showAs: col.typeAttributes.config.showAs,
           column: col.typeAttributes.config.column || col.typeAttributes.config.showAsSingle,
           icon: col.typeAttributes.config.icon,
@@ -727,7 +721,7 @@ export default class OdConfigurationColumns extends LightningElement {
     fieldsPlusCustom.push({
       label: 'Custom Column',
       type: FIELD_TYPES.CUSTOM,
-      value: generateRandomNumber(36, 2, 10),
+      value: generateRandomString(36, 2, 10),
       isEditable: false,
       required: false,
       canEdit: false,

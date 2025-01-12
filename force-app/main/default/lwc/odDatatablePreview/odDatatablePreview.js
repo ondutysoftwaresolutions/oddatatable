@@ -1,7 +1,7 @@
 import { api } from 'lwc';
 import LightningModal from 'lightning/modal';
 import { DATE_FIELDS, NUMERIC_FIELDS, TEXT_FIELDS, FIELD_TYPES } from 'c/odDatatableConstants';
-import { generateRandomNumber } from 'c/odDatatableUtils';
+import { generateRandomString } from 'c/odDatatableUtils';
 
 export default class OdDatatablePreview extends LightningModal {
   @api configuration;
@@ -10,7 +10,7 @@ export default class OdDatatablePreview extends LightningModal {
     const result = [];
 
     for (let index = 0; index < 4; index++) {
-      const newRecord = { Id: generateRandomNumber() };
+      const newRecord = { Id: generateRandomString() };
 
       JSON.parse(this.configuration.columns.value).forEach((cl) => {
         let value;

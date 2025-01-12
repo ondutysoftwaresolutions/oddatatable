@@ -17,7 +17,7 @@ import {
   PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
 } from 'c/odDatatableConstants';
-import { reduceErrors, getFieldType, getPrecision, generateRandomNumber } from 'c/odDatatableUtils';
+import { reduceErrors, getFieldType, getPrecision, generateRandomString } from 'c/odDatatableUtils';
 import OdDatatableFlow from 'c/odDatatableFlow';
 
 export default class ODDatatable extends LightningElement {
@@ -278,12 +278,11 @@ export default class ODDatatable extends LightningElement {
     return this.inlineSave === YES_NO.YES;
   }
 
-  get _somethingEdited() {
-    return this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0;
-  }
-
   get hasChanges() {
-    return this._somethingEdited && this._tableData.filter((rec) => rec._hasChanges).length > 0;
+    return (
+      (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
+      this._tableData.filter((rec) => rec._hasChanges).length > 0
+    );
   }
 
   get standardButtonsDisabled() {
@@ -571,6 +570,8 @@ export default class ODDatatable extends LightningElement {
         hideDefaultActions: true,
         typeAttributes: {
           recordId: { fieldName: '_id' },
+          iconName: { fieldName: '_deleteIcon' },
+          tooltip: { fieldName: '_deleteTooltip' },
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
@@ -678,7 +679,7 @@ export default class ODDatatable extends LightningElement {
       .filter((col) => col.type !== ROW_BUTTON_TYPE)
       .forEach((col) => {
         newRecord.isNew = true;
-        newRecord._id = generateRandomNumber();
+        newRecord._id = generateRandomString();
         newRecord[col.fieldName] = col.typeAttributes.config.defaultValue || '';
       });
 
@@ -950,7 +951,7 @@ export default class ODDatatable extends LightningElement {
 
     // update all the rows with the _hasChanges
     this._tableData.forEach((rec) => {
-      rec._hasChanges = this._somethingEdited;
+      rec._hasChanges = true;
     });
 
     // dispatch the outputs to parent in case someone is listening to it

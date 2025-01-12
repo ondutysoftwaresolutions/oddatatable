@@ -5,7 +5,7 @@ import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
 import { ALIGNMENT_OPTIONS, FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
-import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
+import { reduceErrors, generateRandomString } from 'c/odDatatableUtils';
 import OdDatatablePreview from 'c/odDatatablePreview';
 
 export default class OdConfigurationEditor extends LightningElement {
@@ -302,7 +302,7 @@ export default class OdConfigurationEditor extends LightningElement {
     uniqueTableName: {
       label: 'Unique Table Name',
       type: FIELD_TYPES.TEXT,
-      value: generateRandomNumber(36, 2, 10),
+      value: generateRandomString(36, 2, 10),
       valueType: FIELD_TYPES.STRING,
     },
     objectName: {
