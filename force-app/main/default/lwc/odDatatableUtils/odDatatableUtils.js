@@ -155,3 +155,13 @@ export function doReplaceMergeField(value, fieldToReplace, record) {
 
   return value.replace(regex, record[fieldName]);
 }
+
+export function formatDateForInput(date) {
+  return (
+    date.getFullYear() +
+    '-' +
+    (date.getMonth() + 1).toString().padStart(2, '0') +
+    '-' +
+    date.getDate().toString().padStart(2, '0')
+  );
+}

@@ -16,6 +16,7 @@ export const FIELD_TYPES = {
   PHONE: 'phone',
   RADIO_BUTTON_TYPE: 'radioButtonType',
   RICH_TEXTAREA: 'rich_textarea',
+  SEARCH: 'search',
   SELECT: 'picklist',
   STRING: 'string',
   TEXT: 'text',
@@ -38,6 +39,10 @@ export const NUMERIC_FIELDS = [FIELD_TYPES.DOUBLE, FIELD_TYPES.INTEGER, FIELD_TY
 
 export const DATE_FIELDS = [FIELD_TYPES.DATE, FIELD_TYPES.DATETIME];
 
+export const FORMATTED_FIELDS = [...DATE_FIELDS, FIELD_TYPES.CURRENCY, FIELD_TYPES.PERCENTAGE];
+
+export const TEXTAREA_FIELDS = [FIELD_TYPES.LONG_TEXTAREA, FIELD_TYPES.RICH_TEXTAREA, FIELD_TYPES.TEXTAREA];
+
 export const LOCAL_SIDE_SEARCH = [FIELD_TYPES.SELECT, FIELD_TYPES.MULTISELECT];
 
 export const SERVER_SIDE_SEARCH = [FIELD_TYPES.LOOKUP];
@@ -47,9 +52,15 @@ export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SI
 export const CUSTOM_TYPES = {
   SCREEN_FLOW: 'Flow',
   AUTOLAUNCHED_FLOW: 'AutoLaunchedFlow',
+  SEND_TO_CALLER: 'sendToCaller',
 };
 
-export const CUSTOM_BUTTON_TYPES = [CUSTOM_TYPES.SCREEN_FLOW, CUSTOM_TYPES.AUTOLAUNCHED_FLOW];
+export const CUSTOM_BUTTON_TYPES = [
+  CUSTOM_TYPES.SCREEN_FLOW,
+  CUSTOM_TYPES.AUTOLAUNCHED_FLOW,
+  CUSTOM_TYPES.SEND_TO_CALLER,
+];
+
 export const CUSTOM_FIELD_TYPES = [
   FIELD_TYPES.CHECKBOX,
   FIELD_TYPES.CURRENCY,
@@ -190,6 +201,12 @@ export const FORMATTED_TYPE_TO_SHOW = {
         valueInactive: ' ',
         extraContainerClasses: 'slds-align--absolute-center',
       },
+      {
+        value: CUSTOM_TYPES.SEND_TO_CALLER,
+        label: 'Send To Caller',
+        flow: false,
+        sendToCaller: true,
+      },
     ],
   },
 };
@@ -210,6 +227,7 @@ export const EVENTS = {
   ADD: 'add',
   CHANGE: 'change',
   OPEN_FLOW: 'openFlow',
+  SEND_TO_CALLER: 'sendToCaller',
   DELETE: 'delete',
   UNDELETE: 'undelete',
 };
@@ -217,6 +235,9 @@ export const EVENTS = {
 export const ROW_BUTTON_TYPE = 'rowButtonType';
 
 export const ROW_BUTTON_CONFIGURATION = {
+  SEND_TO_CALLER: {
+    action: EVENTS.SEND_TO_CALLER,
+  },
   OPEN_FLOW: {
     action: EVENTS.OPEN_FLOW,
   },

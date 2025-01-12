@@ -111,6 +111,7 @@ public without sharing class OD_DatatableConfigEditorController {
         newField.required = !fieldResult.isNillable();
         newField.canBeUsedInWhere = fieldResult.isFilterable();
         newField.isMasterDetail = masterDetailFields.contains(fieldName);
+        newField.helpText = fieldResult.getInlineHelpText();
 
         // add the reference to if it's a lookup
         if (fieldResult.getReferenceTo().size() == 1) {
@@ -543,6 +544,9 @@ public without sharing class OD_DatatableConfigEditorController {
 
     @AuraEnabled
     public List<PicklistOption> options;
+
+    @AuraEnabled
+    public String helpText;
 
     public FieldWrapper() {
       this.options = new List<PicklistOption>();

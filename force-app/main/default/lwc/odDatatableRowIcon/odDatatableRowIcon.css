@@ -1,1 +1,30 @@
 @import 'c/odDatatableCSSLibrary';
+
+.iconImage {
+  height: 2rem;
+  width: 3rem;
+  outline: none;
+}
+
+.iconTooltip {
+  top: 0;
+  width: max-content;
+}
+
+.iconTooltip.top {
+  top: -3rem;
+}
+
+.iconTooltip.right {
+  margin-left: 1rem;
+}
+
+.iconTooltip.left {
+  right: 0;
+  margin-right: 4rem;
+}
+
+.iconTooltip .slds-popover__body {
+  min-height: 3rem;
+  min-width: 4rem;
+}

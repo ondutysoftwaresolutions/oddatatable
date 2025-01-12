@@ -30,6 +30,7 @@ input::-webkit-calendar-picker-indicator {
 
 .icon-button {
   pointer-events: all !important;
+  margin-top: -0.55rem;
 }
 
 .no-option:hover {

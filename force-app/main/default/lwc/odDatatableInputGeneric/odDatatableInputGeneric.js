@@ -1,4 +1,6 @@
 import { LightningElement, api } from 'lwc';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import CURRENCY_SYMBOL from '@salesforce/i18n/number.currencySymbol';
 import DATE_FORMAT from '@salesforce/i18n/dateTime.shortDateFormat';
 import CURRENCY_CODE from '@salesforce/i18n/currency';
@@ -38,17 +40,56 @@ export default class ODInputGeneric extends LightningElement {
   @api toggleLabel;
   @api insideDatatable = false;
   @api maxLength = 255;
+  @api maxNumber;
+  @api minNumber = 0;
   @api isHtml = false;
   @api scale = 2;
   @api precision = 18;
   @api afterValidate = false;
   @api currentRecordId;
+  @api dropdownOptionClasses;
+  @api minDate = '1924-01-01';
+  @api maxDate = '2124-12-31';
+  @api isFirstRecord;
+  @api isLastRecord;
+  @api isFirstColumn;
+  @api isLastColumn;
+  @api richTextFormats = [
+    'font',
+    'size',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'list',
+    'indent',
+    'align',
+    'link',
+    'image',
+    'clean',
+    'table',
+    'header',
+    'color',
+    'background',
+    'code',
+    'code-block',
+    'script',
+    'blockquote',
+    'direction',
+  ];
+  @api dropdownTopPositionShift = 0;
 
   currencyCode = CURRENCY_CODE;
-
   lookupSelectedLabel;
+
   _insideTableOpen = false;
   _alreadyRendered = false;
+
+  connectedCallback() {
+    if (!this.insideDatatable) {
+      Promise.all([loadStyle(this, `${OD_DatatableResource}/css/main.css`)]);
+    }
+  }
 
   renderedCallback() {
     if (!this._alreadyRendered && this.afterValidate) {
@@ -91,6 +132,10 @@ export default class ODInputGeneric extends LightningElement {
     return this.toggleLabel ? 'label-stacked' : 'label-hidden';
   }
 
+  get labelToggle() {
+    return this.toggleLabel || ' ';
+  }
+
   get theValue() {
     if (!isEmpty(this.value)) {
       if (this.lookupSelectedLabel && this.isDisabled) {
@@ -115,11 +160,6 @@ export default class ODInputGeneric extends LightningElement {
 
           return this.value.replace('alt', `${title} alt`);
         }
-      }
-
-      // if it's a percentage field, divide by 100
-      if (this.isPercentage && this.value) {
-        return this.value / 100;
       }
 
       return this.value;
@@ -212,7 +252,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get isRichTextArea() {
-    return this.theType === FIELD_TYPES.TEXTAREA && this.isHtml;
+    return (this.theType === FIELD_TYPES.TEXTAREA && this.isHtml) || this.theType === FIELD_TYPES.RICH_TEXTAREA;
   }
 
   get isRadioButtonType() {
@@ -243,7 +283,11 @@ export default class ODInputGeneric extends LightningElement {
     return 0;
   }
 
-  get maxNumber() {
+  get theMaxNumber() {
+    if (this.maxNumber) {
+      return this.maxNumber;
+    }
+
     const integerPart = Math.pow(10, this.precision) - 1;
 
     if (this.scale > 0) {
@@ -290,11 +334,22 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get checkboxClasses() {
-    return `slds-p-around--xx-small slds-size--1-of-1 slds-align-content-center ${this.extraCheckboxClasses}`;
+    return `slds-p-around--xx-small slds-size--1-of-1 slds-align-content-center checkbox editable ${this.extraCheckboxClasses}`;
   }
 
   get containerClasses() {
-    return `slds-is-relative container ${this.extraContainerClasses || ''}`;
+    const isFormControl =
+      this.extraContainerClasses && this.extraContainerClasses.includes('slds-form-element__control');
+
+    return `slds-is-relative errorTooltip ${isFormControl ? '' : 'container'} ${this.extraContainerClasses || ''} ${
+      this.isFirstColumn ? 'firstColumn' : ''
+    } ${this.isLastColumn ? 'lastColumn' : ''} ${this.isFirstRecord ? 'firstRecord' : ''} ${
+      this.isLastRecord ? 'lastRecord' : ''
+    }`;
+  }
+
+  get richTextAreaValid() {
+    return this.required && this.theValue;
   }
 
   // =======================================================================================================================================================================================================================================
@@ -344,6 +399,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   handleChangeInput(event) {
+    event.target.reportValidity();
     this._doUpdateField(event.target.name, event.target.value, event.target.checkValidity());
   }
 
@@ -351,16 +407,25 @@ export default class ODInputGeneric extends LightningElement {
     this._doUpdateField(event.target.name, event.detail.checked ? YES_NO.YES : YES_NO.NO);
   }
 
+  handleChangeInputRichTextarea(event) {
+    const valid = (this.required && event.target.value) || !this.required;
+
+    this._doUpdateField(event.target.dataset.name, event.target.value, valid);
+  }
+
   handleChangeInputTextarea(event) {
+    event.target.reportValidity();
     this._doUpdateField(event.target.dataset.name, event.target.value, event.target.checkValidity());
   }
 
   handleChangeNumber(event) {
+    event.target.reportValidity();
     const valueToSend = this.decimalsFormat > 0 ? parseFloat(event.target.value) : parseInt(event.target.value, 10);
     this._doUpdateField(event.target.name, valueToSend, event.target.checkValidity());
   }
 
   handleChangeDecimal(event) {
+    event.target.reportValidity();
     this._doUpdateField(event.target.name, parseFloat(event.target.value), event.target.checkValidity());
   }
 
@@ -374,5 +439,10 @@ export default class ODInputGeneric extends LightningElement {
 
   handleChangeLookupSelectedLabel(event) {
     this.lookupSelectedLabel = event.detail.label;
+  }
+
+  @api
+  handleResetField(fieldSelector) {
+    this.template.querySelector(fieldSelector).value = '';
   }
 }

@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import Toast from 'lightning/toast';
 import {
   getPopupHeight,
   getBodyPopupClasses,
@@ -242,6 +243,7 @@ export default class OdConfigurationColumns extends LightningElement {
           label: col.typeAttributes.config.isCustom ? `Custom: ${col.tableLabel}` : col.tableLabel || field.label,
           type: type,
           tableLabel: col.tableLabel,
+          classesType: selectedCustom.flow ? 'slds-size--1-of-1' : 'slds-size--10-of-12',
           typeSpec: typeSpec,
           precision: getPrecision(field),
           isMulti: this._isMulti(type),
@@ -263,6 +265,7 @@ export default class OdConfigurationColumns extends LightningElement {
           isCustom: col.typeAttributes.config.isCustom,
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
+          isButton: CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType),
           showAs: col.typeAttributes.config.showAs,
           column: col.typeAttributes.config.column || col.typeAttributes.config.showAsSingle,
           icon: col.typeAttributes.config.icon,
@@ -449,10 +452,16 @@ export default class OdConfigurationColumns extends LightningElement {
       } else {
         objectToUpdate.classesType = 'slds-size--10-of-12';
       }
+
+      // if it's a button
+      objectToUpdate.isButton = CUSTOM_BUTTON_TYPES.includes(this.selectedFields[fieldIndexSelected].customType);
     }
 
     // if it's a hidden field
-    if (objectToUpdate.hidden) {
+    if (
+      (objectToUpdate.hidden && fieldName === 'hidden') ||
+      (fieldName !== 'hidden' && this.selectedFields[fieldIndexSelected].hidden)
+    ) {
       // check the hidden type
       objectToUpdate.hiddenIsRecordBased =
         (objectToUpdate.hiddenType || this.selectedFields[fieldIndexSelected].hiddenType) ===
@@ -481,7 +490,7 @@ export default class OdConfigurationColumns extends LightningElement {
     const result = [];
 
     // common properties
-    this.fieldsToDisplayTable.forEach((field) => {
+    this.fieldsToDisplayTable.forEach((field, index, array) => {
       let fieldToAdd = {
         label: `${field.required && field.isEditable ? '* ' : ''}${field.tableLabel}`,
         tableLabel: field.tableLabel,
@@ -542,6 +551,12 @@ export default class OdConfigurationColumns extends LightningElement {
           fieldToAdd.type = 'rowTooltipIconType';
           fieldToAdd.typeAttributes.config.iconName = field.iconName;
           fieldToAdd.typeAttributes.config.iconVariant = field.iconVariant;
+          fieldToAdd.typeAttributes.config.label = fieldToAdd.label;
+
+          // if it's not an slds icon, add a fixed initialWidth if empty
+          if (!field.iconName.includes(':') && !field.initialWidth) {
+            field.initialWidth = 60;
+          }
         }
       } else {
         // custom columns
@@ -566,12 +581,14 @@ export default class OdConfigurationColumns extends LightningElement {
             type: ROW_BUTTON_TYPE,
             typeAttributes: {
               ...fieldToAdd.typeAttributes,
-              name: ROW_BUTTON_CONFIGURATION.OPEN_FLOW.action,
+              name: field.flow
+                ? ROW_BUTTON_CONFIGURATION.OPEN_FLOW.action
+                : ROW_BUTTON_CONFIGURATION.SEND_TO_CALLER.action,
               config: {
                 ...fieldToAdd.typeAttributes.config,
-                flowName: field.flowName,
-                flowInputVariables: field.flowInputVariables,
-                flowNavigateNext: field.flowNavigateNext,
+                flowName: field.flow ? field.flowName : undefined,
+                flowInputVariables: field.flow ? field.flowInputVariables : undefined,
+                flowNavigateNext: field.flow ? field.flowNavigateNext : undefined,
                 waitForPlatformEvent: field.waitForPlatformEvent,
                 showAsSingle: field.showAsSingle,
                 showAsMultiple: field.showAsMultiple,
@@ -614,6 +631,13 @@ export default class OdConfigurationColumns extends LightningElement {
       // add the initial width
       if (field.initialWidth) {
         fieldToAdd.initialWidth = field.initialWidth;
+      }
+
+      // add first and last column fields
+      if (index === 0) {
+        fieldToAdd.typeAttributes.config.isFirstColumn = true;
+      } else if (index === array.length - 1) {
+        fieldToAdd.typeAttributes.config.isLastColumn = true;
       }
 
       result.push(fieldToAdd);
@@ -700,5 +724,68 @@ export default class OdConfigurationColumns extends LightningElement {
 
       this.handleCloseFlowInputVariables();
     }
+  }
+
+  handleCopyFieldColumnsToClipboard() {
+    const valueToCopy = [];
+
+    this.fieldsToDisplayTable
+      .filter((col) => col.isFieldColumn)
+      .forEach((col) => {
+        valueToCopy.push({
+          digits: col.digits,
+          isHTML: col.isHTML,
+          isMasterDetail: col.isMasterDetail,
+          label: col.label,
+          tableLabel: col.label,
+          maxLength: col.maxLength,
+          precision: col.precision,
+          scale: col.scale,
+          type: col.type,
+          isMulti: col.isMulti,
+          isLookup: col.isLookup,
+          canEdit: col.canEdit,
+          options: col.options,
+          required: col.required,
+          fieldName: col.value,
+          isEditable: col.isEditable,
+          icon: col.icon,
+          iconName: col.iconName,
+          iconVariant: col.iconVariant,
+          lookupConfig: col.lookupConfig,
+          extraContainerClasses: col.extraContainerClasses,
+          valueActive: col.valueActive,
+          valueInactive: col.valueInactive,
+          parentObjectName: col.parentObjectName,
+          hidden: col.hidden,
+          defaultValue: col.defaultValue,
+          buttonVariant: col.buttonVariant,
+        });
+      });
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(JSON.stringify(valueToCopy));
+    } else {
+      const input = document.createElement('textarea');
+      input.innerHTML = valueToCopy;
+      document.body.appendChild(input);
+      input.select();
+
+      // deprecated but still a good fallback because it is supported in most of the browsers
+      document.execCommand('copy');
+
+      document.body.removeChild(input);
+    }
+
+    // display a success toast
+    Toast.show(
+      {
+        label: 'Copied!',
+        message: 'The Field Columns Configuration was copied to your clipboard',
+        mode: 'dismissible',
+        variant: 'success',
+      },
+      this,
+    );
   }
 }

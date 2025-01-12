@@ -1,7 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import Toast from 'lightning/toast';
-import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
+import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
 import { ALIGNMENT_OPTIONS, FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
@@ -340,7 +340,7 @@ export default class OdConfigurationEditor extends LightningElement {
   // lifecycle methods
   // =================================================================
   connectedCallback() {
-    Promise.all([loadStyle(this, CSSStyles)]);
+    Promise.all([loadStyle(this, `${OD_DatatableResource}/css/main.css`)]);
   }
 
   // =================================================================
@@ -910,6 +910,7 @@ export default class OdConfigurationEditor extends LightningElement {
   async handleShowPreview() {
     // open the modal
     await OdDatatablePreview.open({
+      label: 'Preview',
       size: 'medium',
       configuration: this.inputValues,
     });
@@ -961,7 +962,13 @@ export default class OdConfigurationEditor extends LightningElement {
         this,
       );
     } else {
-      this.inputValues = JSON.parse(this.configurationJSON);
+      const configuration = JSON.parse(this.configurationJSON);
+
+      if (!configuration.tableData) {
+        configuration.tableData = this.inputValues.tableData;
+      }
+
+      this.inputValues = configuration;
 
       // display a success toast
       Toast.show(

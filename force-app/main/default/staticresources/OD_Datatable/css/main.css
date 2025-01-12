@@ -1,0 +1,131 @@
+.slds-modal__container {
+	min-width: 70% !important;
+}
+
+#wrapper-body > .quick-actions-panel, 
+#wrapper-body > .quick-actions-panel > .slds-modal__content,
+.od-datatable-dropdown-open flowruntime-lwc-body {
+  overflow-y: hidden !important;
+}
+
+.od-datatable td.slds-has-focus,
+.od-datatable th.slds-has-focus {
+  box-shadow: none !important;
+}
+
+.od-datatable table.slds-table > tbody > tr:hover > td,
+.od-datatable table.slds-table > tbody > tr:hover > td.slds-has-focus:hover, .od-datatable table.slds-table > tbody > tr:hover > th.slds-has-focus:hover {  
+  box-shadow: var(--slds-g-color-border-base-1, #e5e5e5) 0 -1px 0 inset, var(--slds-g-color-border-base-1, #e5e5e5) 0 1px 0 inset !important;
+}
+
+.od-datatable tbody tr {
+  height: 42px;
+}
+
+.od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .slds-form-element__control .slds-checkbox {
+  display: inline-block;
+}
+
+.sharedColumn .slds-form-element__control .slds-checkbox {
+  margin-right: 2rem;
+}
+
+.configurator  lightning-datepicker .slds-form-element__help,
+.od-datatable lightning-datepicker .slds-form-element__help {
+  display: none;
+}
+
+.od-datatable .slds-rich-text-editor__output img {
+  margin-bottom: 0;
+}
+
+.od-datatable .rowButton .slds-button {
+  box-shadow: none;
+  outline: none;
+}
+
+.container.errorTooltip .slds-has-error .slds-form-element__help  {
+  visibility: hidden;
+  display: block !important;
+  width: 100% !important;
+  background-color: var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e)));
+  color: #ffffff;
+  text-align: center;
+  padding: 5px !important;
+  border-radius: 6px;
+  position: absolute !important;
+  z-index: 9999;
+  height: auto !important;
+  clip: unset !important;
+  font-size: 12px;
+  white-space: break-spaces !important;
+  bottom: 110%;
+  left: 0;
+}
+
+.container.errorTooltip .slds-has-error .slds-form-element__help::after {
+  content: " ";
+  position: absolute;
+  white-space: normal;
+  border-width: 5px;
+  border-style: solid;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-color: var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent transparent transparent;
+}
+
+.container.errorTooltip .slds-has-error:hover .slds-form-element__help {
+  visibility: visible;
+}
+
+/* First record */
+.container.errorTooltip.firstRecord .slds-has-error .slds-form-element__help {
+  top: 105%;
+  left: 0;
+  bottom: auto;
+}
+
+.container.errorTooltip.firstRecord .slds-has-error .slds-form-element__help::after {
+  bottom: 100%;  /* At the top of the tooltip */
+  left: 50%;
+  top: auto;
+  border-color: transparent transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent;
+}
+
+/* First Column */
+.container.errorTooltip.firstColumn .slds-has-error .slds-form-element__help {
+  left: 105%;
+  top: 0;
+  bottom: auto;
+}
+
+.container.errorTooltip.firstColumn .slds-has-error .slds-form-element__help::after {
+  top: 50%;
+  right: 100%; /* To the left of the tooltip */
+  left: auto;
+  margin-top: -5px;
+  border-color: transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent transparent;
+}
+
+/* Last Column */
+.container.errorTooltip.lastColumn .slds-has-error .slds-form-element__help {
+  right: 100%;
+  margin-right: 6px;
+  left: auto;
+  bottom: auto;
+  top: 0;
+}
+
+.container.errorTooltip.lastColumn .slds-has-error .slds-form-element__help::after {
+  top: 50%;
+  left: 100%; /* To the right of the tooltip */
+  margin-left: 0;
+  bottom: auto;
+  margin-top: -5px;
+  border-color: transparent transparent transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e)));
+}
+
+.container.errorTooltip .slds-has-error:hover > .slds-rich-text-editor__toolbar .slds-form-element__help {
+  visibility: hidden;
+}

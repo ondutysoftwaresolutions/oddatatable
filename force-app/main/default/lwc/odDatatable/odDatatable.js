@@ -2,7 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import { FlowNavigationNextEvent } from 'lightning/flowSupport';
 import { subscribe, unsubscribe } from 'lightning/empApi';
-import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
+import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_DatatableConfigEditorController.saveRecords';
 import getRecords from '@salesforce/apex/OD_DatatableConfigEditorController.getRecords';
@@ -29,9 +29,9 @@ export default class ODDatatable extends LightningElement {
 
   // table configuration
   @api objectName;
-  //@api tableData = [];
   @api columns;
   @api noRecordsMessage;
+  @api showRowNumberColumn;
 
   // master detail configuration
   @api isMasterDetail;
@@ -105,6 +105,9 @@ export default class ODDatatable extends LightningElement {
   afterValidate = false;
   _selectedRows = [];
 
+  _originalTableData;
+  _tableData;
+
   // platform event
   _subscription;
 
@@ -157,7 +160,7 @@ export default class ODDatatable extends LightningElement {
   // lifecycle methods
   // =================================================================
   connectedCallback() {
-    Promise.all([loadStyle(this, CSSStyles)]);
+    Promise.all([loadStyle(this, `${OD_DatatableResource}/css/main.css`)]);
 
     // subscribe to platform event
     if (this._listeningToPlatformEvent) {
@@ -189,7 +192,7 @@ export default class ODDatatable extends LightningElement {
       this._buildRecords(this.tableData);
 
       // clean the output variables
-      this._doCleanOutputs();
+      this._doCleanOutputs(true, false);
     } else if (result.error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(result.error);
@@ -199,8 +202,6 @@ export default class ODDatatable extends LightningElement {
   // =================================================================
   // getter methods
   // =================================================================
-  _tableData;
-
   @api
   get tableData() {
     return this._tableData || [];
@@ -424,7 +425,9 @@ export default class ODDatatable extends LightningElement {
   _buildRecords(data, afterSave = false) {
     let result = [];
 
-    JSON.parse(JSON.stringify(data)).forEach((rec) => {
+    this._originalTableData = JSON.parse(JSON.stringify(data));
+
+    this._originalTableData.forEach((rec, index, array) => {
       // if this record is in the stored session one use the stored one (for when we validate and back to the same page)
       const indexEdited = this.outputEditedRows.findIndex((ed) => ed._id === rec.Id);
       const indexDeleted = this.outputDeletedRows.findIndex((dl) => dl._id === rec.Id);
@@ -437,7 +440,12 @@ export default class ODDatatable extends LightningElement {
         let record = {
           ...rec,
           _id: rec.Id,
-          _originalRecord: rec,
+          _originalRecord: {
+            ...rec,
+            _isFirst: index === 0,
+            _isLast: index === array.length - 1,
+          },
+          isDeleted: false,
           ...ROW_BUTTON_CONFIGURATION.DELETE,
         };
 
@@ -638,8 +646,15 @@ export default class ODDatatable extends LightningElement {
 
   _doChangeField(recordIndex, fieldName, value) {
     if (recordIndex !== -1) {
+      let theValue = value;
+
+      // if it's an array field then it means a multiselect picklist
+      if (Array.isArray(theValue)) {
+        theValue = theValue.map((vl) => vl.value).join(';');
+      }
+
       const newObj = {
-        [fieldName]: value,
+        [fieldName]: theValue,
       };
 
       this._doUpdateRecord(recordIndex, newObj);
@@ -667,6 +682,9 @@ export default class ODDatatable extends LightningElement {
         newRecord._id = generateRandomNumber();
         newRecord[col.fieldName] = col.typeAttributes.config.defaultValue || '';
       });
+
+    // add the _originalRecord too
+    newRecord._originalRecord = {};
 
     // add to the records to show
     this._doUpdateRecord(99999, newRecord);
@@ -697,6 +715,16 @@ export default class ODDatatable extends LightningElement {
     }
 
     this._doOpenFlow(modalProps, record);
+  }
+
+  _doSendToCaller(record) {
+    this.dispatchEvent(
+      new CustomEvent('clickrowbutton', {
+        detail: {
+          record: record,
+        },
+      }),
+    );
   }
 
   async _doOpenFlowButton(fieldName, record, selectedIds = undefined) {
@@ -938,7 +966,7 @@ export default class ODDatatable extends LightningElement {
     );
   }
 
-  _doCleanOutputs(emptyOutputs = true) {
+  _doCleanOutputs(emptyOutputs = true, cleanHasChanges = true) {
     if (emptyOutputs) {
       this.saveAndNext = false;
       this.rowRecordId = null;
@@ -950,10 +978,12 @@ export default class ODDatatable extends LightningElement {
     this.outputDeletedRows = [];
     this.outputEditedRows = [];
 
-    // update all the rows with the _hasChanges
-    this._tableData.forEach((rec) => {
-      rec._hasChanges = false;
-    });
+    if (cleanHasChanges) {
+      // update all the rows with the _hasChanges
+      this._tableData.forEach((rec) => {
+        rec._hasChanges = false;
+      });
+    }
 
     this._doRemoveSessionStorage();
   }
@@ -1079,6 +1109,9 @@ export default class ODDatatable extends LightningElement {
       case EVENTS.OPEN_FLOW:
         this._doOpenFlowButton(fieldName, record);
         break;
+      case EVENTS.SEND_TO_CALLER:
+        this._doSendToCaller(record);
+        break;
       default:
         break;
     }
@@ -1150,13 +1183,20 @@ export default class ODDatatable extends LightningElement {
     this.handleCloseBulkEdit();
   }
 
-  handleCancel() {
+  @api
+  handleCancel(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
     this._doCleanOutputs();
 
-    this._buildRecords(this._tableData);
+    this._buildRecords(this._originalTableData);
   }
 
-  handleSave() {
+  handleSave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (this.preview) {
       this._doCleanOutputs();
       return;

@@ -4,7 +4,7 @@
       <span class="slds-required">{requiredStar}</span>
       {label}
       <template lwc:if={hasHelpText}>
-        <lightning-helptext class="help-text" content={helpText}></lightning-helptext>
+        <lightning-helptext class="help-text" tabindex="-1" content={helpText}></lightning-helptext>
       </template>
     </label>
   </template>
@@ -26,6 +26,7 @@
             is-multi={isMulti}
             onselectlookup={handleChangeLookupSelectedLabel}
             current-record-id={currentRecordId}
+            dropdown-option-classes={dropdownOptionClasses}
             server-side-configuration={lookupConfiguration}
             placeholder={placeholder}
             required={required}
@@ -33,7 +34,8 @@
             opened={isOpened}
             onfocus={handleOnFocusDropdown}
             onblur={handleOnBlurDropdown}
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            top-position-shift={dropdownTopPositionShift}
+            class="slds-p-around--xx-small slds-size--1-of-1 select editable"
           >
           </c-od-datatable-input-autocomplete>
         </template>
@@ -72,15 +74,16 @@
           disabled={isDisabled}
           name={fieldName}
           checked={theValue}
+          label=" "
         >
         </lightning-input>
       </template>
       <template lwc:elseif={isToggle}>
         <lightning-input
           id={fieldName}
-          class="slds-p-around--xx-small"
+          class="slds-p-around--xx-small toggle editable"
           onchange={handleChangeToggle}
-          label={toggleLabel}
+          label={labelToggle}
           message-toggle-active={toggleValueActive}
           message-toggle-inactive={toggleValueInactive}
           variant={variantToggle}
@@ -95,7 +98,7 @@
         <template lwc:if={editable}>
           <lightning-input
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 currency editable"
             autocomplete="off"
             variant="label-hidden"
             type="number"
@@ -104,11 +107,10 @@
             formatter="currency"
             step={decimalsStep}
             required={required}
-            message-when-value-missing=" "
-            max={maxNumber}
-            message-when-range-overflow=" "
+            max={theMaxNumber}
+            min={minNumber}
+            label=" "
             onchange={handleChangeDecimal}
-            message-when-bad-input=" "
             placeholder={currencyPlaceholder}
           >
           </lightning-input>
@@ -128,7 +130,7 @@
       <template lwc:elseif={isNumber}>
         <template lwc:if={editable}>
           <lightning-input
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 number editable"
             id={fieldName}
             autocomplete="off"
             onchange={handleChangeNumber}
@@ -137,13 +139,11 @@
             name={fieldName}
             value={theValue}
             required={required}
-            message-when-value-missing=" "
-            max={maxNumber}
-            message-when-bad-input=" "
+            max={theMaxNumber}
+            min={minNumber}
             step={decimalsStep}
-            message-when-range-overflow=" "
             placeholder={numberPlaceholder}
-            message-when-step-mismatch=" "
+            label=" "
           >
           </lightning-input>
         </template>
@@ -162,20 +162,19 @@
         <template lwc:if={editable}>
           <lightning-input
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 percentage editable"
             autocomplete="off"
             onchange={handleChangeDecimal}
             variant="label-hidden"
             type="number"
             name={fieldName}
-            message-when-bad-input=" "
-            message-when-range-overflow=" "
+            label=" "
             value={theValue}
-            formatter="percent"
+            formatter="percent-fixed"
             step={decimalsStep}
             required={required}
-            max={maxNumber}
-            message-when-value-missing=" "
+            max={theMaxNumber}
+            min={minNumber}
             placeholder={percentPlaceholder}
           >
           </lightning-input>
@@ -184,7 +183,7 @@
           <lightning-formatted-number
             id={fieldName}
             value={theValue}
-            format-style="percent"
+            format-style="percent-fixed"
             minimum-fraction-digits={decimalsFormat}
             class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
           >
@@ -194,7 +193,7 @@
       <template lwc:elseif={isDate}>
         <template lwc:if={editable}>
           <lightning-input
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 date editable"
             id={fieldName}
             autocomplete="off"
             onchange={handleChangeInput}
@@ -202,11 +201,12 @@
             type="date"
             name={fieldName}
             date-style="short"
-            message-when-bad-input=" "
             value={theValue}
             required={required}
-            message-when-value-missing=" "
             placeholder={datePlaceholder}
+            label=" "
+            min={minDate}
+            max={maxDate}
           >
           </lightning-input>
         </template>
@@ -225,7 +225,7 @@
       <template lwc:elseif={isDatetime}>
         <template lwc:if={editable}>
           <lightning-input
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 datetime editable"
             id={fieldName}
             autocomplete="off"
             onchange={handleChangeInput}
@@ -235,9 +235,10 @@
             value={theValue}
             date-style="short"
             required={required}
-            message-when-value-missing=" "
-            message-when-bad-input=" "
             placeholder={datePlaceholder}
+            label=" "
+            min={minDate}
+            max={maxDate}
           >
           </lightning-input>
         </template>
@@ -259,14 +260,17 @@
         <template lwc:if={editable}>
           <lightning-input-rich-text
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 richText editable"
             variant="label-hidden"
             data-name={fieldName}
             value={theValue}
             required={required}
-            onchange={handleChangeInputTextarea}
-            message-when-bad-input=" "
+            label=" "
+            message-when-bad-input="Complete this field."
+            onchange={handleChangeInputRichTextarea}
+            formats={richTextFormats}
             placeholder={placeholder}
+            valid={richTextAreaValid}
           >
           </lightning-input-rich-text>
         </template>
@@ -283,7 +287,7 @@
         <template lwc:if={editable}>
           <lightning-textarea
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 textArea editable"
             autocomplete="off"
             variant="label-hidden"
             data-name={fieldName}
@@ -291,7 +295,6 @@
             required={required}
             max-length={maxLength}
             onchange={handleChangeInputTextarea}
-            message-when-bad-input=" "
             placeholder={placeholder}
           >
           </lightning-textarea>
@@ -311,6 +314,7 @@
           variant="label-hidden"
           options={theOptions}
           value={theValue}
+          class="radioGroup editable"
           disabled={isDisabled}
           type="button"
           onchange={handleChangeInput}
@@ -320,18 +324,16 @@
       <template lwc:else>
         <template lwc:if={editable}>
           <lightning-input
-            class="slds-p-around--xx-small slds-size--1-of-1"
+            class="slds-p-around--xx-small slds-size--1-of-1 text editable"
             type={theType}
             value={theValue}
+            label=" "
             max-length={maxLength}
             name={fieldName}
             variant="label-hidden"
             required={required}
             autocomplete="off"
-            message-when-value-missing=" "
             onchange={handleChangeInput}
-            message-when-type-mismatch=" "
-            message-when-bad-input=" "
             placeholder={placeholder}
           >
           </lightning-input>

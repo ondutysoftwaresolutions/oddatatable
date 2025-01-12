@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { CUSTOM_FIELD_TYPES, EVENTS, YES_NO, HIDDEN_TYPE_OPTIONS, FIELD_TYPES } from 'c/odDatatableConstants';
-import { getFieldsFromString, doReplaceMergeField } from 'c/odDatatableUtils';
+import { doReplaceMergeField, formatDateForInput, getFieldsFromString } from 'c/odDatatableUtils';
 
 export default class OdDatatableField extends LightningElement {
   @api recordId;
@@ -33,6 +33,10 @@ export default class OdDatatableField extends LightningElement {
     return editableValue && !this.isDeleted;
   }
 
+  get isRequired() {
+    return this.required || this.config.required;
+  }
+
   get defaultValue() {
     if (this.isEditable || this.isNew) {
       let defaultValue = this.config.defaultValue;
@@ -40,7 +44,11 @@ export default class OdDatatableField extends LightningElement {
       if (defaultValue && typeof defaultValue === FIELD_TYPES.STRING && defaultValue.includes('{{')) {
         const fieldsToReplace = getFieldsFromString(defaultValue);
 
-        defaultValue = doReplaceMergeField(defaultValue, fieldsToReplace[0], this.record);
+        if (fieldsToReplace[0].includes('Record.')) {
+          defaultValue = doReplaceMergeField(defaultValue, fieldsToReplace[0], this.record);
+        } else if (fieldsToReplace[0] === 'CurrentDate') {
+          defaultValue = formatDateForInput(new Date());
+        }
       }
 
       return defaultValue;

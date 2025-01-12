@@ -1,13 +1,31 @@
 <template>
   <template lwc:if={showIcon}>
-    <template lwc:if={content}>
-      <lightning-helptext
-        class="slds-align--absolute-center"
-        icon-name={config.iconName}
-        content={content}
-        icon-variant={config.iconVariant}
-      >
-      </lightning-helptext>
+    <template lwc:if={tooltipContent}>
+      <template lwc:if={sldsIcon}>
+        <lightning-helptext
+          class="slds-align--absolute-center"
+          icon-name={config.iconName}
+          content={tooltipContent}
+          icon-variant={config.iconVariant}
+        >
+        </lightning-helptext>
+      </template>
+      <template lwc:else>
+        <div class="slds-is-relative">
+          <button
+            class="slds-button slds-button_icon slds-button slds-button_icon"
+            onmouseover={handleToggleSrcIconTooltip}
+            onmouseout={handleToggleSrcIconTooltip}
+          >
+            <img src={srcIconName} class="iconImage" />
+          </button>
+          <template lwc:if={showSrcIconTooltip}>
+            <div class={classesSrcIconTooltip} role="tooltip">
+              <div class="slds-align--absolute-center slds-popover__body">{tooltipContent}</div>
+            </div>
+          </template>
+        </div>
+      </template>
     </template>
   </template>
 </template>

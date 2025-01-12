@@ -28,6 +28,8 @@ export default class ODInputAutocomplete extends LightningElement {
   @api currentRecordId;
   @api serverSideConfiguration;
   @api afterValidate = false;
+  @api dropdownOptionClasses = 'slds-input slds-input--bare slds-listbox__item slds-p-left--none';
+  @api topPositionShift = 0;
 
   // tracked
   isSearching = false;
@@ -86,9 +88,7 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   get noOptionClasses() {
-    return `slds-input slds-input--bare slds-listbox__item slds-p-left--none ${
-      this.isServerSearch ? '' : 'slds-align--absolute-center'
-    }`;
+    return `${this.dropdownOptionClasses} ${this.isServerSearch ? '' : 'slds-align--absolute-center'}`;
   }
 
   get showInputSearch() {
@@ -135,10 +135,16 @@ export default class ODInputAutocomplete extends LightningElement {
         if (typeof element === 'object') {
           result.push(element);
         } else {
-          result.push({
-            label: 'Loading...',
-            value: element,
-          });
+          // find the object in the array of options
+          const record = this.options.find((opt) => opt.value === element);
+          if (record) {
+            result.push(record);
+          } else {
+            result.push({
+              label: 'Label not found',
+              value: element,
+            });
+          }
         }
       });
     }
@@ -155,11 +161,17 @@ export default class ODInputAutocomplete extends LightningElement {
       return null;
     }
 
-    if (Array.isArray(this.value)) {
-      return JSON.parse(JSON.stringify([...this.value]));
+    let valueToUse = this.value;
+
+    if (this.isMulti && !Array.isArray(valueToUse)) {
+      valueToUse = this.value.split(';');
     }
 
-    return this.value;
+    if (Array.isArray(valueToUse)) {
+      return JSON.parse(JSON.stringify([...valueToUse]));
+    }
+
+    return valueToUse;
   }
 
   get parsedServerSideConfiguration() {
@@ -179,7 +191,7 @@ export default class ODInputAutocomplete extends LightningElement {
 
       const bounding = element.getBoundingClientRect();
 
-      const topPosition = bounding.top + bounding.height;
+      const topPosition = bounding.top + bounding.height - this.topPositionShift;
       let top = `${topPosition}px`;
       let bottom = 'auto';
 
@@ -222,7 +234,7 @@ export default class ODInputAutocomplete extends LightningElement {
   _doBuildOptions(newValue = undefined) {
     const options = JSON.parse(JSON.stringify(this._parsedOptions));
     options.forEach((opt) => {
-      opt.classes = `slds-input slds-input--bare slds-listbox__item slds-p-left--none`;
+      opt.classes = `${this.dropdownOptionClasses}`;
       if (opt.value === (newValue || this.parsedValue)) {
         opt.classes += ` ${optionSelectedClass} ${optionHoverClass}`;
       }
@@ -341,7 +353,7 @@ export default class ODInputAutocomplete extends LightningElement {
     if (this.isMulti) {
       // add to the filtered only if it's not selected already
       options.forEach((opt) => {
-        const findIndex = this.parsedValue.findIndex((pv) => pv.value === opt.value);
+        const findIndex = this.pillsValueToShow.findIndex((pv) => pv.value === opt.value);
 
         if (findIndex === -1) {
           result.push(opt);
@@ -437,7 +449,7 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   // function to close the dropdown
-  _doClose(e, dispatchSelect = true, setLabel = true) {
+  _doClose(setLabel = true) {
     this._searched = false;
 
     // allow scrollbar main area
@@ -452,7 +464,6 @@ export default class ODInputAutocomplete extends LightningElement {
     // if the value is undefined, clean the value
     if (setLabel) {
       this.searchText = null;
-      this._getLabelSelected(dispatchSelect);
     }
   }
 
@@ -547,12 +558,9 @@ export default class ODInputAutocomplete extends LightningElement {
 
         // add to the array of values
         value = [
-          ...this.parsedValue,
+          ...this.pillsValueToShow,
           {
             ...selectedOption,
-            value: value,
-            label: e.currentTarget.dataset.label,
-            isEditable: selectedOption.canEdit,
           },
         ];
 
@@ -569,7 +577,7 @@ export default class ODInputAutocomplete extends LightningElement {
         }
 
         // Close the dropdown
-        this._doClose(e, false, false);
+        this._doClose(false);
       }
 
       // dispatch the select event
@@ -581,10 +589,18 @@ export default class ODInputAutocomplete extends LightningElement {
 
   // function to close the dropdown when moving away from the input (and not going away from the dropdown)
   handleBlur(e) {
-    this._doClose(e, false, !this.isServerSearch);
+    this._doClose(!this.isServerSearch);
 
     // dispatch onblur, just in case a parent component is listening
     this._doDispatchBlur();
+
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      // get the input element
+      const inputElement = this.template.querySelector('lightning-input');
+
+      inputElement.reportValidity();
+    });
   }
 
   // function to manage the key pressed while the dropdown in opened
@@ -616,12 +632,12 @@ export default class ODInputAutocomplete extends LightningElement {
       }
       case 'Escape': {
         e.stopPropagation();
-        this._doClose(e);
+        this._doClose();
         this._doDispatchBlur();
         break;
       }
       case 'Tab': {
-        this._doClose(e);
+        this._doClose();
         this._doDispatchBlur();
         break;
       }
@@ -632,7 +648,7 @@ export default class ODInputAutocomplete extends LightningElement {
   // function to remove the option in the multi lookup pills
   handleRemoveOption(e) {
     const value = e.currentTarget.dataset.id;
-    const newValue = [...this.parsedValue];
+    const newValue = [...this.pillsValueToShow];
 
     this.handleEmptyAndFocus(e);
 
