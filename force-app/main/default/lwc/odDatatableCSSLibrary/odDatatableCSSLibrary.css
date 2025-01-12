@@ -13,6 +13,12 @@
   }
 }
 
+.columnsTable {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 .columnsTable th {
   position: sticky;
   background: #f4f2f2;

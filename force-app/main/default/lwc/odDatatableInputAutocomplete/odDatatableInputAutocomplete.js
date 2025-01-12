@@ -209,7 +209,17 @@ export default class ODInputAutocomplete extends LightningElement {
         bottom = `${windowHeight - bounding.top}px`;
       }
 
-      return `position: fixed; max-height: ${maxHeight}px;top: ${top}; bottom: ${bottom}; max-width: ${bounding.width}px; transform: none; left: unset;`;
+      // if it's inside an scrollablle content then do that for left and transform
+      let left = 'unset';
+
+      const parentTableElement = element.closest('table');
+      if (parentTableElement) {
+        if (parentTableElement.scrollWidth > parentTableElement.clientWidth) {
+          left = `${bounding.left - 90}px`;
+        }
+      }
+
+      return `position: fixed; max-height: ${maxHeight}px;top: ${top}; bottom: ${bottom}; max-width: ${bounding.width}px; transform: none; left: ${left};`;
     }
 
     return '';
@@ -590,15 +600,12 @@ export default class ODInputAutocomplete extends LightningElement {
   // function to close the dropdown when moving away from the input (and not going away from the dropdown)
   handleBlur(e) {
     this._doClose(!this.isServerSearch);
-
     // dispatch onblur, just in case a parent component is listening
     this._doDispatchBlur();
-
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     setTimeout(() => {
       // get the input element
       const inputElement = this.template.querySelector('lightning-input');
-
       inputElement.reportValidity();
     });
   }

@@ -52,12 +52,16 @@ export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SI
 export const CUSTOM_TYPES = {
   SCREEN_FLOW: 'Flow',
   AUTOLAUNCHED_FLOW: 'AutoLaunchedFlow',
+  NAVIGATE_NEXT: 'Next',
+  NAVIGATE_BACK: 'Back',
   SEND_TO_CALLER: 'sendToCaller',
 };
 
 export const CUSTOM_BUTTON_TYPES = [
   CUSTOM_TYPES.SCREEN_FLOW,
   CUSTOM_TYPES.AUTOLAUNCHED_FLOW,
+  CUSTOM_TYPES.NAVIGATE_NEXT,
+  CUSTOM_TYPES.NAVIGATE_BACK,
   CUSTOM_TYPES.SEND_TO_CALLER,
 ];
 
@@ -161,51 +165,53 @@ export const FORMATTED_TYPE_TO_SHOW = {
         flow: true,
       },
       {
+        value: CUSTOM_TYPES.NAVIGATE_NEXT,
+        label: 'Navigate Next',
+        navigation: true,
+      },
+      {
+        value: CUSTOM_TYPES.NAVIGATE_BACK,
+        label: 'Navigate Back',
+        navigation: true,
+      },
+      {
+        value: CUSTOM_TYPES.SEND_TO_CALLER,
+        label: 'Send To Caller',
+        sendToCaller: true,
+      },
+      {
         value: FIELD_TYPES.CHECKBOX,
         label: 'Checkbox Field',
-        flow: false,
         extraContainerClasses: 'slds-align--absolute-center',
       },
       {
         value: FIELD_TYPES.CURRENCY,
         label: 'Currency Field',
-        flow: false,
         scale: 2,
       },
       {
         value: FIELD_TYPES.DATE,
         label: 'Date Field',
-        flow: false,
       },
       {
         value: FIELD_TYPES.LONG,
         label: 'Number Field',
-        flow: false,
       },
       {
         value: FIELD_TYPES.PERCENTAGE,
         label: 'Percentage Field',
-        flow: false,
         scale: 2,
       },
       {
         value: FIELD_TYPES.TEXT,
         label: 'Text Field',
-        flow: false,
       },
       {
         value: FIELD_TYPES.TOGGLE,
         label: 'Toggle Field',
-        flow: false,
         valueActive: ' ',
         valueInactive: ' ',
         extraContainerClasses: 'slds-align--absolute-center',
-      },
-      {
-        value: CUSTOM_TYPES.SEND_TO_CALLER,
-        label: 'Send To Caller',
-        flow: false,
-        sendToCaller: true,
       },
     ],
   },
@@ -227,7 +233,9 @@ export const EVENTS = {
   ADD: 'add',
   CHANGE: 'change',
   OPEN_FLOW: 'openFlow',
-  SEND_TO_CALLER: 'sendToCaller',
+  NAVIGATE_BACK: CUSTOM_TYPES.NAVIGATE_BACK,
+  NAVIGATE_NEXT: CUSTOM_TYPES.NAVIGATE_NEXT,
+  SEND_TO_CALLER: CUSTOM_TYPES.SEND_TO_CALLER,
   DELETE: 'delete',
   UNDELETE: 'undelete',
 };
@@ -245,14 +253,14 @@ export const ROW_BUTTON_CONFIGURATION = {
     _editAction: EVENTS.CHANGE,
   },
   DELETE: {
-    _deleteIcon: 'utility:delete',
+    iconName: 'utility:delete',
     _deleteAction: EVENTS.DELETE,
-    _deleteTooltip: 'Delete this record. If it is an input record, it will mark it as deleted',
+    tooltip: 'Delete this record. If it is an input record, it will mark it as deleted',
   },
   UNDELETE: {
-    _deleteIcon: 'utility:undelete',
+    iconName: 'utility:undelete',
     _deleteAction: EVENTS.UNDELETE,
-    _deleteTooltip: 'Restore this record',
+    tooltip: 'Restore this record',
   },
 };
 
@@ -271,57 +279,55 @@ export const FLOW_DATA_TYPES = [
   },
 ];
 
-const BULK = 'Bulk Button';
-const BOTH = 'Both';
-
-export const BULK_BOTH_BUTTONS = [BULK, BOTH];
-
-export const SHOW_AS_OPTIONS = [
-  {
-    label: 'Column',
-    value: 'column',
-    column: true,
-    default: true,
-    single: true,
-    showInField: false,
-    showInCustom: true,
-  },
+export const SHOW_AS_OPTIONS_FIELDS = [
   {
     label: 'Field Value',
     value: 'column',
     column: true,
     default: true,
     single: true,
-    showInField: true,
-    showInCustom: false,
-  },
-  {
-    label: BULK,
-    value: BULK.toLowerCase(),
-    multiple: true,
-    showInCustom: true,
-  },
-  {
-    label: BOTH,
-    value: BOTH.toLowerCase(),
-    column: true,
-    multiple: true,
-    single: true,
-    showInCustom: true,
-  },
-  {
-    label: 'Bottom Nav.',
-    value: 'bottomNav',
-    bottomNav: true,
-    showInCustom: true,
   },
   {
     label: 'Tooltip Icon',
     value: 'tooltipIcon',
-    showInField: true,
     icon: true,
   },
 ];
+
+export const SHOW_AS_OPTIONS_CUSTOM_BUTTONS = [
+  {
+    label: 'Column',
+    value: 'column',
+    column: true,
+    default: true,
+    single: true,
+  },
+  {
+    label: 'Bulk Button',
+    value: 'bulk',
+    multiple: true,
+  },
+  {
+    label: 'Column and Bulk Button',
+    value: 'both',
+    column: true,
+    multiple: true,
+    single: true,
+  },
+  {
+    label: 'Bottom Navigation',
+    value: 'bottomNav',
+    bottomNav: true,
+  },
+];
+
+export const SHOW_AS_OPTIONS_CUSTOM_FIELDS = {
+  label: 'Column',
+  value: 'column',
+  column: true,
+  default: true,
+  single: true,
+};
 
 export const ICON_VARIANTS = [
   {
@@ -374,6 +380,37 @@ export const BUTTON_VARIANTS = [
   {
     label: 'Success',
     value: 'success',
+  },
+];
+
+export const BUTTON_ICON_VARIANTS = [
+  {
+    label: 'Bare',
+    value: 'bare',
+  },
+  {
+    label: 'Container',
+    value: 'container',
+  },
+  {
+    label: 'Brand',
+    value: 'brand',
+  },
+  {
+    label: 'Border',
+    value: 'border',
+  },
+  {
+    label: 'Border Filled',
+    value: 'border-filled',
+  },
+  {
+    label: 'Bare Inverse',
+    value: 'bare-inverse',
+  },
+  {
+    label: 'Border Inverse',
+    value: 'border-inverse',
   },
 ];
 

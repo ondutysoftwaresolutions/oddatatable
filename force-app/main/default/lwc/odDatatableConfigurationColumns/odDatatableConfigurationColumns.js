@@ -3,6 +3,7 @@ import Toast from 'lightning/toast';
 import {
   getPopupHeight,
   getBodyPopupClasses,
+  isEmpty,
   sortArrayByProperty,
   getFieldType,
   getPrecision,
@@ -10,6 +11,7 @@ import {
 } from 'c/odDatatableUtils';
 import {
   ALIGNMENT_OPTIONS,
+  BUTTON_ICON_VARIANTS,
   BUTTON_VARIANTS,
   FIELD_TYPES,
   FORMATTED_TYPE_TO_SHOW,
@@ -20,7 +22,9 @@ import {
   HIDDEN_TYPE_OPTIONS,
   ICON_VARIANTS,
   ROW_BUTTON_CONFIGURATION,
-  SHOW_AS_OPTIONS,
+  SHOW_AS_OPTIONS_FIELDS,
+  SHOW_AS_OPTIONS_CUSTOM_BUTTONS,
+  SHOW_AS_OPTIONS_CUSTOM_FIELDS,
 } from 'c/odDatatableConstants';
 
 export default class OdConfigurationColumns extends LightningElement {
@@ -38,6 +42,7 @@ export default class OdConfigurationColumns extends LightningElement {
 
   iconVariants = ICON_VARIANTS;
   buttonVariants = BUTTON_VARIANTS;
+  buttonIconVariants = BUTTON_ICON_VARIANTS;
   popupHeight;
   isSelectFieldsOpened = false;
   errorMessage = false;
@@ -237,13 +242,19 @@ export default class OdConfigurationColumns extends LightningElement {
           ? typeSpec.find((ts) => ts.value === col.typeAttributes.config.customType)
           : {};
 
+        const isCustomButton = CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType);
+
         result.push({
           ...selectedCustom,
           ...field,
           label: col.typeAttributes.config.isCustom ? `Custom: ${col.tableLabel}` : col.tableLabel || field.label,
           type: type,
           tableLabel: col.tableLabel,
-          classesType: selectedCustom.flow ? 'slds-size--1-of-1' : 'slds-size--10-of-12',
+          classesType: selectedCustom.flow
+            ? 'slds-size--1-of-1'
+            : selectedCustom.sendToCaller || !isCustomButton
+              ? 'slds-size--10-of-12'
+              : 'slds-size--1-of-1',
           typeSpec: typeSpec,
           precision: getPrecision(field),
           isMulti: this._isMulti(type),
@@ -257,6 +268,8 @@ export default class OdConfigurationColumns extends LightningElement {
           hiddenConditionField: col.typeAttributes.config.hiddenConditionField,
           hiddenIsRecordBased: col.typeAttributes.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value,
           buttonVariant: col.typeAttributes.config.buttonVariant,
+          isButtonIcon: col.typeAttributes.config.isButtonIcon,
+          buttonIconVariant: col.typeAttributes.config.buttonIconVariant,
           isLookup: type === FIELD_TYPES.LOOKUP,
           typeForDefault: type === FIELD_TYPES.LOOKUP ? FIELD_TYPES.SELECT : type,
           options: type === FIELD_TYPES.LOOKUP ? this._buildOptionsFromFlow(FIELD_TYPES.STRING) : field.options,
@@ -265,7 +278,7 @@ export default class OdConfigurationColumns extends LightningElement {
           isCustom: col.typeAttributes.config.isCustom,
           isFieldColumn: !col.typeAttributes.config.isCustom,
           customType: col.typeAttributes.config.customType,
-          isButton: CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType),
+          isButton: isCustomButton,
           showAs: col.typeAttributes.config.showAs,
           column: col.typeAttributes.config.column || col.typeAttributes.config.showAsSingle,
           icon: col.typeAttributes.config.icon,
@@ -274,6 +287,7 @@ export default class OdConfigurationColumns extends LightningElement {
           showAsMultiple: col.typeAttributes.config.showAsMultiple,
           flowName: col.typeAttributes.config.flowName,
           iconName: col.typeAttributes.config.iconName,
+          tooltip: col.typeAttributes.config.tooltip,
           iconVariant: col.typeAttributes.config.iconVariant,
           flowInputVariables: col.typeAttributes.config.flowInputVariables,
           flowNavigateNext: col.typeAttributes.config.flowNavigateNext,
@@ -281,11 +295,11 @@ export default class OdConfigurationColumns extends LightningElement {
           waitForPlatformEvent: col.typeAttributes.config.waitForPlatformEvent,
           alignmentOptions: Object.values(ALIGNMENT_OPTIONS),
           hiddenTypeOptions: Object.values(HIDDEN_TYPE_OPTIONS),
-          showAsOptions: SHOW_AS_OPTIONS.filter(
-            (opt) =>
-              (col.typeAttributes.config.isCustom && opt.showInCustom) ||
-              (!col.typeAttributes.config.isCustom && opt.showInField),
-          ),
+          showAsOptions: !col.typeAttributes.config.isCustom
+            ? SHOW_AS_OPTIONS_FIELDS
+            : CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType)
+              ? SHOW_AS_OPTIONS_CUSTOM_BUTTONS
+              : [SHOW_AS_OPTIONS_CUSTOM_FIELDS],
         });
       }
     });
@@ -306,7 +320,11 @@ export default class OdConfigurationColumns extends LightningElement {
     }
 
     // get the default show as option
-    const defaultShowAs = SHOW_AS_OPTIONS.find((cl) => cl.default);
+    const defaultShowAs = [
+      ...SHOW_AS_OPTIONS_CUSTOM_BUTTONS,
+      ...[SHOW_AS_OPTIONS_CUSTOM_FIELDS],
+      ...SHOW_AS_OPTIONS_FIELDS,
+    ].find((cl) => cl.default);
 
     let iteration = 1;
     result = result.map((fl) => {
@@ -333,12 +351,10 @@ export default class OdConfigurationColumns extends LightningElement {
         newField.icon = false;
         newField.alignmentOptions = Object.values(ALIGNMENT_OPTIONS);
         newField.hiddenTypeOptions = Object.values(HIDDEN_TYPE_OPTIONS);
-        newField.showAsOptions = SHOW_AS_OPTIONS.filter(
-          (opt) => (newField.isCustom && opt.showInCustom) || (!newField.isCustom && opt.showInField),
-        );
         newField.showAsSingle = defaultShowAs.single;
         newField.showAsMultiple = false;
         newField.showInBottomNav = false;
+        newField.showAsOptions = !newField.isCustom ? SHOW_AS_OPTIONS_FIELDS : [];
 
         // if typespec is an array
         if (Array.isArray(typeSpec)) {
@@ -346,6 +362,9 @@ export default class OdConfigurationColumns extends LightningElement {
           const { value, label, ...other } = typeSpec[0];
           newField.customType = value;
           newField.flowOptions = this.flows.filter((flow) => flow.type === value);
+          newField.isButton = CUSTOM_BUTTON_TYPES.includes(newField.customType);
+
+          newField.showAsOptions = newField.isButton ? SHOW_AS_OPTIONS_CUSTOM_BUTTONS : [SHOW_AS_OPTIONS_CUSTOM_FIELDS];
 
           newField = {
             ...newField,
@@ -402,7 +421,7 @@ export default class OdConfigurationColumns extends LightningElement {
   handleUpdateField(event) {
     const { fieldName, value, ...other } = event.detail;
     const fieldAPIName = event.target.dataset.value;
-    const isCustom = event.target.dataset.custom === 'true';
+    const isCustom = isEmpty(event.target.dataset.custom) ? undefined : event.target.dataset.custom === 'true';
 
     let objectToUpdate = {
       [fieldName]: value,
@@ -412,26 +431,17 @@ export default class OdConfigurationColumns extends LightningElement {
       objectToUpdate[event.target.dataset.field] = value;
     }
 
-    // check if it exists in the showas options and use that to populate the single/multiple and more
-    const showAsOption = SHOW_AS_OPTIONS.find((sw) => sw.value === value);
-    if (showAsOption) {
-      objectToUpdate.showAsSingle = showAsOption.single;
-      objectToUpdate.showAsMultiple = showAsOption.multiple;
-      objectToUpdate.showInBottomNav = showAsOption.bottomNav;
-      objectToUpdate.icon = showAsOption.icon;
-      objectToUpdate.column = showAsOption.column;
-
-      if (showAsOption.icon) {
-        objectToUpdate.iconVariant = ICON_VARIANTS[0];
-      }
-    }
-
     // update the right field in the arrays
     // selected fields array
     const fieldIndexSelected = this.selectedFields.findIndex((fl) => fl.value === fieldAPIName);
 
     // if custom search to determine the options
     if (isCustom && this.selectedFields[fieldIndexSelected].typeSpec.length > 0) {
+      // set default variables in here
+      objectToUpdate.flow = false;
+      objectToUpdate.navigation = false;
+      objectToUpdate.sendToCaller = false;
+
       const {
         // eslint-disable-next-line no-unused-vars
         label,
@@ -445,16 +455,48 @@ export default class OdConfigurationColumns extends LightningElement {
         ...other,
       };
 
+      // if it's a button
+      objectToUpdate.isButton = CUSTOM_BUTTON_TYPES.includes(objectToUpdate.customType);
+
       // if it's a flow
       if (other.flow) {
         objectToUpdate.classesType = 'slds-size--1-of-1';
         objectToUpdate.flowOptions = this.flows.filter((fl) => fl.type === theValue);
       } else {
-        objectToUpdate.classesType = 'slds-size--10-of-12';
+        if (other.sendToCaller || !objectToUpdate.isButton) {
+          objectToUpdate.classesType = 'slds-size--10-of-12';
+        }
       }
+    }
 
-      // if it's a button
-      objectToUpdate.isButton = CUSTOM_BUTTON_TYPES.includes(this.selectedFields[fieldIndexSelected].customType);
+    // check if it exists in the show as options and use that to populate the single/multiple and more
+    let showAsOption;
+
+    // if it's custom and not a button, it means it can only be displayed in the column
+    const isCustomRecord = isEmpty(isCustom) ? this.selectedFields[fieldIndexSelected].isCustom : isCustom;
+    const isButtonRecord = isEmpty(objectToUpdate.isButton)
+      ? this.selectedFields[fieldIndexSelected].isButton
+      : objectToUpdate.isButton;
+
+    if (isCustomRecord && !isButtonRecord) {
+      showAsOption = SHOW_AS_OPTIONS_CUSTOM_FIELDS;
+      objectToUpdate.showAsOptions = [SHOW_AS_OPTIONS_CUSTOM_FIELDS];
+    } else {
+      showAsOption = [...SHOW_AS_OPTIONS_CUSTOM_BUTTONS, ...SHOW_AS_OPTIONS_FIELDS].find((sw) => sw.value === value);
+      objectToUpdate.showAsOptions =
+        isCustomRecord && isButtonRecord ? SHOW_AS_OPTIONS_CUSTOM_BUTTONS : SHOW_AS_OPTIONS_FIELDS;
+    }
+
+    if (showAsOption) {
+      objectToUpdate.showAsSingle = showAsOption.single;
+      objectToUpdate.showAsMultiple = showAsOption.multiple;
+      objectToUpdate.showInBottomNav = showAsOption.bottomNav;
+      objectToUpdate.icon = showAsOption.icon;
+      objectToUpdate.column = showAsOption.column;
+
+      if (showAsOption.icon) {
+        objectToUpdate.iconVariant = ICON_VARIANTS[0];
+      }
     }
 
     // if it's a hidden field
@@ -583,7 +625,9 @@ export default class OdConfigurationColumns extends LightningElement {
               ...fieldToAdd.typeAttributes,
               name: field.flow
                 ? ROW_BUTTON_CONFIGURATION.OPEN_FLOW.action
-                : ROW_BUTTON_CONFIGURATION.SEND_TO_CALLER.action,
+                : field.navigation
+                  ? field.customType
+                  : ROW_BUTTON_CONFIGURATION.SEND_TO_CALLER.action,
               config: {
                 ...fieldToAdd.typeAttributes.config,
                 flowName: field.flow ? field.flowName : undefined,
@@ -597,6 +641,10 @@ export default class OdConfigurationColumns extends LightningElement {
                   field.showAsMultiple && field.showAsSingle ? `Bulk ${field.tableLabel}` : field.tableLabel,
                 hidden: !field.showAsSingle || field.hidden,
                 buttonVariant: field.buttonVariant,
+                isButtonIcon: field.isButtonIcon,
+                iconName: field.iconName,
+                buttonIconVariant: field.buttonIconVariant,
+                tooltip: field.tooltip,
               },
             },
           };
@@ -750,7 +798,10 @@ export default class OdConfigurationColumns extends LightningElement {
           fieldName: col.value,
           isEditable: col.isEditable,
           icon: col.icon,
+          isButtonIcon: col.isButtonIcon,
           iconName: col.iconName,
+          buttonIconVariant: col.buttonIconVariant,
+          tooltip: col.tooltip,
           iconVariant: col.iconVariant,
           lookupConfig: col.lookupConfig,
           extraContainerClasses: col.extraContainerClasses,

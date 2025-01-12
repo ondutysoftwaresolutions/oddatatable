@@ -3,11 +3,11 @@
     <div class={cellClassesToUse}>
       <template lwc:if={isIconButton}>
         <lightning-button-icon
-          icon-name={iconName}
-          variant="bare"
+          icon-name={theIconName}
+          variant={iconVariant}
           class="icon-inside-table-row"
           onclick={handleClick}
-          tooltip={tooltip}
+          tooltip={theTooltip}
         >
         </lightning-button-icon>
       </template>

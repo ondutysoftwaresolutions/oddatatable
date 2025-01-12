@@ -318,7 +318,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get numberPlaceholder() {
-    return this.placeholder || this.label;
+    return this.placeholder || (this.insideDatatable ? this.label : '');
   }
 
   get datePlaceholder() {

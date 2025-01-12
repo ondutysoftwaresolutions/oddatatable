@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import { FlowNavigationNextEvent } from 'lightning/flowSupport';
+import { FlowNavigationBackEvent, FlowNavigationNextEvent } from 'lightning/flowSupport';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
@@ -278,11 +278,12 @@ export default class ODDatatable extends LightningElement {
     return this.inlineSave === YES_NO.YES;
   }
 
+  get _somethingEdited() {
+    return this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0;
+  }
+
   get hasChanges() {
-    return (
-      (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
-      this._tableData.filter((rec) => rec._hasChanges).length > 0
-    );
+    return this._somethingEdited && this._tableData.filter((rec) => rec._hasChanges).length > 0;
   }
 
   get standardButtonsDisabled() {
@@ -570,8 +571,6 @@ export default class ODDatatable extends LightningElement {
         hideDefaultActions: true,
         typeAttributes: {
           recordId: { fieldName: '_id' },
-          iconName: { fieldName: '_deleteIcon' },
-          tooltip: { fieldName: '_deleteTooltip' },
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
@@ -951,7 +950,7 @@ export default class ODDatatable extends LightningElement {
 
     // update all the rows with the _hasChanges
     this._tableData.forEach((rec) => {
-      rec._hasChanges = true;
+      rec._hasChanges = this._somethingEdited;
     });
 
     // dispatch the outputs to parent in case someone is listening to it
@@ -1042,6 +1041,13 @@ export default class ODDatatable extends LightningElement {
     return copyData;
   }
 
+  _doNavigateBack() {
+    if (this.availableActions.find((action) => action === 'BACK')) {
+      const navigateBackEvent = new FlowNavigationBackEvent();
+      this.dispatchEvent(navigateBackEvent);
+    }
+  }
+
   _doNavigateNext() {
     if (this.availableActions.find((action) => action === 'NEXT')) {
       const navigateNextEvent = new FlowNavigationNextEvent();
@@ -1111,6 +1117,12 @@ export default class ODDatatable extends LightningElement {
         break;
       case EVENTS.SEND_TO_CALLER:
         this._doSendToCaller(record);
+        break;
+      case EVENTS.NAVIGATE_NEXT:
+        this._doNavigateNext();
+        break;
+      case EVENTS.NAVIGATE_BACK:
+        this._doNavigateBack();
         break;
       default:
         break;
