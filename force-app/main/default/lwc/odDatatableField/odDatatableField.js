@@ -28,6 +28,10 @@ export default class OdDatatableField extends LightningElement {
   // getter methods
   // =================================================================
   get isEditable() {
+    if (this.record._isGroupRecord) {
+      return false;
+    }
+
     const editableValue = typeof this.editable === 'boolean' ? this.editable : this.editable === YES_NO.YES;
 
     return editableValue && !this.isDeleted;
@@ -67,7 +71,9 @@ export default class OdDatatableField extends LightningElement {
   }
 
   get cellClasses() {
-    return this.isDeleted ? 'deleted-record' : this.config.cellClasses || '';
+    return this.isDeleted
+      ? 'deleted-record'
+      : `${this.config.cellClasses || ''} ${this.record?._isGroupRecord ? 'groupCell' : ''}`;
   }
 
   get lookupConfig() {

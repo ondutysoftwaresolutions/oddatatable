@@ -17,7 +17,13 @@ import {
   PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
 } from 'c/odDatatableConstants';
-import { reduceErrors, getFieldType, getPrecision, generateRandomString } from 'c/odDatatableUtils';
+import {
+  reduceErrors,
+  getFieldType,
+  getPrecision,
+  generateRandomString,
+  sortArrayByProperty,
+} from 'c/odDatatableUtils';
 import OdDatatableFlow from 'c/odDatatableFlow';
 
 export default class ODDatatable extends LightningElement {
@@ -75,6 +81,13 @@ export default class ODDatatable extends LightningElement {
   @api pageSize;
   @api paginationShowOptions;
 
+  // grouping
+  @api grouping;
+  @api groupingField;
+  @api groupSortDirection = 'asc';
+  @api groupContentOrderField = 'Name';
+  @api groupContentSortDirection = 'asc';
+
   // outputs
   @api saveAndNext = false;
   @api outputAddedRows = [];
@@ -127,13 +140,15 @@ export default class ODDatatable extends LightningElement {
     if (isValid) {
       // check the required fields with value, return false on the first one (this is for fields that are required but not navigated to them)
       this.columnsToShow.every((col) => {
-        this._tableData.every((rec) => {
-          if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
-            isValid = false;
-            return false;
-          }
-          return true;
-        });
+        this._tableData
+          .filter((row) => !row._originalRecord._isGroupRecord)
+          .every((rec) => {
+            if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
+              isValid = false;
+              return false;
+            }
+            return true;
+          });
 
         return isValid;
       });
@@ -255,7 +270,11 @@ export default class ODDatatable extends LightningElement {
   }
 
   get bulkOperationDisabled() {
-    return this._selectedRows.length === 0 || this.standardButtonsDisabled;
+    return (
+      this._selectedRows.length === 0 ||
+      this.standardButtonsDisabled ||
+      !this._selectedRows.some((row) => !row._originalRecord._isGroupRecord)
+    );
   }
 
   get showBulkEditButton() {
@@ -359,6 +378,14 @@ export default class ODDatatable extends LightningElement {
 
   get isLastPage() {
     return this.currentPage + 1 === this.totalPages;
+  }
+
+  get showGrouping() {
+    return this.grouping === YES_NO.YES;
+  }
+
+  get _selectedRowsToProcessBulk() {
+    return this._selectedRows.filter((row) => !row._originalRecord._isGroupRecord);
   }
 
   // =================================================================
@@ -465,7 +492,55 @@ export default class ODDatatable extends LightningElement {
       result = result.concat(this.outputAddedRows);
     }
 
-    this._tableData = result;
+    this._tableData = this.showGrouping ? this._groupData(result) : result;
+  }
+
+  _groupData(data) {
+    // group the data by the field
+    const groupedData = Object.groupBy(data, (dt) => dt[this.groupingField] || '');
+
+    // First sort the groups
+    let sortedResult = Object.entries(groupedData).sort(([keyA], [keyB]) => {
+      // Handle empty/null/undefined values
+      const isEmptyA = !keyA || keyA === '';
+      const isEmptyB = !keyB || keyB === '';
+
+      // If both are empty/null/undefined, maintain their relative position
+      if (isEmptyA && isEmptyB) return 0;
+      // If only A is empty/null/undefined, move it to the end
+      if (isEmptyA) return 1;
+      // If only B is empty/null/undefined, move it to the end
+      if (isEmptyB) return -1;
+
+      return this.groupSortDirection === 'asc' ? keyA.localeCompare(keyB) : keyB.localeCompare(keyA);
+    });
+
+    if (this.groupContentOrderField) {
+      // Then sort the arrays within each group
+      sortedResult = sortedResult.reduce((sorted, [key, array]) => {
+        sorted[key] = sortArrayByProperty(array, this.groupContentOrderField, this.groupContentSortDirection);
+
+        return sorted;
+      }, {});
+    }
+
+    const firstColumnField = this.columnsToShow[0].fieldName;
+
+    return Object.entries(sortedResult).reduce((flattened, [group, items]) => {
+      // Add the group as an element
+      flattened.push({
+        _id: `grouping-${group || 'no-group'}`,
+        [firstColumnField]: group,
+        _originalRecord: {
+          _isGroupRecord: true,
+        },
+      });
+
+      // Add all items in that group
+      flattened.push(...items);
+
+      return flattened;
+    }, []);
   }
 
   _buildColumns(columnsFromObject) {
@@ -553,6 +628,7 @@ export default class ODDatatable extends LightningElement {
         hideDefaultActions: true,
         typeAttributes: {
           recordId: { fieldName: '_id' },
+          record: { fieldName: '_originalRecord' },
           name: { fieldName: '_editAction' },
           label: { fieldName: '_editLabel' },
           isDeleted: { fieldName: 'isDeleted' },
@@ -570,6 +646,7 @@ export default class ODDatatable extends LightningElement {
         hideDefaultActions: true,
         typeAttributes: {
           recordId: { fieldName: '_id' },
+          record: { fieldName: '_originalRecord' },
           iconName: { fieldName: '_deleteIcon' },
           tooltip: { fieldName: '_deleteTooltip' },
           name: { fieldName: '_deleteAction' },
@@ -753,10 +830,9 @@ export default class ODDatatable extends LightningElement {
         // set the outputs
         this.rowRecordId = record ? record._id : undefined;
         this.rowRecordIds = selectedIds;
-        this.rowButtonClicked = record ? column.typeAttributes.label : column.typeAttributes.config.bulkButtonLabel;
 
         // navigate next
-        this._doNavigateNext();
+        this._doNavigateNext(fieldName, record);
       } else {
         this._selectedRows = [];
         this.selectedRowsIds = [];
@@ -1049,8 +1125,14 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  _doNavigateNext() {
+  _doNavigateNext(fieldName = undefined, record = {}) {
     if (this.availableActions.find((action) => action === 'NEXT')) {
+      if (fieldName) {
+        const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
+
+        this.rowButtonClicked = record ? column.typeAttributes.label : column.typeAttributes.config.bulkButtonLabel;
+      }
+
       const navigateNextEvent = new FlowNavigationNextEvent();
       this.dispatchEvent(navigateNextEvent);
     }
@@ -1120,7 +1202,7 @@ export default class ODDatatable extends LightningElement {
         this._doSendToCaller(record);
         break;
       case EVENTS.NAVIGATE_NEXT:
-        this._doNavigateNext();
+        this._doNavigateNext(fieldName, record);
         break;
       case EVENTS.NAVIGATE_BACK:
         this._doNavigateBack();
@@ -1146,7 +1228,7 @@ export default class ODDatatable extends LightningElement {
 
   handleBulkDelete() {
     const recordsAvailable = JSON.parse(JSON.stringify(this._tableData));
-    this._selectedRows.forEach((row) => {
+    this._selectedRowsToProcessBulk.forEach((row) => {
       const recordIndex = recordsAvailable.findIndex((rc) => rc._id === row._id);
 
       this._doDelete(recordIndex);
@@ -1171,7 +1253,7 @@ export default class ODDatatable extends LightningElement {
     const fieldsToUpdate = event.detail.fields;
 
     // for each selected row, update the corresponding fields if necessary
-    this._selectedRows.forEach((row) => {
+    this._selectedRowsToProcessBulk.forEach((row) => {
       fieldsToUpdate.forEach((fl) => {
         // check the the id is not the same as the value (to prevent cycle for parent relationships)
         if (row._id !== fl.value) {

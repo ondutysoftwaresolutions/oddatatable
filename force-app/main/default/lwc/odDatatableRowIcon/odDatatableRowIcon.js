@@ -12,6 +12,10 @@ export default class OdDatatableRowIcon extends LightningElement {
   showSrcIconTooltip = false;
 
   get showIcon() {
+    if (this.record._isGroupRecord) {
+      return false;
+    }
+
     let hidden = this.config.hidden;
     if (this.config.hidden && this.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value) {
       hidden = this.record[this.config.hiddenConditionField];
@@ -62,6 +66,10 @@ export default class OdDatatableRowIcon extends LightningElement {
     }
 
     return classes;
+  }
+
+  get classesNoIcon() {
+    return this.record._isGroupRecord ? 'groupCell' : '';
   }
 
   handleToggleSrcIconTooltip() {

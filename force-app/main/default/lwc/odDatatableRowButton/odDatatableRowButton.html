@@ -1,6 +1,6 @@
 <template>
-  <template lwc:if={showButton}>
-    <div class={cellClassesToUse}>
+  <div class={cellClassesToUse}>
+    <template lwc:if={showButton}>
       <template lwc:if={isIconButton}>
         <lightning-button-icon
           icon-name={theIconName}
@@ -20,6 +20,6 @@
         >
         </lightning-button>
       </template>
-    </div>
-  </template>
+    </template>
+  </div>
 </template>

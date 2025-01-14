@@ -87,6 +87,43 @@
     </c-od-datatable-input-generic>
   </fieldset>
 
+  <!-- Grouping -->
+  <fieldset class="slds-box slds-grid slds-wrap">
+    <legend>Grouping</legend>
+    <c-od-datatable-input-generic
+      field-name="grouping"
+      type={inputValues.grouping.type}
+      editable
+      toggle-value-active={yesNo.YES}
+      toggle-value-inactive={yesNo.NO}
+      extra-container-classes="slds-m-left--x-large"
+      class="slds-size--1-of-1"
+      value={inputValues.grouping.value}
+      label={inputValues.grouping.label}
+      onupdatefield={handleInputChange}
+      help-text={inputValues.grouping.helpText}
+    >
+    </c-od-datatable-input-generic>
+    <template lwc:if={groupingEnabled}>
+      <c-od-datatable-input-generic
+        field-name="groupingField"
+        type={fieldTypes.SELECT}
+        editable
+        options={fields}
+        class="slds-size--1-of-1"
+        value={inputValues.groupingField.value}
+        label={inputValues.groupingField.label}
+        required
+        opened={dropdowns.groupingField}
+        onfocusdropdown={handleOnFocusDropdown}
+        onblurdropdown={handleOnBlurDropdown}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.groupingField.helpText}
+      >
+      </c-od-datatable-input-generic>
+    </template>
+  </fieldset>
+
   <!-- Pagination -->
   <fieldset class="slds-box slds-grid slds-wrap">
     <legend>Pagination</legend>

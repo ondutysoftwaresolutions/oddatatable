@@ -34,6 +34,7 @@ export default class OdConfigurationEditor extends LightningElement {
     platformEventMatchingFieldName: false,
     platformEventMatchingId: false,
     paginationAlignment: false,
+    groupingField: false,
   };
 
   @track fields = [];
@@ -296,6 +297,19 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: ALIGNMENT_OPTIONS.CENTER.value,
       helpText: 'Alignment for the pagination controls',
+    },
+    grouping: {
+      label: 'Grouping Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the data will be grouped by the field specified',
+    },
+    groupingField: {
+      label: 'Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'Field to group the data by',
     },
 
     // internal use
@@ -660,6 +674,10 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get paginationEnabled() {
     return this.inputValues.pagination.value === YES_NO.YES;
+  }
+
+  get groupingEnabled() {
+    return this.inputValues.grouping.value === YES_NO.YES;
   }
 
   // =================================================================

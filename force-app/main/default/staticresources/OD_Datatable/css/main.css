@@ -1,3 +1,7 @@
+.od-datatable {
+  --height-row: 42px;
+}
+
 .slds-modal__container {
 	min-width: 70% !important;
 }
@@ -19,7 +23,7 @@
 }
 
 .od-datatable tbody tr {
-  height: 42px;
+  height: var(--height-row);
 }
 
 .od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .slds-form-element__control .slds-checkbox {
@@ -128,4 +132,21 @@
 
 .container.errorTooltip .slds-has-error:hover > .slds-rich-text-editor__toolbar .slds-form-element__help {
   visibility: hidden;
+}
+
+/* Grouping */
+.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox {
+  display: none !important;
+}
+
+.od-datatable tr.slds-is-selected[data-row-key-value^="grouping-"] > td,
+.od-datatable tr.slds-is-selected[data-row-key-value^="grouping-"] > th {
+  background-color: transparent !important;
+}
+
+.od-datatable th div.groupCell,
+.od-datatable td div.groupCell {
+  background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+  font-weight: 700;
+  min-height: var(--height-row);
 }

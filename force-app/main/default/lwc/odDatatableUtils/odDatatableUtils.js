@@ -113,7 +113,7 @@ export function getPopupHeight(that) {
   return height;
 }
 
-export function sortArrayByProperty(array, property) {
+export function sortArrayByProperty(array, property, direction = 'asc') {
   return array.sort((a, b) => {
     const aProp = a[property] || 9998;
     const bProp = b[property] || 9999;
@@ -121,10 +121,10 @@ export function sortArrayByProperty(array, property) {
     const fb = isNaN(bProp) ? bProp.toLowerCase() : bProp;
 
     if (fa < fb) {
-      return -1;
+      return direction === 'asc' ? -1 : 1;
     }
     if (fa > fb) {
-      return 1;
+      return direction === 'asc' ? 1 : -1;
     }
 
     return 0;

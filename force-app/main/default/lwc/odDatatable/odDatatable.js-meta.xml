@@ -108,6 +108,12 @@
                 role="inputOnly"
                 default="Yes"
                 description="If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers" />
+            <property name="grouping" label="Grouping Enabled?" type="String" role="inputOnly"
+                default="Yes"
+                description="If enabled, the data will be grouped by the field specified" />
+            <property name="groupingField" label="Group By" type="String"
+                role="inputOnly"
+                description="Field to group the data by" />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"
@@ -140,8 +146,8 @@
                 description="The record Ids of the selected rows after clicking one of the custom buttons and coming back from the flow. Only used if Navigate Next after flow is selected." />
             <property name="rowButtonClicked" label="The Button label clicked" type="String"
                 role="outputOnly"
-                description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected." />
-            <property name="wasChanged" label="Was the data change is same shape or form?"
+                description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected or the button is Navigate Next" />
+            <property name="wasChanged" label="Was the data change is some shape or form?"
                 type="Boolean"
                 role="outputOnly"
                 description="True if the data was changed (added/edited/deleted)." />

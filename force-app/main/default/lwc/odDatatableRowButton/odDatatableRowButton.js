@@ -41,10 +41,15 @@ export default class OdDatatableRowButton extends LightningElement {
 
   get cellClassesToUse() {
     const disableClass = !this.isDelete && !this.isUndelete && this.hasChanges ? 'disabled' : 'enabled';
-    return `rowButton ${this.config.cellClasses} ${this.isDeleted ? 'deleted-record' : ''} ${disableClass}`;
+
+    return `rowButton ${this.config.cellClasses} ${this.isDeleted ? 'deleted-record' : ''} ${disableClass} ${this.record?._isGroupRecord ? 'groupCell' : ''}`;
   }
 
   get showButton() {
+    if (this.record._isGroupRecord) {
+      return false;
+    }
+
     let hidden = this.config.hidden;
     if (this.config.hidden && this.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value) {
       hidden = this.record[this.config.hiddenConditionField];
