@@ -224,19 +224,21 @@
     <template lwc:if={summarizedColumns.length}>
       <fieldset class="slds-box slds-grid slds-wrap">
         <legend>Summarize</legend>
-        <c-od-datatable-input-generic
-          field-name="showTotalsByGroup"
-          type={inputValues.showTotalsByGroup.type}
-          editable
-          toggle-value-active={yesNo.YES}
-          toggle-value-inactive={yesNo.NO}
-          class="slds-size--1-of-1"
-          value={inputValues.showTotalsByGroup.value}
-          label={inputValues.showTotalsByGroup.label}
-          onupdatefield={handleInputChange}
-          help-text={inputValues.showTotalsByGroup.helpText}
-        >
-        </c-od-datatable-input-generic>
+        <template lwc:if={groupingEnabled}>
+          <c-od-datatable-input-generic
+            field-name="showTotalsByGroup"
+            type={inputValues.showTotalsByGroup.type}
+            editable
+            toggle-value-active={yesNo.YES}
+            toggle-value-inactive={yesNo.NO}
+            class="slds-size--1-of-1"
+            value={inputValues.showTotalsByGroup.value}
+            label={inputValues.showTotalsByGroup.label}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.showTotalsByGroup.helpText}
+          >
+          </c-od-datatable-input-generic>
+        </template>
         <c-od-datatable-input-generic
           field-name="recalculateLive"
           type={inputValues.recalculateLive.type}

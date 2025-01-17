@@ -653,7 +653,7 @@ export default class ODDatatable extends LightningElement {
       });
     }
 
-    const firstColumnField = this.columnsToShow[0].fieldName;
+    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
 
     // Flatten the sorted groups back into a single array
     return groupsWithSummaries.reduce((flattened, { group, items, summary }) => {
@@ -691,7 +691,7 @@ export default class ODDatatable extends LightningElement {
 
   _checkAndAddLabelToFirstColumn(record, group, columnFieldName = undefined) {
     let groupToUse = group;
-    const firstColumnField = this.columnsToShow[0].fieldName;
+    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
 
     if (columnFieldName === firstColumnField || !columnFieldName) {
       if (record[firstColumnField]) {

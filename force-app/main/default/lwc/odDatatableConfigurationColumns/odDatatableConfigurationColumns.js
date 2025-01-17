@@ -557,7 +557,7 @@ export default class OdConfigurationColumns extends LightningElement {
     const result = [];
 
     // common properties
-    this.fieldsToDisplayTable.forEach((field, index, array) => {
+    this.fieldsToDisplayTable.forEach((field) => {
       let fieldToAdd = {
         label: `${field.required && field.isEditable ? '* ' : ''}${field.tableLabel}`,
         tableLabel: field.tableLabel,
@@ -708,15 +708,28 @@ export default class OdConfigurationColumns extends LightningElement {
         fieldToAdd.initialWidth = field.initialWidth;
       }
 
-      // add first and last column fields
-      if (index === 0) {
-        fieldToAdd.typeAttributes.config.isFirstColumn = true;
-      } else if (index === array.length - 1) {
-        fieldToAdd.typeAttributes.config.isLastColumn = true;
-      }
-
       result.push(fieldToAdd);
     });
+
+    // add first and last column fields
+    const first = result.find(
+      (col) =>
+        col.typeAttributes.config.column &&
+        !col.typeAttributes.config.icon &&
+        !col.typeAttributes.config.isCustom &&
+        !col.typeAttributes.config.hidden,
+    );
+    first.typeAttributes.config.isFirstColumn = true;
+
+    // Last element
+    const last = result.findLast(
+      (col) =>
+        col.typeAttributes.config.column &&
+        !col.typeAttributes.config.icon &&
+        !col.typeAttributes.config.isCustom &&
+        !col.typeAttributes.config.hidden,
+    );
+    last.typeAttributes.config.isLastColumn = true;
 
     // dispatch the save
     const event = new CustomEvent('save', { detail: { value: JSON.stringify(result) } });
