@@ -164,62 +164,32 @@
         <!-- Bulk Other buttons -->
         <template lwc:if={otherBulkFlowButtons.length}>
           <template for:each={otherBulkFlowButtons} for:item="btn">
-            <template lwc:if={btn.typeAttributes.config.isButtonIcon}>
-              <lightning-button-icon
-                key={btn.fieldName}
-                class="slds-m-bottom--small slds-m-right--medium"
-                data-name={btn.fieldName}
-                icon-name={btn.typeAttributes.config.iconName}
-                variant={btn.typeAttributes.config.buttonIconVariant}
-                onclick={handleOpenBulkFlow}
-                tooltip={btn.typeAttributes.config.tooltip}
-                disabled={bulkOperationDisabled}
-              >
-              </lightning-button-icon>
-            </template>
-            <template lwc:else>
-              <lightning-button
-                key={btn.fieldName}
-                class="slds-m-bottom--small slds-m-right--medium"
-                label={btn.typeAttributes.config.bulkButtonLabel}
-                title={btn.label}
-                data-name={btn.fieldName}
-                onclick={handleOpenBulkFlow}
-                disabled={bulkOperationDisabled}
-              >
-              </lightning-button>
-            </template>
+            <lightning-button
+              key={btn.fieldName}
+              class="slds-m-bottom--small slds-m-right--medium"
+              label={btn.typeAttributes.config.bulkButtonLabel}
+              title={btn.label}
+              data-name={btn.fieldName}
+              onclick={handleOpenBulkFlow}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button>
           </template>
         </template>
 
         <!-- Other buttons -->
         <template lwc:if={bottomNavButtons.length}>
           <template for:each={bottomNavButtons} for:item="btn">
-            <template lwc:if={btn.typeAttributes.config.isButtonIcon}>
-              <lightning-button-icon
-                key={btn.fieldName}
-                class="slds-m-bottom--small slds-m-right--medium"
-                data-name={btn.fieldName}
-                icon-name={btn.typeAttributes.config.iconName}
-                variant={btn.typeAttributes.config.buttonIconVariant}
-                onclick={handleOpenBottomNavFlow}
-                tooltip={btn.typeAttributes.config.tooltip}
-                disabled={hasChanges}
-              >
-              </lightning-button-icon>
-            </template>
-            <template lwc:else>
-              <lightning-button
-                key={btn.fieldName}
-                class="slds-m-bottom--small slds-m-right--medium"
-                label={btn.label}
-                title={btn.label}
-                data-name={btn.fieldName}
-                onclick={handleOpenBottomNavFlow}
-                disabled={hasChanges}
-              >
-              </lightning-button>
-            </template>
+            <lightning-button
+              key={btn.fieldName}
+              class="slds-m-bottom--small slds-m-right--medium"
+              label={btn.label}
+              title={btn.label}
+              data-name={btn.fieldName}
+              onclick={handleOpenBottomNavFlow}
+              disabled={hasChanges}
+            >
+            </lightning-button>
           </template>
         </template>
       </div>

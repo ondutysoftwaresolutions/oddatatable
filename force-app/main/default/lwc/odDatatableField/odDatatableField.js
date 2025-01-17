@@ -1,6 +1,11 @@
 import { LightningElement, api } from 'lwc';
 import { CUSTOM_FIELD_TYPES, EVENTS, YES_NO, HIDDEN_TYPE_OPTIONS, FIELD_TYPES } from 'c/odDatatableConstants';
-import { doReplaceMergeField, formatDateForInput, getFieldsFromString } from 'c/odDatatableUtils';
+import {
+  doReplaceMergeField,
+  formatDateForInput,
+  getFieldsFromString,
+  getSummarizeFieldTypeToDisplay,
+} from 'c/odDatatableUtils';
 
 export default class OdDatatableField extends LightningElement {
   @api recordId;
@@ -28,13 +33,21 @@ export default class OdDatatableField extends LightningElement {
   // getter methods
   // =================================================================
   get isEditable() {
-    if (this.record._isGroupRecord) {
+    if (this.record._isGroupRecord || this.record._isSummarizeRecord) {
       return false;
     }
 
     const editableValue = typeof this.editable === 'boolean' ? this.editable : this.editable === YES_NO.YES;
 
     return editableValue && !this.isDeleted;
+  }
+
+  get theType() {
+    if (this.record._isSummarizeRecord || this.record._isGroupRecord) {
+      return getSummarizeFieldTypeToDisplay(this.type);
+    }
+
+    return this.type;
   }
 
   get isRequired() {
@@ -73,7 +86,7 @@ export default class OdDatatableField extends LightningElement {
   get cellClasses() {
     return this.isDeleted
       ? 'deleted-record'
-      : `${this.config.cellClasses || ''} ${this.record?._isGroupRecord ? 'groupCell' : ''}`;
+      : `${this.config.cellClasses || ''} ${this.record?._isGroupRecord ? 'groupCell' : ''} ${this.record?._isSummarizeRecord ? 'summarizeCell' : ''}`;
   }
 
   get lookupConfig() {

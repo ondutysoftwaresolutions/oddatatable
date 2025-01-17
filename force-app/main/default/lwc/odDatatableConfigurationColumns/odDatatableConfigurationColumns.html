@@ -52,10 +52,11 @@
                 <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Editable?</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Required?</th>
                 <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Hidden?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Summarize?</th>
                 <th class="slds-p-around--x-small" style="min-width: 200px">Show As</th>
                 <th class="slds-p-around--x-small" style="min-width: 350px">Flow Configuration</th>
                 <th class="slds-p-around--x-small" style="min-width: 350px">Icon/Button Configuration</th>
-                <th class="slds-p-around--x-small" style="min-width: 350px">Hidden Configuration</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Hidden/Summarize Configuration</th>
                 <th class="slds-p-around--x-small" style="min-width: 250px">Default Value</th>
                 <th class="slds-p-around--x-small" style="min-width: 100px">Width (px)</th>
                 <th class="slds-p-around--x-small" style="min-width: 100px">Alignment</th>
@@ -164,9 +165,20 @@
                     <c-od-datatable-input-generic
                       type={fieldTypes.CHECKBOX}
                       field-name="hidden"
-                      editable
+                      editable={field.canHide}
                       data-value={field.value}
                       value={field.hidden}
+                      onupdatefield={handleUpdateField}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td class="slds-p-around--xx-small slds-text-align--center">
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.CHECKBOX}
+                      field-name="summarize"
+                      editable={field.canSummarize}
+                      data-value={field.value}
+                      value={field.summarize}
                       onupdatefield={handleUpdateField}
                     >
                     </c-od-datatable-input-generic>
@@ -296,7 +308,7 @@
                     </template>
                     <template lwc:elseif={field.isCustom}>
                       <template lwc:if={field.isButton}>
-                        <div class="slds-align--absolute-center slds-grid slds-wrap">
+                        <div class="slds-align--absolute-center slds-grid slds-wrap" lwc:if={field.column}>
                           <c-od-datatable-input-generic
                             type={fieldTypes.CHECKBOX}
                             field-name="isButtonIcon"
@@ -382,7 +394,7 @@
                         <c-od-datatable-input-generic
                           type={fieldTypes.SELECT}
                           field-name="hiddenType"
-                          class="slds-size--1-of-3"
+                          class="slds-size--1-of-1"
                           data-value={field.value}
                           inside-popup-height={popupHeight}
                           editable
@@ -400,7 +412,7 @@
                             type={fieldTypes.SELECT}
                             data-value={field.value}
                             editable
-                            class="slds-size--2-of-3"
+                            class="slds-size--1-of-1"
                             value={field.hiddenConditionField}
                             options={booleanFields}
                             placeholder="Select Boolean field..."
@@ -412,6 +424,25 @@
                           >
                           </c-od-datatable-input-generic>
                         </template>
+                      </div>
+                    </template>
+                    <template lwc:elseif={field.summarize}>
+                      <div class="slds-grid slds-wrap">
+                        <c-od-datatable-input-generic
+                          type={fieldTypes.SELECT}
+                          field-name="summarizeType"
+                          class="slds-size--1-of-1"
+                          data-value={field.value}
+                          inside-popup-height={popupHeight}
+                          editable
+                          value={field.summarizeType}
+                          onupdatefield={handleUpdateField}
+                          options={field.summarizeTypeOptions}
+                          opened={field.opened_summarizeType}
+                          onfocusdropdown={handleColumnsOnFocusDropdown}
+                          onblurdropdown={handleColumnsOnBlurDropdown}
+                        >
+                        </c-od-datatable-input-generic>
                       </div>
                     </template>
                   </td>

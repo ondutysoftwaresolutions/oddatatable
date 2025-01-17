@@ -1,6 +1,6 @@
 import { LightningElement, wire, api, track } from 'lwc';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
-import { FIELD_TYPES, DATE_FIELDS, FIELDS_STRING, SERVER_SIDE_SEARCH } from 'c/odDatatableConstants';
+import { FIELD_TYPES, DATE_FIELDS, FIELDS_STRING, SERVER_SIDE_SEARCH, SORT_DIRECTION } from 'c/odDatatableConstants';
 import { reduceErrors, getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 
 // search groups
@@ -148,17 +148,6 @@ const booleanOptions = [
   },
 ];
 
-const standardDirections = [
-  {
-    label: 'Ascendent',
-    value: 'ASC',
-  },
-  {
-    label: 'Descendent',
-    value: 'DESC',
-  },
-];
-
 const notSelected = '-999';
 
 export default class OdDatatableConfigurationColumnLookup extends LightningElement {
@@ -199,10 +188,10 @@ export default class OdDatatableConfigurationColumnLookup extends LightningEleme
   finalWhereCondition;
 
   // order
-  directions = standardDirections;
+  directions = Object.values(SORT_DIRECTION);
   @track addOrder = {
     fieldOrder: '',
-    directionOrder: standardDirections[0].value,
+    directionOrder: SORT_DIRECTION.ASC.value,
   };
   finalOrderCondition;
 
@@ -427,7 +416,7 @@ export default class OdDatatableConfigurationColumnLookup extends LightningEleme
 
     this.addOrder = {
       fieldOrder: '',
-      directionOrder: standardDirections[0].value,
+      directionOrder: SORT_DIRECTION.ASC.value,
     };
   }
 

@@ -29,6 +29,12 @@
     </template>
   </template>
   <template lwc:else>
-    <div class={classesNoIcon}></div>
+    <template lwc:if={isSummarizeRecord}>
+      <c-od-datatable-field type={type} record={record} field-name={fieldName} value={content} config={theConfig}>
+      </c-od-datatable-field>
+    </template>
+    <template lwc:else>
+      <div class={classesNoIcon}></div>
+    </template>
   </template>
 </template>

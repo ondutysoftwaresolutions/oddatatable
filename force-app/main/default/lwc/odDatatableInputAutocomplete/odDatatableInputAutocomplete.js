@@ -88,7 +88,7 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   get noOptionClasses() {
-    return `${this.dropdownOptionClasses} ${this.isServerSearch ? '' : 'slds-align--absolute-center'}`;
+    return `${this.dropdownOptionClasses || ''} ${this.isServerSearch ? '' : 'slds-align--absolute-center'}`;
   }
 
   get showInputSearch() {
@@ -244,7 +244,7 @@ export default class ODInputAutocomplete extends LightningElement {
   _doBuildOptions(newValue = undefined) {
     const options = JSON.parse(JSON.stringify(this._parsedOptions));
     options.forEach((opt) => {
-      opt.classes = `${this.dropdownOptionClasses}`;
+      opt.classes = `${this.dropdownOptionClasses || ''}`;
       if (opt.value === (newValue || this.parsedValue)) {
         opt.classes += ` ${optionSelectedClass} ${optionHoverClass}`;
       }

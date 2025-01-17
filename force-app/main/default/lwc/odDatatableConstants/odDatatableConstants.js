@@ -39,6 +39,8 @@ export const NUMERIC_FIELDS = [FIELD_TYPES.DOUBLE, FIELD_TYPES.INTEGER, FIELD_TY
 
 export const DATE_FIELDS = [FIELD_TYPES.DATE, FIELD_TYPES.DATETIME];
 
+const ALL_NUMERIC_FIELDS = [...NUMERIC_FIELDS, FIELD_TYPES.PERCENTAGE, FIELD_TYPES.CURRENCY];
+
 export const FORMATTED_FIELDS = [...DATE_FIELDS, FIELD_TYPES.CURRENCY, FIELD_TYPES.PERCENTAGE];
 
 export const TEXTAREA_FIELDS = [FIELD_TYPES.LONG_TEXTAREA, FIELD_TYPES.RICH_TEXTAREA, FIELD_TYPES.TEXTAREA];
@@ -48,6 +50,14 @@ export const LOCAL_SIDE_SEARCH = [FIELD_TYPES.SELECT, FIELD_TYPES.MULTISELECT];
 export const SERVER_SIDE_SEARCH = [FIELD_TYPES.LOOKUP];
 
 export const FIELDS_STRING = [...TEXT_FIELDS, ...LOCAL_SIDE_SEARCH, ...SERVER_SIDE_SEARCH];
+
+export const AVAILABLE_FIELDS_GROUPING = [
+  ...TEXT_FIELDS,
+  FIELD_TYPES.SELECT,
+  ...ALL_NUMERIC_FIELDS,
+  ...DATE_FIELDS,
+  FIELD_TYPES.TEXTAREA,
+];
 
 export const CUSTOM_TYPES = {
   SCREEN_FLOW: 'Flow',
@@ -443,3 +453,47 @@ export const HIDDEN_TYPE_OPTIONS = {
 export const PLATFORM_EVENT_CHANNEL_NAME = '/event/OD_Refresh_Datatable__e';
 
 export const INPUT_GENERIC_TYPE = 'inputGeneric';
+
+export const SUMMARIZE_OPTIONS = [
+  {
+    label: 'AVG',
+    value: 'avg',
+    types: ALL_NUMERIC_FIELDS,
+  },
+  {
+    label: 'COUNT',
+    value: 'count',
+    all: true,
+  },
+  {
+    label: 'MAX',
+    value: 'max',
+    types: [...ALL_NUMERIC_FIELDS, ...DATE_FIELDS],
+  },
+  {
+    label: 'MIN',
+    value: 'min',
+    types: [...ALL_NUMERIC_FIELDS, ...DATE_FIELDS],
+  },
+  {
+    label: 'SUM',
+    value: 'sum',
+    types: ALL_NUMERIC_FIELDS,
+  },
+];
+
+export const SORT_DIRECTION = {
+  ASC: {
+    label: 'ASC',
+    value: 'asc',
+  },
+  DESC: {
+    label: 'DESC',
+    value: 'desc',
+  },
+};
+
+export const GROUPING_SOURCE = {
+  FIELD: 'Field',
+  DATASET: 'Dataset',
+};

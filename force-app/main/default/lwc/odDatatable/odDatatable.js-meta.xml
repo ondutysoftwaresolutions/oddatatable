@@ -109,11 +109,42 @@
                 default="Yes"
                 description="If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers" />
             <property name="grouping" label="Grouping Enabled?" type="String" role="inputOnly"
-                default="Yes"
+                default="No"
                 description="If enabled, the data will be grouped by the field specified" />
             <property name="groupingField" label="Group By" type="String"
                 role="inputOnly"
-                description="Field to group the data by" />
+                description="Field to group the data by. If the field is not present in the dataset then it will not group the data" />
+            <property name="groupSortField" label="Sort Group By" type="String"
+                role="inputOnly"
+                description="Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field" />
+            <property name="groupSortDirection" label="Group Sort Direction" type="String"
+                role="inputOnly"
+                description="Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC" />
+            <property name="groupContentSortField" label="Sort Content of Group By" type="String"
+                role="inputOnly"
+                description="Field to sort the content of the group by. It can be one of the fields being showed in the table." />
+            <property name="groupContentSortDirection" label="Group Content Sort Direction"
+                type="String"
+                role="inputOnly"
+                description="Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC" />
+            <property name="groupingSource" label="Source" type="String" role="inputOnly"
+                default="Dataset"
+                description="Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group." />
+            <property name="groupingSourceFieldData" label="Source Field Data" type="String"
+                role="inputOnly"
+                description="If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for" />
+            <property name="showEmptyGroups" label="Show Empty?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled, the groups with no data in it will be shown." />
+            <property name="showTotalsByGroup" label="Show Totals By Group?" type="String"
+                role="inputOnly"
+                default="Yes"
+                description="If enabled, a line with the totals by group will be shown." />
+            <property name="recalculateLive" label="Recalculate totals on the fly?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table" />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

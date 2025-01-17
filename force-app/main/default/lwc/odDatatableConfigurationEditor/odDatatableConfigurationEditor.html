@@ -55,629 +55,739 @@
     </template>
   </fieldset>
 
-  <!-- Data -->
-  <fieldset class="slds-box slds-grid slds-wrap">
-    <legend>Data</legend>
-    <c-od-datatable-input-generic
-      field-name="tableData"
-      type={inputValues.tableData.type}
-      editable
-      class="slds-size--1-of-1"
-      value={inputValues.tableData.value}
-      options={dataCollectionOptions}
-      placeholder="Select source data..."
-      label={inputValues.tableData.label}
-      onupdatefield={handleInputChange}
-      opened={dropdowns.tableData}
-      help-text={inputValues.tableData.helpText}
-      onfocusdropdown={handleOnFocusDropdown}
-      onblurdropdown={handleOnBlurDropdown}
-    >
-    </c-od-datatable-input-generic>
-    <c-od-datatable-input-generic
-      field-name="noRecordsMessage"
-      type={inputValues.noRecordsMessage.type}
-      editable
-      class="slds-size--1-of-1"
-      value={inputValues.noRecordsMessage.value}
-      label={inputValues.noRecordsMessage.label}
-      onupdatefield={handleInputChange}
-      help-text={inputValues.noRecordsMessage.helpText}
-    >
-    </c-od-datatable-input-generic>
-  </fieldset>
-
-  <!-- Grouping -->
-  <fieldset class="slds-box slds-grid slds-wrap">
-    <legend>Grouping</legend>
-    <c-od-datatable-input-generic
-      field-name="grouping"
-      type={inputValues.grouping.type}
-      editable
-      toggle-value-active={yesNo.YES}
-      toggle-value-inactive={yesNo.NO}
-      extra-container-classes="slds-m-left--x-large"
-      class="slds-size--1-of-1"
-      value={inputValues.grouping.value}
-      label={inputValues.grouping.label}
-      onupdatefield={handleInputChange}
-      help-text={inputValues.grouping.helpText}
-    >
-    </c-od-datatable-input-generic>
-    <template lwc:if={groupingEnabled}>
+  <template lwc:if={emptyColumns}></template>
+  <template lwc:else>
+    <!-- Data -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Data</legend>
       <c-od-datatable-input-generic
-        field-name="groupingField"
-        type={fieldTypes.SELECT}
+        field-name="tableData"
+        type={inputValues.tableData.type}
         editable
-        options={fields}
         class="slds-size--1-of-1"
-        value={inputValues.groupingField.value}
-        label={inputValues.groupingField.label}
-        required
-        opened={dropdowns.groupingField}
+        value={inputValues.tableData.value}
+        options={dataCollectionOptions}
+        placeholder="Select source data..."
+        label={inputValues.tableData.label}
+        onupdatefield={handleInputChange}
+        opened={dropdowns.tableData}
+        help-text={inputValues.tableData.helpText}
         onfocusdropdown={handleOnFocusDropdown}
         onblurdropdown={handleOnBlurDropdown}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.groupingField.helpText}
       >
       </c-od-datatable-input-generic>
-    </template>
-  </fieldset>
+      <c-od-datatable-input-generic
+        field-name="noRecordsMessage"
+        type={inputValues.noRecordsMessage.type}
+        editable
+        class="slds-size--1-of-1"
+        value={inputValues.noRecordsMessage.value}
+        label={inputValues.noRecordsMessage.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.noRecordsMessage.helpText}
+      >
+      </c-od-datatable-input-generic>
+    </fieldset>
 
-  <!-- Pagination -->
-  <fieldset class="slds-box slds-grid slds-wrap">
-    <legend>Pagination</legend>
-    <c-od-datatable-input-generic
-      field-name="pagination"
-      type={inputValues.pagination.type}
-      editable
-      toggle-value-active={yesNo.YES}
-      toggle-value-inactive={yesNo.NO}
-      extra-container-classes="slds-m-left--x-large"
-      class="slds-size--1-of-1"
-      value={inputValues.pagination.value}
-      label={inputValues.pagination.label}
-      onupdatefield={handleInputChange}
-      help-text={inputValues.pagination.helpText}
-    >
-    </c-od-datatable-input-generic>
-    <template lwc:if={paginationEnabled}>
+    <!-- Grouping -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Grouping</legend>
       <c-od-datatable-input-generic
-        field-name="pageSize"
-        type={inputValues.pageSize.type}
+        field-name="grouping"
+        type={inputValues.grouping.type}
         editable
-        scale="0"
-        class="slds-size--1-of-2"
-        value={inputValues.pageSize.value}
-        label={inputValues.pageSize.label}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.pageSize.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <c-od-datatable-input-generic
-        field-name="paginationAlignment"
-        type={fieldTypes.SELECT}
-        editable
-        options={paginationAlignmentOptions}
-        class="slds-size--1-of-2"
-        value={inputValues.paginationAlignment.value}
-        label={inputValues.paginationAlignment.label}
-        required
-        opened={dropdowns.paginationAlignment}
-        onfocusdropdown={handleOnFocusDropdown}
-        onblurdropdown={handleOnBlurDropdown}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.paginationAlignment.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <c-od-datatable-input-generic
-        field-name="paginationShowOptions"
-        type={inputValues.paginationShowOptions.type}
-        editable
-        extra-container-classes="slds-m-left--x-large"
         toggle-value-active={yesNo.YES}
         toggle-value-inactive={yesNo.NO}
         class="slds-size--1-of-1"
-        value={inputValues.paginationShowOptions.value}
-        label={inputValues.paginationShowOptions.label}
+        value={inputValues.grouping.value}
+        label={inputValues.grouping.label}
         onupdatefield={handleInputChange}
-        help-text={inputValues.paginationShowOptions.helpText}
+        help-text={inputValues.grouping.helpText}
       >
       </c-od-datatable-input-generic>
-    </template>
-  </fieldset>
-
-  <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-    <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">
-      Add, Edit and Delete Behaviour
-    </h1>
-  </div>
-
-  <template lwc:if={isObjectSelected}>
-    <!-- Adding Records -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Adding Records</legend>
-      <div class="slds-size--1-of-1 slds-grid slds-wrap">
+      <template lwc:if={groupingEnabled}>
         <c-od-datatable-input-generic
-          field-name="canAdd"
-          type={inputValues.canAdd.type}
+          field-name="groupingField"
+          type={fieldTypes.SELECT}
           editable
-          extra-container-classes="slds-align--absolute-center"
-          toggle-value-active={yesNo.YES}
-          toggle-value-inactive={yesNo.NO}
-          extra-label-classes="slds-align--absolute-center"
-          class="slds-size--1-of-2"
-          value={inputValues.canAdd.value}
-          label={inputValues.canAdd.label}
+          options={groupingFieldOptions}
+          class="slds-size--1-of-1"
+          value={inputValues.groupingField.value}
+          label={inputValues.groupingField.label}
+          required
+          opened={dropdowns.groupingField}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
           onupdatefield={handleInputChange}
-          help-text={inputValues.canAdd.helpText}
+          help-text={inputValues.groupingField.helpText}
         >
         </c-od-datatable-input-generic>
-        <template lwc:if={canAdd}>
-          <c-od-datatable-input-generic
-            field-name="addLabel"
-            type={inputValues.addLabel.type}
-            editable
-            class="slds-size--1-of-2"
-            value={inputValues.addLabel.value}
-            label={inputValues.addLabel.label}
-            onupdatefield={handleInputChange}
-            help-text={inputValues.addLabel.helpText}
-          >
-          </c-od-datatable-input-generic>
-          <div class="slds-size--1-of-1 slds-grid slds-wrap">
+        <template lwc:if={inputValues.groupingField.value}>
+          <template lwc:if={isGroupingFieldPicklist}>
             <c-od-datatable-input-generic
-              field-name="addType"
-              type={inputValues.addType.type}
-              editable={addTypeEditable}
-              extra-container-classes="slds-align--absolute-center"
-              options={inlineFlowOptions}
-              class="slds-size--1-of-2"
-              value={inputValues.addType.value}
-              label={inputValues.addType.label}
+              field-name="groupingSource"
+              type={inputValues.groupingSource.type}
+              editable
+              options={groupingSourceOptions}
+              class="slds-size--1-of-1"
+              value={inputValues.groupingSource.value}
+              label={inputValues.groupingSource.label}
               onupdatefield={handleInputChange}
-              help-text={inputValues.addType.helpText}
+              help-text={inputValues.groupingSource.helpText}
             >
             </c-od-datatable-input-generic>
-          </div>
-          <template lwc:if={addFlow}>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
+            <template lwc:if={isGroupingSourceDataset}>
               <c-od-datatable-input-generic
-                field-name="addFlowName"
-                type={fieldTypes.SELECT}
+                field-name="showEmptyGroups"
+                type={inputValues.showEmptyGroups.type}
                 editable
-                options={flows}
-                placeholder="Select flow..."
+                toggle-value-active={yesNo.YES}
+                toggle-value-inactive={yesNo.NO}
                 class="slds-size--1-of-1"
-                value={inputValues.addFlowName.value}
-                label={inputValues.addFlowName.label}
-                required
-                opened={dropdowns.addFlowName}
-                onfocusdropdown={handleOnFocusDropdown}
-                onblurdropdown={handleOnBlurDropdown}
+                value={inputValues.showEmptyGroups.value}
+                label={inputValues.showEmptyGroups.label}
                 onupdatefield={handleInputChange}
-                help-text={inputValues.addFlowName.helpText}
+                help-text={inputValues.showEmptyGroups.helpText}
               >
               </c-od-datatable-input-generic>
-            </div>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
-              <lightning-button
-                label="Configure Flow Variables"
-                icon-name="utility:flow"
-                name="addFlowInputVariables"
-                onclick={handleOpenFlowInputVariables}
-                class="slds-p-around--xx-small"
-              >
-              </lightning-button>
-            </div>
+            </template>
           </template>
+          <template lwc:if={summarizedColumns.length}>
+            <c-od-datatable-input-generic
+              field-name="groupSortField"
+              type={fieldTypes.SELECT}
+              editable
+              options={groupingSortFieldOptions}
+              class="slds-size--1-of-1"
+              value={inputValues.groupSortField.value}
+              label={inputValues.groupSortField.label}
+              required
+              opened={dropdowns.groupSortField}
+              onfocusdropdown={handleOnFocusDropdown}
+              onblurdropdown={handleOnBlurDropdown}
+              onupdatefield={handleInputChange}
+              help-text={inputValues.groupSortField.helpText}
+            >
+            </c-od-datatable-input-generic>
+          </template>
+          <c-od-datatable-input-generic
+            field-name="groupSortDirection"
+            type={fieldTypes.SELECT}
+            editable
+            options={sortDirectionOptions}
+            class="slds-size--1-of-1"
+            value={inputValues.groupSortDirection.value}
+            label={inputValues.groupSortDirection.label}
+            opened={dropdowns.groupSortDirection}
+            onfocusdropdown={handleOnFocusDropdown}
+            onblurdropdown={handleOnBlurDropdown}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.groupSortDirection.helpText}
+          >
+          </c-od-datatable-input-generic>
+          <hr />
+          <c-od-datatable-input-generic
+            field-name="groupContentSortField"
+            type={fieldTypes.SELECT}
+            editable
+            options={groupContentSortFieldOptions}
+            class="slds-size--1-of-1"
+            value={inputValues.groupContentSortField.value}
+            label={inputValues.groupContentSortField.label}
+            opened={dropdowns.groupContentSortField}
+            onfocusdropdown={handleOnFocusDropdown}
+            onblurdropdown={handleOnBlurDropdown}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.groupContentSortField.helpText}
+          >
+          </c-od-datatable-input-generic>
+          <c-od-datatable-input-generic
+            field-name="groupContentSortDirection"
+            type={fieldTypes.SELECT}
+            editable
+            options={sortDirectionOptions}
+            class="slds-size--1-of-1"
+            value={inputValues.groupContentSortDirection.value}
+            label={inputValues.groupContentSortDirection.label}
+            opened={dropdowns.groupContentSortDirection}
+            onfocusdropdown={handleOnFocusDropdown}
+            onblurdropdown={handleOnBlurDropdown}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.groupContentSortDirection.helpText}
+          >
+          </c-od-datatable-input-generic>
         </template>
-      </div>
+      </template>
     </fieldset>
-    <template lwc:if={canAdd}>
+
+    <!-- Summarize -->
+    <template lwc:if={summarizedColumns.length}>
       <fieldset class="slds-box slds-grid slds-wrap">
-        <legend>New Record Configuration</legend>
+        <legend>Summarize</legend>
         <c-od-datatable-input-generic
-          field-name="isMasterDetail"
-          type={inputValues.isMasterDetail.type}
+          field-name="showTotalsByGroup"
+          type={inputValues.showTotalsByGroup.type}
           editable
-          extra-container-classes="slds-m-left--x-large"
           toggle-value-active={yesNo.YES}
           toggle-value-inactive={yesNo.NO}
           class="slds-size--1-of-1"
-          value={inputValues.isMasterDetail.value}
-          label={inputValues.isMasterDetail.label}
-          onupdatefield={handleEnableDisableMasterDetail}
-          help-text={inputValues.isMasterDetail.helpText}
+          value={inputValues.showTotalsByGroup.value}
+          label={inputValues.showTotalsByGroup.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.showTotalsByGroup.helpText}
         >
         </c-od-datatable-input-generic>
-        <template lwc:if={isMasterDetail}>
-          <div class="slds-m-top--small">
-            <lightning-button
-              label="Configure Master-Detail Fields"
-              icon-name="utility:insert_tag_field"
-              onclick={handleOpenMasterDetailFields}
-              variant="brand"
+        <c-od-datatable-input-generic
+          field-name="recalculateLive"
+          type={inputValues.recalculateLive.type}
+          editable
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.recalculateLive.value}
+          label={inputValues.recalculateLive.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.recalculateLive.helpText}
+        >
+        </c-od-datatable-input-generic>
+      </fieldset>
+    </template>
+
+    <!-- Pagination -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Pagination</legend>
+      <c-od-datatable-input-generic
+        field-name="pagination"
+        type={inputValues.pagination.type}
+        editable
+        toggle-value-active={yesNo.YES}
+        toggle-value-inactive={yesNo.NO}
+        class="slds-size--1-of-1"
+        value={inputValues.pagination.value}
+        label={inputValues.pagination.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.pagination.helpText}
+      >
+      </c-od-datatable-input-generic>
+      <template lwc:if={paginationEnabled}>
+        <c-od-datatable-input-generic
+          field-name="pageSize"
+          type={inputValues.pageSize.type}
+          editable
+          scale="0"
+          class="slds-size--1-of-1"
+          value={inputValues.pageSize.value}
+          label={inputValues.pageSize.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.pageSize.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="paginationAlignment"
+          type={fieldTypes.SELECT}
+          editable
+          options={paginationAlignmentOptions}
+          class="slds-size--1-of-1"
+          value={inputValues.paginationAlignment.value}
+          label={inputValues.paginationAlignment.label}
+          required
+          opened={dropdowns.paginationAlignment}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.paginationAlignment.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="paginationShowOptions"
+          type={inputValues.paginationShowOptions.type}
+          editable
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.paginationShowOptions.value}
+          label={inputValues.paginationShowOptions.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.paginationShowOptions.helpText}
+        >
+        </c-od-datatable-input-generic>
+      </template>
+    </fieldset>
+
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">
+        Add, Edit and Delete Behaviour
+      </h1>
+    </div>
+
+    <template lwc:if={isObjectSelected}>
+      <!-- Adding Records -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Adding Records</legend>
+        <div class="slds-size--1-of-1 slds-grid slds-wrap">
+          <c-od-datatable-input-generic
+            field-name="canAdd"
+            type={inputValues.canAdd.type}
+            editable
+            toggle-value-active={yesNo.YES}
+            toggle-value-inactive={yesNo.NO}
+            class="slds-size--1-of-1"
+            value={inputValues.canAdd.value}
+            label={inputValues.canAdd.label}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.canAdd.helpText}
+          >
+          </c-od-datatable-input-generic>
+          <template lwc:if={canAdd}>
+            <c-od-datatable-input-generic
+              field-name="addLabel"
+              type={inputValues.addLabel.type}
+              editable
+              class="slds-size--1-of-1"
+              value={inputValues.addLabel.value}
+              label={inputValues.addLabel.label}
+              onupdatefield={handleInputChange}
+              help-text={inputValues.addLabel.helpText}
             >
-            </lightning-button>
-            <template lwc:if={emptyMasterDetailColumns}>
-              <div role="alert" class="slds-form-element__help error-text">
-                You must select at least one Master-Detail field. Click the button to do it.
+            </c-od-datatable-input-generic>
+            <div class="slds-size--1-of-1 slds-grid slds-wrap">
+              <c-od-datatable-input-generic
+                field-name="addType"
+                type={inputValues.addType.type}
+                editable={addTypeEditable}
+                options={inlineFlowOptions}
+                class="slds-size--1-of-1"
+                value={inputValues.addType.value}
+                label={inputValues.addType.label}
+                onupdatefield={handleInputChange}
+                help-text={inputValues.addType.helpText}
+              >
+              </c-od-datatable-input-generic>
+            </div>
+            <template lwc:if={addFlow}>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <c-od-datatable-input-generic
+                  field-name="addFlowName"
+                  type={fieldTypes.SELECT}
+                  editable
+                  options={flows}
+                  placeholder="Select flow..."
+                  class="slds-size--1-of-1"
+                  value={inputValues.addFlowName.value}
+                  label={inputValues.addFlowName.label}
+                  required
+                  opened={dropdowns.addFlowName}
+                  onfocusdropdown={handleOnFocusDropdown}
+                  onblurdropdown={handleOnBlurDropdown}
+                  onupdatefield={handleInputChange}
+                  help-text={inputValues.addFlowName.helpText}
+                >
+                </c-od-datatable-input-generic>
               </div>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <lightning-button
+                  label="Configure Flow Variables"
+                  icon-name="utility:flow"
+                  name="addFlowInputVariables"
+                  onclick={handleOpenFlowInputVariables}
+                  class="slds-p-around--xx-small"
+                >
+                </lightning-button>
+              </div>
+            </template>
+          </template>
+        </div>
+      </fieldset>
+      <template lwc:if={canAdd}>
+        <fieldset class="slds-box slds-grid slds-wrap">
+          <legend>New Record Configuration</legend>
+          <c-od-datatable-input-generic
+            field-name="isMasterDetail"
+            type={inputValues.isMasterDetail.type}
+            editable
+            toggle-value-active={yesNo.YES}
+            toggle-value-inactive={yesNo.NO}
+            class="slds-size--1-of-1"
+            value={inputValues.isMasterDetail.value}
+            label={inputValues.isMasterDetail.label}
+            onupdatefield={handleEnableDisableMasterDetail}
+            help-text={inputValues.isMasterDetail.helpText}
+          >
+          </c-od-datatable-input-generic>
+          <template lwc:if={isMasterDetail}>
+            <div class="slds-m-top--small">
+              <lightning-button
+                label="Configure Master-Detail Fields"
+                icon-name="utility:insert_tag_field"
+                onclick={handleOpenMasterDetailFields}
+                variant="brand"
+              >
+              </lightning-button>
+              <template lwc:if={emptyMasterDetailColumns}>
+                <div role="alert" class="slds-form-element__help error-text">
+                  You must select at least one Master-Detail field. Click the button to do it.
+                </div>
+              </template>
+            </div>
+          </template>
+        </fieldset>
+      </template>
+
+      <!-- Editing Records -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Editing Records</legend>
+        <div class="slds-size--1-of-1 slds-grid slds-wrap">
+          <div class="slds-size--1-of-1 slds-grid slds-wrap">
+            <c-od-datatable-input-generic
+              field-name="canEdit"
+              type={inputValues.canEdit.type}
+              editable={canEditEditable}
+              toggle-value-active={yesNo.YES}
+              toggle-value-inactive={yesNo.NO}
+              class="slds-size--1-of-1"
+              value={inputValues.canEdit.value}
+              label={inputValues.canEdit.label}
+              onupdatefield={handleInputChange}
+              help-text={inputValues.canEdit.helpText}
+            >
+            </c-od-datatable-input-generic>
+            <template lwc:if={canEdit}>
+              <c-od-datatable-input-generic
+                field-name="editType"
+                type={inputValues.editType.type}
+                editable
+                class="slds-size--1-of-1"
+                options={inlineFlowOptions}
+                value={inputValues.editType.value}
+                label={inputValues.editType.label}
+                onupdatefield={handleInputChange}
+                help-text={inputValues.editType.helpText}
+              >
+              </c-od-datatable-input-generic>
+            </template>
+          </div>
+          <template lwc:if={canEdit}>
+            <template lwc:if={editFlow}>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <c-od-datatable-input-generic
+                  field-name="editLabel"
+                  type={inputValues.editLabel.type}
+                  editable
+                  class="slds-size--1-of-1"
+                  value={inputValues.editLabel.value}
+                  label={inputValues.editLabel.label}
+                  onupdatefield={handleInputChange}
+                  help-text={inputValues.editLabel.helpText}
+                >
+                </c-od-datatable-input-generic>
+              </div>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <c-od-datatable-input-generic
+                  field-name="editFlowName"
+                  type={fieldTypes.SELECT}
+                  editable
+                  options={flows}
+                  placeholder="Select flow..."
+                  class="slds-size--1-of-1"
+                  value={inputValues.editFlowName.value}
+                  label={inputValues.editFlowName.label}
+                  onupdatefield={handleInputChange}
+                  required
+                  help-text={inputValues.editFlowName.helpText}
+                  opened={dropdowns.editFlowName}
+                  onfocusdropdown={handleOnFocusDropdown}
+                  onblurdropdown={handleOnBlurDropdown}
+                >
+                </c-od-datatable-input-generic>
+              </div>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <lightning-button
+                  label="Configure Flow Variables"
+                  icon-name="utility:flow"
+                  name="editFlowInputVariables"
+                  class="slds-p-around--xx-small"
+                  onclick={handleOpenFlowInputVariables}
+                >
+                </lightning-button>
+              </div>
+            </template>
+            <template lwc:if={editInline}>
+              <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                <c-od-datatable-input-generic
+                  field-name="canBulkEdit"
+                  type={inputValues.canBulkEdit.type}
+                  editable
+                  toggle-value-active={yesNo.YES}
+                  toggle-value-inactive={yesNo.NO}
+                  class="slds-size--1-of-1"
+                  value={inputValues.canBulkEdit.value}
+                  label={inputValues.canBulkEdit.label}
+                  onupdatefield={handleInputChange}
+                  help-text={inputValues.canBulkEdit.helpText}
+                >
+                </c-od-datatable-input-generic>
+                <template lwc:if={canBulkEdit}>
+                  <c-od-datatable-input-generic
+                    field-name="bulkEditLabel"
+                    type={inputValues.bulkEditLabel.type}
+                    editable
+                    class="slds-size--1-of-1"
+                    value={inputValues.bulkEditLabel.value}
+                    label={inputValues.bulkEditLabel.label}
+                    onupdatefield={handleInputChange}
+                    help-text={inputValues.bulkEditLabel.helpText}
+                  >
+                  </c-od-datatable-input-generic>
+                </template>
+              </div>
+            </template>
+          </template>
+        </div>
+      </fieldset>
+
+      <!-- Deleting Records -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Deleting Records</legend>
+        <c-od-datatable-input-generic
+          field-name="canDelete"
+          type={inputValues.canDelete.type}
+          editable={canDeleteEditable}
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.canDelete.value}
+          label={inputValues.canDelete.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.canDelete.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <template lwc:if={canDelete}>
+          <div class="slds-size--1-of-1 slds-grid slds-wrap">
+            <c-od-datatable-input-generic
+              field-name="canBulkDelete"
+              type={inputValues.canBulkDelete.type}
+              editable
+              toggle-value-active={yesNo.YES}
+              toggle-value-inactive={yesNo.NO}
+              class="slds-size--1-of-1"
+              value={inputValues.canBulkDelete.value}
+              label={inputValues.canBulkDelete.label}
+              onupdatefield={handleInputChange}
+              help-text={inputValues.canBulkDelete.helpText}
+            >
+            </c-od-datatable-input-generic>
+            <template lwc:if={canBulkDelete}>
+              <c-od-datatable-input-generic
+                field-name="bulkDeleteLabel"
+                type={inputValues.bulkDeleteLabel.type}
+                editable
+                class="slds-size--1-of-1"
+                value={inputValues.bulkDeleteLabel.value}
+                label={inputValues.bulkDeleteLabel.label}
+                onupdatefield={handleInputChange}
+                help-text={inputValues.bulkDeleteLabel.helpText}
+              >
+              </c-od-datatable-input-generic>
             </template>
           </div>
         </template>
       </fieldset>
-    </template>
 
-    <!-- Editing Records -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Editing Records</legend>
-      <div class="slds-size--1-of-1 slds-grid slds-wrap">
-        <div class="slds-size--1-of-1 slds-grid slds-wrap">
-          <c-od-datatable-input-generic
-            field-name="canEdit"
-            type={inputValues.canEdit.type}
-            editable={canEditEditable}
-            extra-container-classes="slds-align--absolute-center"
-            toggle-value-active={yesNo.YES}
-            toggle-value-inactive={yesNo.NO}
-            extra-label-classes="slds-align--absolute-center"
-            class="slds-size--1-of-2"
-            value={inputValues.canEdit.value}
-            label={inputValues.canEdit.label}
-            onupdatefield={handleInputChange}
-            help-text={inputValues.canEdit.helpText}
-          >
-          </c-od-datatable-input-generic>
-          <template lwc:if={canEdit}>
-            <c-od-datatable-input-generic
-              field-name="editType"
-              type={inputValues.editType.type}
-              editable
-              extra-container-classes="slds-align--absolute-center"
-              class="slds-size--1-of-2"
-              options={inlineFlowOptions}
-              value={inputValues.editType.value}
-              label={inputValues.editType.label}
-              onupdatefield={handleInputChange}
-              help-text={inputValues.editType.helpText}
-            >
-            </c-od-datatable-input-generic>
-          </template>
-        </div>
-        <template lwc:if={canEdit}>
-          <template lwc:if={editFlow}>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
-              <c-od-datatable-input-generic
-                field-name="editLabel"
-                type={inputValues.editLabel.type}
-                editable
-                class="slds-size--1-of-2"
-                value={inputValues.editLabel.value}
-                label={inputValues.editLabel.label}
-                onupdatefield={handleInputChange}
-                help-text={inputValues.editLabel.helpText}
-              >
-              </c-od-datatable-input-generic>
-            </div>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
-              <c-od-datatable-input-generic
-                field-name="editFlowName"
-                type={fieldTypes.SELECT}
-                editable
-                options={flows}
-                placeholder="Select flow..."
-                class="slds-size--1-of-1"
-                value={inputValues.editFlowName.value}
-                label={inputValues.editFlowName.label}
-                onupdatefield={handleInputChange}
-                required
-                help-text={inputValues.editFlowName.helpText}
-                opened={dropdowns.editFlowName}
-                onfocusdropdown={handleOnFocusDropdown}
-                onblurdropdown={handleOnBlurDropdown}
-              >
-              </c-od-datatable-input-generic>
-            </div>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
-              <lightning-button
-                label="Configure Flow Variables"
-                icon-name="utility:flow"
-                name="editFlowInputVariables"
-                class="slds-p-around--xx-small"
-                onclick={handleOpenFlowInputVariables}
-              >
-              </lightning-button>
-            </div>
-          </template>
-          <template lwc:if={editInline}>
-            <div class="slds-size--1-of-1 slds-grid slds-wrap">
-              <c-od-datatable-input-generic
-                field-name="canBulkEdit"
-                type={inputValues.canBulkEdit.type}
-                editable
-                extra-container-classes="slds-align--absolute-center"
-                toggle-value-active={yesNo.YES}
-                toggle-value-inactive={yesNo.NO}
-                extra-label-classes="slds-align--absolute-center"
-                class="slds-size--1-of-2"
-                value={inputValues.canBulkEdit.value}
-                label={inputValues.canBulkEdit.label}
-                onupdatefield={handleInputChange}
-                help-text={inputValues.canBulkEdit.helpText}
-              >
-              </c-od-datatable-input-generic>
-              <template lwc:if={canBulkEdit}>
-                <c-od-datatable-input-generic
-                  field-name="bulkEditLabel"
-                  type={inputValues.bulkEditLabel.type}
-                  editable
-                  class="slds-size--1-of-2"
-                  value={inputValues.bulkEditLabel.value}
-                  label={inputValues.bulkEditLabel.label}
-                  onupdatefield={handleInputChange}
-                  help-text={inputValues.bulkEditLabel.helpText}
-                >
-                </c-od-datatable-input-generic>
-              </template>
-            </div>
-          </template>
-        </template>
+      <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+        <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Save Behaviour</h1>
       </div>
-    </fieldset>
 
-    <!-- Deleting Records -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Deleting Records</legend>
-      <c-od-datatable-input-generic
-        field-name="canDelete"
-        type={inputValues.canDelete.type}
-        editable={canDeleteEditable}
-        extra-container-classes="slds-align--absolute-center"
-        toggle-value-active={yesNo.YES}
-        toggle-value-inactive={yesNo.NO}
-        extra-label-classes="slds-align--absolute-center"
-        class="slds-size--1-of-2"
-        value={inputValues.canDelete.value}
-        label={inputValues.canDelete.label}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.canDelete.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <template lwc:if={canDelete}>
-        <div class="slds-size--1-of-1 slds-grid slds-wrap">
-          <c-od-datatable-input-generic
-            field-name="canBulkDelete"
-            type={inputValues.canBulkDelete.type}
-            editable
-            extra-container-classes="slds-align--absolute-center"
-            toggle-value-active={yesNo.YES}
-            toggle-value-inactive={yesNo.NO}
-            extra-label-classes="slds-align--absolute-center"
-            class="slds-size--1-of-2"
-            value={inputValues.canBulkDelete.value}
-            label={inputValues.canBulkDelete.label}
-            onupdatefield={handleInputChange}
-            help-text={inputValues.canBulkDelete.helpText}
-          >
-          </c-od-datatable-input-generic>
-          <template lwc:if={canBulkDelete}>
-            <c-od-datatable-input-generic
-              field-name="bulkDeleteLabel"
-              type={inputValues.bulkDeleteLabel.type}
-              editable
-              class="slds-size--1-of-2"
-              value={inputValues.bulkDeleteLabel.value}
-              label={inputValues.bulkDeleteLabel.label}
-              onupdatefield={handleInputChange}
-              help-text={inputValues.bulkDeleteLabel.helpText}
-            >
-            </c-od-datatable-input-generic>
-          </template>
-        </div>
-      </template>
-    </fieldset>
-
-    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Save Behaviour</h1>
-    </div>
-
-    <!-- Saving records -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Saving the Records</legend>
-      <c-od-datatable-input-generic
-        field-name="inlineSave"
-        type={inputValues.inlineSave.type}
-        editable
-        extra-container-classes="slds-align--absolute-center"
-        toggle-value-active={yesNo.YES}
-        toggle-value-inactive={yesNo.NO}
-        extra-label-classes="slds-align--absolute-center"
-        class="slds-size--1-of-2"
-        value={inputValues.inlineSave.value}
-        label={inputValues.inlineSave.label}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.inlineSave.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <template lwc:if={inlineSave}>
+      <!-- Saving records -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Saving the Records</legend>
         <c-od-datatable-input-generic
-          field-name="saveLabel"
-          type={inputValues.saveLabel.type}
+          field-name="inlineSave"
+          type={inputValues.inlineSave.type}
           editable
-          class="slds-size--1-of-2"
-          value={inputValues.saveLabel.value}
-          label={inputValues.saveLabel.label}
-          onupdatefield={handleInputChange}
-          help-text={inputValues.saveLabel.helpText}
-        >
-        </c-od-datatable-input-generic>
-        <c-od-datatable-input-generic
-          field-name="navigateNextAfterSave"
-          type={inputValues.navigateNextAfterSave.type}
-          editable
-          extra-container-classes="slds-p-left--x-large"
           toggle-value-active={yesNo.YES}
           toggle-value-inactive={yesNo.NO}
-          extra-label-classes="slds-p-left--x-small"
           class="slds-size--1-of-1"
-          value={inputValues.navigateNextAfterSave.value}
-          label={inputValues.navigateNextAfterSave.label}
+          value={inputValues.inlineSave.value}
+          label={inputValues.inlineSave.label}
           onupdatefield={handleInputChange}
-          help-text={inputValues.navigateNextAfterSave.helpText}
+          help-text={inputValues.inlineSave.helpText}
         >
         </c-od-datatable-input-generic>
-      </template>
-    </fieldset>
+        <template lwc:if={inlineSave}>
+          <c-od-datatable-input-generic
+            field-name="saveLabel"
+            type={inputValues.saveLabel.type}
+            editable
+            class="slds-size--1-of-1"
+            value={inputValues.saveLabel.value}
+            label={inputValues.saveLabel.label}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.saveLabel.helpText}
+          >
+          </c-od-datatable-input-generic>
+          <c-od-datatable-input-generic
+            field-name="navigateNextAfterSave"
+            type={inputValues.navigateNextAfterSave.type}
+            editabletoggle-value-active={yesNo.YES}
+            toggle-value-inactive={yesNo.NO}
+            class="slds-size--1-of-1"
+            value={inputValues.navigateNextAfterSave.value}
+            label={inputValues.navigateNextAfterSave.label}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.navigateNextAfterSave.helpText}
+          >
+          </c-od-datatable-input-generic>
+        </template>
+      </fieldset>
 
-    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Automatic Refresh Behaviour</h1>
-    </div>
+      <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+        <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">
+          Automatic Refresh Behaviour
+        </h1>
+      </div>
 
-    <!-- Platform Event -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Platform Event</legend>
-      <c-od-datatable-input-generic
-        field-name="listenToPlatformEvent"
-        type={inputValues.listenToPlatformEvent.type}
-        editable
-        extra-container-classes="slds-align--absolute-center"
-        toggle-value-active={yesNo.YES}
-        toggle-value-inactive={yesNo.NO}
-        extra-label-classes="slds-align--absolute-center"
-        class="slds-size--1-of-2"
-        value={inputValues.listenToPlatformEvent.value}
-        label={inputValues.listenToPlatformEvent.label}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.listenToPlatformEvent.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <template lwc:if={listenToPlatformEvent}>
+      <!-- Platform Event -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Platform Event</legend>
         <c-od-datatable-input-generic
-          field-name="platFormEventName"
-          type={fieldTypes.STRING}
-          class="slds-size--1-of-1"
-          value="OD_Refresh_Datatable__e"
-          label="Platform Event Name"
-          help-text="The API Name of the Platform Event that needs to be published for the component to refresh"
-        >
-        </c-od-datatable-input-generic>
-        <c-od-datatable-input-generic
-          field-name="platformEventMatchingFieldName"
-          type={fieldTypes.SELECT}
+          field-name="listenToPlatformEvent"
+          type={inputValues.listenToPlatformEvent.type}
           editable
-          options={fieldsForPlatformEvent}
-          placeholder="Select Field..."
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
           class="slds-size--1-of-1"
-          value={inputValues.platformEventMatchingFieldName.value}
-          label={inputValues.platformEventMatchingFieldName.label}
+          value={inputValues.listenToPlatformEvent.value}
+          label={inputValues.listenToPlatformEvent.label}
           onupdatefield={handleInputChange}
-          required
-          help-text={inputValues.platformEventMatchingFieldName.helpText}
-          opened={dropdowns.platformEventMatchingFieldName}
-          onfocusdropdown={handleOnFocusDropdown}
-          onblurdropdown={handleOnBlurDropdown}
+          help-text={inputValues.listenToPlatformEvent.helpText}
         >
         </c-od-datatable-input-generic>
+        <template lwc:if={listenToPlatformEvent}>
+          <c-od-datatable-input-generic
+            field-name="platFormEventName"
+            type={fieldTypes.STRING}
+            class="slds-size--1-of-1"
+            value="OD_Refresh_Datatable__e"
+            label="Platform Event Name"
+            help-text="The API Name of the Platform Event that needs to be published for the component to refresh"
+          >
+          </c-od-datatable-input-generic>
+          <c-od-datatable-input-generic
+            field-name="platformEventMatchingFieldName"
+            type={fieldTypes.SELECT}
+            editable
+            options={fieldsForPlatformEvent}
+            placeholder="Select Field..."
+            class="slds-size--1-of-1"
+            value={inputValues.platformEventMatchingFieldName.value}
+            label={inputValues.platformEventMatchingFieldName.label}
+            onupdatefield={handleInputChange}
+            required
+            help-text={inputValues.platformEventMatchingFieldName.helpText}
+            opened={dropdowns.platformEventMatchingFieldName}
+            onfocusdropdown={handleOnFocusDropdown}
+            onblurdropdown={handleOnBlurDropdown}
+          >
+          </c-od-datatable-input-generic>
+          <c-od-datatable-input-generic
+            field-name="platformEventMatchingId"
+            type={fieldTypes.SELECT}
+            editable
+            options={matchingIdOptions}
+            class="slds-size--1-of-1"
+            value={inputValues.platformEventMatchingId.value}
+            label={inputValues.platformEventMatchingId.label}
+            onupdatefield={handleInputChange}
+            required
+            help-text={inputValues.platformEventMatchingId.helpText}
+            opened={dropdowns.platformEventMatchingId}
+            onfocusdropdown={handleOnFocusDropdown}
+            onblurdropdown={handleOnBlurDropdown}
+          >
+          </c-od-datatable-input-generic>
+        </template>
+      </fieldset>
+
+      <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+        <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">More</h1>
+      </div>
+
+      <!-- Configuration Copy / Paste -->
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Copy</legend>
+        <lightning-button
+          label="Copy Configuration JSON"
+          icon-name="utility:copy"
+          onclick={handleCopyConfigurationToClipboard}
+          variant="brand"
+        >
+        </lightning-button>
+      </fieldset>
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Paste</legend>
         <c-od-datatable-input-generic
-          field-name="platformEventMatchingId"
-          type={fieldTypes.SELECT}
+          field-name="configurationJSON"
+          type={fieldTypes.TEXTAREA}
           editable
-          options={matchingIdOptions}
           class="slds-size--1-of-1"
-          value={inputValues.platformEventMatchingId.value}
-          label={inputValues.platformEventMatchingId.label}
-          onupdatefield={handleInputChange}
-          required
-          help-text={inputValues.platformEventMatchingId.helpText}
-          opened={dropdowns.platformEventMatchingId}
-          onfocusdropdown={handleOnFocusDropdown}
-          onblurdropdown={handleOnBlurDropdown}
+          value={configurationJSON}
+          label="Configuration JSON"
+          max-length="999999999"
+          onupdatefield={handleConfigurationChange}
+          help-text="Paste a fully configuration JSON from another Datatable (Using the Copy Configuration JSON button)"
         >
         </c-od-datatable-input-generic>
-      </template>
-    </fieldset>
-
-    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">More</h1>
-    </div>
-
-    <!-- Configuration Copy / Paste -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Copy</legend>
-      <lightning-button
-        label="Copy Configuration JSON"
-        icon-name="utility:copy"
-        onclick={handleCopyConfigurationToClipboard}
-        variant="brand"
-      >
-      </lightning-button>
-    </fieldset>
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Paste</legend>
-      <c-od-datatable-input-generic
-        field-name="configurationJSON"
-        type={fieldTypes.TEXTAREA}
-        editable
-        class="slds-size--1-of-1"
-        value={configurationJSON}
-        label="Configuration JSON"
-        max-length="999999999"
-        onupdatefield={handleConfigurationChange}
-        help-text="Paste a fully configuration JSON from another Datatable (Using the Copy Configuration JSON button)"
-      >
-      </c-od-datatable-input-generic>
-      <lightning-button
-        label="Process Configuration JSON"
-        icon-name="utility:paste"
-        onclick={handleProcessConfigurationToClipboard}
-        variant="brand"
-      >
-      </lightning-button>
-    </fieldset>
-
-    <!-- Configuration Columns Popup -->
-    <template lwc:if={showConfigureColumns}>
-      <c-od-datatable-configuration-columns
-        object-name={inputType}
-        builder-context={builderContext}
-        all-fields={fields}
-        onclose={handleCloseColumnsConfigurator}
-        class="configurator"
-        flows={flows}
-        columns={inputValues.columns.value}
-        onsave={handleSaveColumnsConfiguration}
-      >
-      </c-od-datatable-configuration-columns>
+        <lightning-button
+          label="Process Configuration JSON"
+          icon-name="utility:paste"
+          onclick={handleProcessConfigurationToClipboard}
+          variant="brand"
+        >
+        </lightning-button>
+      </fieldset>
     </template>
+  </template>
 
-    <!-- Master/Detail fields popup -->
-    <template lwc:if={showConfigureMasterDetailFields}>
-      <c-od-datatable-configuration-master-detail-fields
-        object-name={inputType}
-        context={builderContext}
-        class="configurator"
-        onclose={handleCloseMasterDetailFields}
-        configuration={inputValues.masterDetailConfiguration.value}
-        onsave={handleSaveMasterDetailFields}
-      >
-      </c-od-datatable-configuration-master-detail-fields>
-    </template>
+  <!-- Configuration Columns Popup -->
+  <template lwc:if={showConfigureColumns}>
+    <c-od-datatable-configuration-columns
+      object-name={inputType}
+      builder-context={builderContext}
+      all-fields={fields}
+      onclose={handleCloseColumnsConfigurator}
+      class="configurator"
+      flows={flows}
+      columns={inputValues.columns.value}
+      onsave={handleSaveColumnsConfiguration}
+    >
+    </c-od-datatable-configuration-columns>
+  </template>
 
-    <!-- Flow Input variables popup -->
-    <template lwc:if={showFlowInputVariables}>
-      <c-od-datatable-configuration-flow-input-variables
-        type={flowInputVariablesType}
-        single
-        builder-context={builderContext}
-        onclose={handleCloseFlowInputVariables}
-        class="configurator"
-        inputs={flowInputs}
-        object-name={inputType}
-        onsave={handleSaveFlowInputVariables}
-      >
-      </c-od-datatable-configuration-flow-input-variables>
-    </template>
+  <!-- Master/Detail fields popup -->
+  <template lwc:if={showConfigureMasterDetailFields}>
+    <c-od-datatable-configuration-master-detail-fields
+      object-name={inputType}
+      context={builderContext}
+      class="configurator"
+      onclose={handleCloseMasterDetailFields}
+      configuration={inputValues.masterDetailConfiguration.value}
+      onsave={handleSaveMasterDetailFields}
+    >
+    </c-od-datatable-configuration-master-detail-fields>
+  </template>
+
+  <!-- Flow Input variables popup -->
+  <template lwc:if={showFlowInputVariables}>
+    <c-od-datatable-configuration-flow-input-variables
+      type={flowInputVariablesType}
+      single
+      builder-context={builderContext}
+      onclose={handleCloseFlowInputVariables}
+      class="configurator"
+      inputs={flowInputs}
+      object-name={inputType}
+      onsave={handleSaveFlowInputVariables}
+    >
+    </c-od-datatable-configuration-flow-input-variables>
   </template>
 </template>

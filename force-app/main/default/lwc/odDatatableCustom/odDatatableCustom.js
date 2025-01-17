@@ -29,7 +29,7 @@ export default class ODCustomDatatable extends LightningDatatable {
     rowTooltipIconType: {
       template: rowTooltipIconTemplate,
       standardCellLayout: false,
-      typeAttributes: ['value', 'config', 'record'],
+      typeAttributes: ['fieldName', 'type', 'value', 'config', 'record'],
     },
   };
 }

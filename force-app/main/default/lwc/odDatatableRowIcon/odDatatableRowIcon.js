@@ -6,13 +6,13 @@ export default class OdDatatableRowIcon extends LightningElement {
   @api content;
   @api config;
   @api record;
-  @api isFirstRecord;
-  @api isLastRecord;
+  @api fieldName;
+  @api type;
 
   showSrcIconTooltip = false;
 
   get showIcon() {
-    if (this.record._isGroupRecord) {
+    if (this.record._isGroupRecord || this.isSummarizeRecord) {
       return false;
     }
 
@@ -42,16 +42,20 @@ export default class OdDatatableRowIcon extends LightningElement {
     return `${OD_DatatableResource}/icons/${this.config.iconName}`;
   }
 
+  get isSummarizeRecord() {
+    return this.record._isSummarizeRecord;
+  }
+
   get classesSrcIconTooltip() {
     let classes = `slds-popover slds-popover_tooltip slds-is-absolute iconTooltip`;
 
-    if (this.isFirstRecord) {
+    if (this.record._isFirst) {
       if (this.config.isLastColumn) {
         classes += ` slds-nubbin_right-top left`;
       } else {
         classes += ` slds-nubbin_left-top right`;
       }
-    } else if (this.isLastRecord) {
+    } else if (this.record._isLast) {
       if (this.config.isLastColumn) {
         classes += ` slds-nubbin_right-bottom top left`;
       } else {
@@ -70,6 +74,17 @@ export default class OdDatatableRowIcon extends LightningElement {
 
   get classesNoIcon() {
     return this.record._isGroupRecord ? 'groupCell' : '';
+  }
+
+  get theConfig() {
+    if (this.isSummarizeRecord) {
+      const newConfig = JSON.parse(JSON.stringify(this.config));
+      newConfig.cellClasses = 'slds-text-align--center';
+
+      return newConfig;
+    }
+
+    return this.config;
   }
 
   handleToggleSrcIconTooltip() {

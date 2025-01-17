@@ -13,9 +13,11 @@ import {
   CUSTOM_FIELD_TYPES,
   ROW_BUTTON_CONFIGURATION,
   HIDDEN_TYPE_OPTIONS,
+  GROUPING_SOURCE,
   INLINE_FLOW,
   PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
+  SORT_DIRECTION,
 } from 'c/odDatatableConstants';
 import {
   reduceErrors,
@@ -25,6 +27,9 @@ import {
   sortArrayByProperty,
 } from 'c/odDatatableUtils';
 import OdDatatableFlow from 'c/odDatatableFlow';
+
+const SPACES_FOR_TOTALS = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
+const NO_GROUP = 'no-group';
 
 export default class ODDatatable extends LightningElement {
   // internal use
@@ -84,9 +89,17 @@ export default class ODDatatable extends LightningElement {
   // grouping
   @api grouping;
   @api groupingField;
-  @api groupSortDirection = 'asc';
-  @api groupContentOrderField = 'Name';
-  @api groupContentSortDirection = 'asc';
+  @api groupSortField;
+  @api groupSortDirection = SORT_DIRECTION.ASC.value;
+  @api groupContentSortField;
+  @api groupContentSortDirection = SORT_DIRECTION.ASC.value;
+  @api groupingSource = GROUPING_SOURCE.DATASET;
+  @api groupingSourceFieldData;
+  @api showEmptyGroups;
+
+  // summarize
+  @api showTotalsByGroup;
+  @api recalculateLive;
 
   // outputs
   @api saveAndNext = false;
@@ -141,7 +154,7 @@ export default class ODDatatable extends LightningElement {
       // check the required fields with value, return false on the first one (this is for fields that are required but not navigated to them)
       this.columnsToShow.every((col) => {
         this._tableData
-          .filter((row) => !row._originalRecord._isGroupRecord)
+          .filter((row) => !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord)
           .every((rec) => {
             if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
               isValid = false;
@@ -230,12 +243,47 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
+  get _dataRowIndexes() {
+    return this._tableData
+      .map((row, index) =>
+        !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord ? index : -1,
+      )
+      .filter((index) => index !== -1);
+  }
+
+  get _paginatedData() {
+    // Get the slice of regular row indices we want for this page
+    const paginatedRegularIndexes = this._dataRowIndexes.slice(
+      this.currentPage * this._pageSizeNumber,
+      this._pageSizeNumber * (this.currentPage + 1),
+    );
+
+    if (paginatedRegularIndexes.length > 0) {
+      // Find the first special row before our paginated set
+      let startIndex = paginatedRegularIndexes[0];
+      while (startIndex > 0 && this._tableData[startIndex - 1]._originalRecord._isGroupRecord) {
+        startIndex--;
+      }
+
+      // Find the last special row after our paginated set
+      let endIndex = paginatedRegularIndexes[paginatedRegularIndexes.length - 1];
+      while (
+        endIndex < this._tableData.length - 1 &&
+        this._tableData[endIndex + 1]._originalRecord._isSummarizeRecord
+      ) {
+        endIndex++;
+      }
+
+      // Return all rows between start and end index
+      return this._tableData.slice(startIndex, endIndex + 1);
+    }
+
+    return [];
+  }
+
   get dataToShow() {
     if (this.showPagination) {
-      return this._tableData.slice(
-        this.currentPage * this._pageSizeNumber,
-        this._pageSizeNumber * (this.currentPage + 1),
-      );
+      return this._paginatedData;
     }
 
     return this._tableData;
@@ -285,8 +333,16 @@ export default class ODDatatable extends LightningElement {
     return this.bulkEditLabel && this.bulkEditLabel !== EMPTY_STRING;
   }
 
+  get _editInline() {
+    return this.canEdit === YES_NO.YES && this.editType === INLINE_FLOW.INLINE;
+  }
+
   get _editWithFlow() {
     return this.canEdit === YES_NO.YES && this.editType === INLINE_FLOW.FLOW;
+  }
+
+  get _addInline() {
+    return this.canAdd === YES_NO.YES && this.addType === INLINE_FLOW.INLINE;
   }
 
   get _addWithFlow() {
@@ -356,7 +412,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get totalPages() {
-    return Math.ceil(this._tableData.length / this._pageSizeNumber);
+    return Math.ceil(this._dataRowIndexes.length / this._pageSizeNumber);
   }
 
   get pages() {
@@ -385,7 +441,9 @@ export default class ODDatatable extends LightningElement {
   }
 
   get _selectedRowsToProcessBulk() {
-    return this._selectedRows.filter((row) => !row._originalRecord._isGroupRecord);
+    return this._selectedRows.filter(
+      (row) => !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
+    );
   }
 
   // =================================================================
@@ -452,7 +510,11 @@ export default class ODDatatable extends LightningElement {
   _buildRecords(data, afterSave = false) {
     let result = [];
 
-    this._originalTableData = JSON.parse(JSON.stringify(data));
+    this._originalTableData = JSON.parse(
+      JSON.stringify(
+        data.filter((rs) => !rs._originalRecord?._isGroupRecord && !rs._originalRecord?._isSummarizeRecord),
+      ),
+    );
 
     this._originalTableData.forEach((rec, index, array) => {
       // if this record is in the stored session one use the stored one (for when we validate and back to the same page)
@@ -492,55 +554,329 @@ export default class ODDatatable extends LightningElement {
       result = result.concat(this.outputAddedRows);
     }
 
-    this._tableData = this.showGrouping ? this._groupData(result) : result;
+    const totalRow = this._checkAndSummarize(result);
+
+    result = this.showGrouping ? this._groupData(result) : result;
+
+    // add the total row to the end if any
+    if (totalRow) {
+      result.push(totalRow);
+    }
+
+    this._tableData = result;
   }
 
   _groupData(data) {
+    // first check if the grouping field is in the dataset
+    const fieldInDataSet = data[0].hasOwnProperty(this.groupingField);
+
+    if (!fieldInDataSet) {
+      return data;
+    }
+
     // group the data by the field
-    const groupedData = Object.groupBy(data, (dt) => dt[this.groupingField] || '');
+    let groupedData = {};
 
-    // First sort the groups
-    let sortedResult = Object.entries(groupedData).sort(([keyA], [keyB]) => {
-      // Handle empty/null/undefined values
-      const isEmptyA = !keyA || keyA === '';
-      const isEmptyB = !keyB || keyB === '';
+    // grouping source is the data
+    if (this.groupingSource === GROUPING_SOURCE.DATASET) {
+      groupedData = Object.groupBy(data, (dt) => dt[this.groupingField] || '');
+    } else {
+      // grouping source is the picklist
+      this.groupingSourceFieldData.split(',').forEach((value) => {
+        groupedData[value] = data.filter((dt) => dt[this.groupingField] === value);
+      });
 
-      // If both are empty/null/undefined, maintain their relative position
-      if (isEmptyA && isEmptyB) return 0;
-      // If only A is empty/null/undefined, move it to the end
-      if (isEmptyA) return 1;
-      // If only B is empty/null/undefined, move it to the end
-      if (isEmptyB) return -1;
+      // add the ones with empty value
+      groupedData[''] = data.filter((dt) => !dt[this.groupingField]);
+    }
 
-      return this.groupSortDirection === 'asc' ? keyA.localeCompare(keyB) : keyB.localeCompare(keyA);
+    // Create an array to store group information including summaries
+    let groupsWithSummaries = Object.entries(groupedData).map(([group, items]) => {
+      const summary =
+        this.showTotalsByGroup === YES_NO.YES ? this._checkAndSummarize(items, group || NO_GROUP) : undefined;
+      return {
+        group,
+        items,
+        summary,
+      };
     });
 
-    if (this.groupContentOrderField) {
-      // Then sort the arrays within each group
-      sortedResult = sortedResult.reduce((sorted, [key, array]) => {
-        sorted[key] = sortArrayByProperty(array, this.groupContentOrderField, this.groupContentSortDirection);
+    // Sort the groups based on either group name or summary values
+    groupsWithSummaries = groupsWithSummaries.sort((a, b) => {
+      if (this.groupSortField && this.groupSortField !== this.groupingField) {
+        // If sorting by a summary field
+        if (a.summary && b.summary) {
+          const valueA = a.summary[this.groupSortField];
+          const valueB = b.summary[this.groupSortField];
 
-        return sorted;
-      }, {});
+          // Handle empty/null/undefined values
+          const isEmptyA = valueA === null || valueA === undefined || valueA === '';
+          const isEmptyB = valueB === null || valueB === undefined || valueB === '';
+
+          if (isEmptyA && isEmptyB) return 0;
+          if (isEmptyA) return 1;
+          if (isEmptyB) return -1;
+
+          // Handle numeric values
+          if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return this.groupSortDirection === SORT_DIRECTION.ASC.value ? valueA - valueB : valueB - valueA;
+          }
+
+          // Handle string values
+          return this.groupSortDirection === SORT_DIRECTION.ASC.value
+            ? String(valueA).localeCompare(String(valueB))
+            : String(valueB).localeCompare(String(valueA));
+        }
+      } else {
+        // Default sorting by group name
+        const isEmptyA = !a.group || a.group === '';
+        const isEmptyB = !b.group || b.group === '';
+
+        if (isEmptyA && isEmptyB) return 0;
+        if (isEmptyA) return 1;
+        if (isEmptyB) return -1;
+
+        return this.groupSortDirection === SORT_DIRECTION.ASC.value
+          ? a.group.localeCompare(b.group)
+          : b.group.localeCompare(a.group);
+      }
+    });
+
+    // Sort items within each group if needed
+    if (this.groupContentSortField) {
+      groupsWithSummaries.forEach((groupData) => {
+        groupData.items = sortArrayByProperty(
+          groupData.items,
+          this.groupContentSortField,
+          this.groupContentSortDirection,
+        );
+      });
     }
 
     const firstColumnField = this.columnsToShow[0].fieldName;
 
-    return Object.entries(sortedResult).reduce((flattened, [group, items]) => {
+    // Flatten the sorted groups back into a single array
+    return groupsWithSummaries.reduce((flattened, { group, items, summary }) => {
+      if (this.groupingSource === GROUPING_SOURCE.FIELD && this.showEmptyGroups === YES_NO.NO && items.length === 0) {
+        return flattened;
+      }
+
+      const groupId = group || NO_GROUP;
+
       // Add the group as an element
       flattened.push({
-        _id: `grouping-${group || 'no-group'}`,
+        _id: `grouping-${groupId}`,
         [firstColumnField]: group,
         _originalRecord: {
           _isGroupRecord: true,
         },
       });
 
+      const newItems = items.map((item) => ({
+        ...item,
+        _groupId: groupId,
+      }));
+
       // Add all items in that group
-      flattened.push(...items);
+      flattened.push(...newItems);
+
+      // add the summary row if it exists
+      if (summary && newItems.length > 0) {
+        flattened.push(summary);
+      }
 
       return flattened;
     }, []);
+  }
+
+  _checkAndAddLabelToFirstColumn(record, group, columnFieldName = undefined) {
+    let groupToUse = group;
+    const firstColumnField = this.columnsToShow[0].fieldName;
+
+    if (columnFieldName === firstColumnField || !columnFieldName) {
+      if (record[firstColumnField]) {
+        if (groupToUse === NO_GROUP) {
+          groupToUse = ' ';
+        }
+
+        if (groupToUse) {
+          record[firstColumnField] = `Totals ${groupToUse}:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+        } else {
+          record[firstColumnField] = `TOTALS:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+        }
+      } else {
+        if (groupToUse) {
+          record[firstColumnField] = `Totals ${groupToUse}:`;
+        } else {
+          record[firstColumnField] = `TOTALS:`;
+        }
+      }
+    }
+
+    return record;
+  }
+
+  _checkAndSummarize(data, group = undefined) {
+    let result = {};
+
+    this.columnsToShow.forEach((column) => {
+      if (column.typeAttributes.config.summarize) {
+        const values = data
+          .map((row) => row[column.fieldName])
+          .filter((value) => value !== '' && value !== null && value !== undefined);
+
+        result[column.fieldName] = this._summarizeColumn(column, values);
+      }
+    });
+
+    // check and add labels to summarize rows
+    result = this._checkAndAddLabelToFirstColumn(result, group);
+
+    if (Object.keys(result).length > 0) {
+      return {
+        ...result,
+        _id: `summarize-${group || 'totals'}`,
+        _originalRecord: {
+          _isSummarizeRecord: true,
+        },
+      };
+    }
+
+    return undefined;
+  }
+
+  _summarizeColumn(column, values) {
+    let result;
+    switch (column.typeAttributes.config.summarizeType) {
+      case 'max':
+        result = values.length ? Math.max(...values) : null;
+        // For dates
+        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
+          result = values.reduce((max, current) => (current > max ? current : max));
+        }
+        break;
+
+      case 'min':
+        result = values.length ? Math.min(...values) : null;
+        // For dates
+        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
+          result = values.reduce((min, current) => (current < min ? current : min));
+        }
+        break;
+
+      case 'sum':
+        result = values.reduce((sum, current) => sum + (Number(current) || 0), 0);
+        break;
+
+      case 'avg':
+        if (values.length) {
+          const sum = values.reduce((acc, current) => acc + (Number(current) || 0), 0);
+          result = sum / values.length;
+        } else {
+          result = 0;
+        }
+        break;
+
+      case 'count':
+        result = `Count: ${values.length.toString()}`;
+        break;
+    }
+
+    return result;
+  }
+
+  _recalculateColumn(column, record, forceRecalculation = false) {
+    // only if recalculate live is enabled and is inlineEdit or inlineAdd and new record
+    if (
+      this.recalculateLive === YES_NO.YES &&
+      (forceRecalculation || this._editInline || (this._addInline && record.isNew))
+    ) {
+      // if the column is summarizable
+      if (column.typeAttributes.config.summarize) {
+        const group = record._groupId;
+
+        let newData = JSON.parse(JSON.stringify(this._tableData));
+        let rowToUpdateIndex;
+        let values;
+        let newValue;
+        let newObject = {};
+
+        // calculate for group
+        if (group) {
+          // get the row to update
+          rowToUpdateIndex = newData.findIndex((row) => row._id === `summarize-${group}`);
+
+          if (rowToUpdateIndex !== -1) {
+            values = newData
+              .filter(
+                (row) =>
+                  row._groupId === group &&
+                  !row.isDeleted &&
+                  !row._originalRecord._isGroupRecord &&
+                  !row._originalRecord._isSummarizeRecord,
+              )
+              .map((row) => row[column.fieldName])
+              .filter((value) => value !== '' && value !== null && value !== undefined);
+
+            // calculate the totals
+            newValue = this._summarizeColumn(column, values);
+
+            newObject = {
+              [column.fieldName]: newValue,
+            };
+
+            // check and add labels to summarize rows
+            newObject = this._checkAndAddLabelToFirstColumn(newObject, group, column.fieldName);
+
+            // update the data
+            newData = [
+              ...newData.slice(0, rowToUpdateIndex),
+              {
+                ...newData[rowToUpdateIndex],
+                ...newObject,
+              },
+              ...newData.slice(rowToUpdateIndex + 1),
+            ];
+          }
+        }
+
+        // calculate grand totals
+
+        // get the row to update
+        rowToUpdateIndex = newData.findIndex((row) => row._id === 'summarize-totals');
+
+        if (rowToUpdateIndex !== -1) {
+          values = newData
+            .filter(
+              (row) => !row.isDeleted && !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
+            )
+            .map((row) => row[column.fieldName])
+            .filter((value) => value !== '' && value !== null && value !== undefined);
+
+          // calculate the totals
+          newValue = this._summarizeColumn(column, values);
+
+          newObject = {
+            [column.fieldName]: newValue,
+          };
+
+          // check and add labels to summarize rows
+          newObject = this._checkAndAddLabelToFirstColumn(newObject, undefined, column.fieldName);
+
+          // update the data
+          newData = [
+            ...newData.slice(0, rowToUpdateIndex),
+            {
+              ...newData[rowToUpdateIndex],
+              ...newObject,
+            },
+            ...newData.slice(rowToUpdateIndex + 1),
+          ];
+        }
+
+        this._tableData = newData;
+      }
+    }
   }
 
   _buildColumns(columnsFromObject) {
@@ -647,8 +983,6 @@ export default class ODDatatable extends LightningElement {
         typeAttributes: {
           recordId: { fieldName: '_id' },
           record: { fieldName: '_originalRecord' },
-          iconName: { fieldName: '_deleteIcon' },
-          tooltip: { fieldName: '_deleteTooltip' },
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
@@ -671,19 +1005,21 @@ export default class ODDatatable extends LightningElement {
     this.columnsToShow = columnsConfiguration.filter((cl) => !cl.hidden);
   }
 
-  _doUpdateRecord(recordIndex, newObject) {
+  _doUpdateRecord(recordIndex, newObject, isAdd = false) {
     this._tableData = [
       ...this._tableData.slice(0, recordIndex),
       {
-        ...this._tableData[recordIndex],
+        ...(isAdd ? {} : this._tableData[recordIndex]),
         ...newObject,
       },
-      ...this._tableData.slice(recordIndex + 1),
+      ...this._tableData.slice(recordIndex + (isAdd ? 0 : 1)),
     ];
   }
 
   _doDelete(recordIndex) {
     if (recordIndex !== -1) {
+      const recordToDelete = JSON.parse(JSON.stringify(this._tableData[recordIndex]));
+
       // if it's a new add, delete the record from the collection
       if (this._tableData[recordIndex].isNew) {
         // if it's the last one just do an assignment, otherwise do the slice for the second part
@@ -707,6 +1043,11 @@ export default class ODDatatable extends LightningElement {
 
         this._doUpdateRecord(recordIndex, newObj);
       }
+
+      // recalculate totals
+      this.columnsToShow.forEach((cl) => {
+        this._recalculateColumn(cl, recordToDelete, true);
+      });
     }
   }
 
@@ -718,10 +1059,15 @@ export default class ODDatatable extends LightningElement {
       };
 
       this._doUpdateRecord(recordIndex, newObj);
+
+      // recalculate totals
+      this.columnsToShow.forEach((cl) => {
+        this._recalculateColumn(cl, JSON.parse(JSON.stringify(this._tableData[recordIndex])), true);
+      });
     }
   }
 
-  _doChangeField(recordIndex, fieldName, value) {
+  _doChangeField(recordIndex, fieldName, value, record) {
     if (recordIndex !== -1) {
       let theValue = value;
 
@@ -735,6 +1081,12 @@ export default class ODDatatable extends LightningElement {
       };
 
       this._doUpdateRecord(recordIndex, newObj);
+
+      // recalculate totals if needed
+      this._recalculateColumn(
+        this.columnsToShow.find((cl) => cl.fieldName === fieldName),
+        record,
+      );
     }
   }
 
@@ -763,8 +1115,22 @@ export default class ODDatatable extends LightningElement {
     // add the _originalRecord too
     newRecord._originalRecord = {};
 
+    // get the latest row that is not summary or group
+    let lastIndex = this._tableData.findLastIndex(
+      (dt) => !dt._originalRecord._isGroupRecord && !dt._originalRecord._isSummarizeRecord,
+    );
+
+    if (lastIndex !== -1) {
+      // add the group Id
+      newRecord._groupId = this._tableData[lastIndex]._groupId;
+
+      lastIndex++;
+    } else {
+      lastIndex = 9999;
+    }
+
     // add to the records to show
-    this._doUpdateRecord(99999, newRecord);
+    this._doUpdateRecord(lastIndex, newRecord, true);
 
     this._doUpdateOutputs(newRecord, EVENTS.ADD);
 
@@ -881,6 +1247,9 @@ export default class ODDatatable extends LightningElement {
 
             this._doUpdateRecord(99999, newRecord);
           }
+
+          // TODO test
+          this._buildRecords(this._tableData, true);
         } else {
           // multiple records
 
@@ -908,7 +1277,7 @@ export default class ODDatatable extends LightningElement {
               });
             });
 
-            this._tableData = newRecords;
+            this._buildRecords(newRecords, true);
           }
         }
       }
@@ -1185,7 +1554,7 @@ export default class ODDatatable extends LightningElement {
         if (this._editWithFlow) {
           this._doAddEditWithFlow(record);
         } else {
-          this._doChangeField(recordIndex, fieldName, value);
+          this._doChangeField(recordIndex, fieldName, value, record);
 
           // add to the valid invalids
           this._validInvalidFields[`${recordId}-${fieldName}`] = isValid;

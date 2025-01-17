@@ -134,19 +134,74 @@
   visibility: hidden;
 }
 
-/* Grouping */
-.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox {
+/* Grouping and summarize */
+.od-datatable tr[data-row-key-value^="grouping-"],
+.od-datatable tr[data-row-key-value^="summarize-"] {
+  pointer-events: none;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox,
+.od-datatable tr[data-row-key-value^="summarize-"] > td > lightning-primitive-cell-checkbox {
   display: none !important;
 }
 
-.od-datatable tr.slds-is-selected[data-row-key-value^="grouping-"] > td,
-.od-datatable tr.slds-is-selected[data-row-key-value^="grouping-"] > th {
-  background-color: transparent !important;
+.od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="summarize-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"] {
+  display: block;
+  height: var(--height-row);
 }
 
 .od-datatable th div.groupCell,
-.od-datatable td div.groupCell {
-  background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+.od-datatable td div.groupCell,
+.od-datatable th div.summarizeCell,
+.od-datatable td div.summarizeCell 
+ {
   font-weight: 700;
   min-height: var(--height-row);
+}
+.od-datatable th div.groupCell,
+.od-datatable td div.groupCell,
+.od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td {
+  background-color: #9999 !important;
+  margin-bottom: 5px;
+}
+  
+
+.od-datatable tr[data-row-key-value="summarize-totals"] th div.summarizeCell,
+.od-datatable tr[data-row-key-value="summarize-totals"] td div.summarizeCell,
+.od-datatable tr[data-row-key-value="summarize-totals"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > td {
+  background-color: #aaa !important;
+  color: white;
+  border-top: 2px solid #999;
+}
+
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) th div.summarizeCell,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) td div.summarizeCell,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > td {
+  background-color: #e0e0e0 !important;
+  margin-bottom: 5px;  
+}
+
+.od-datatable tr:has(div.deleted-record) {
+  background: #e7e3e3;
+}
+
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > th,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > th,
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > th 
+{
+  background-color: #ffffff !important;
+}
+
+.od-datatable tr[data-row-key-value^="summarize-"] th,
+.od-datatable tr[data-row-key-value^="summarize-"] td,
+.od-datatable tr[data-row-key-value^="grouping-"] th,
+.od-datatable tr[data-row-key-value^="grouping-"] td  {
+  border-top: 0;
 }

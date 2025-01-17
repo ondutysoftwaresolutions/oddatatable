@@ -4,8 +4,17 @@ import Toast from 'lightning/toast';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
-import { ALIGNMENT_OPTIONS, FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
-import { reduceErrors, generateRandomString } from 'c/odDatatableUtils';
+import {
+  ALIGNMENT_OPTIONS,
+  AVAILABLE_FIELDS_GROUPING,
+  FIELD_TYPES,
+  YES_NO,
+  EMPTY_STRING,
+  INLINE_FLOW,
+  GROUPING_SOURCE,
+  SORT_DIRECTION,
+} from 'c/odDatatableConstants';
+import { reduceErrors, generateRandomString, sortArrayByProperty } from 'c/odDatatableUtils';
 import OdDatatablePreview from 'c/odDatatablePreview';
 
 export default class OdConfigurationEditor extends LightningElement {
@@ -20,6 +29,7 @@ export default class OdConfigurationEditor extends LightningElement {
   yesNo = YES_NO;
   inlineFlow = INLINE_FLOW;
   configurationJSON;
+  sortDirectionOptions = Object.values(SORT_DIRECTION);
 
   // state
   isLoading = true;
@@ -35,6 +45,10 @@ export default class OdConfigurationEditor extends LightningElement {
     platformEventMatchingId: false,
     paginationAlignment: false,
     groupingField: false,
+    groupSortField: false,
+    groupSortDirection: false,
+    groupContentSortField: false,
+    groupContentSortDirection: false,
   };
 
   @track fields = [];
@@ -48,6 +62,17 @@ export default class OdConfigurationEditor extends LightningElement {
     {
       label: INLINE_FLOW.FLOW,
       value: INLINE_FLOW.FLOW,
+    },
+  ];
+
+  groupingSourceOptions = [
+    {
+      label: GROUPING_SOURCE.DATASET,
+      value: GROUPING_SOURCE.DATASET,
+    },
+    {
+      label: GROUPING_SOURCE.FIELD,
+      value: GROUPING_SOURCE.FIELD,
     },
   ];
 
@@ -309,7 +334,74 @@ export default class OdConfigurationEditor extends LightningElement {
       label: 'Group By',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
-      helpText: 'Field to group the data by',
+      helpText:
+        'Field to group the data by. If the field is not present in the dataset then it will not group the data',
+    },
+    groupSortField: {
+      label: 'Sort Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field',
+    },
+    groupSortDirection: {
+      label: 'Group Sort Direction',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: SORT_DIRECTION.ASC.value,
+      helpText:
+        'Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC',
+    },
+    groupContentSortField: {
+      label: 'Sort Content of Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'Field to sort the content of the group by. It can be one of the fields being showed in the table.',
+    },
+    groupContentSortDirection: {
+      label: 'Group Content Sort Direction',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: SORT_DIRECTION.ASC.value,
+      helpText:
+        'Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC',
+    },
+    groupingSource: {
+      label: 'Source',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: GROUPING_SOURCE.DATASET,
+      helpText:
+        'Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group.',
+    },
+    groupingSourceFieldData: {
+      label: 'Source Field Data',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for',
+    },
+    showEmptyGroups: {
+      label: 'Show Empty?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the groups with no data in it will be shown.',
+    },
+    showTotalsByGroup: {
+      label: 'Show Totals By Group?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.YES,
+      helpText: 'If enabled, a line with the totals by group will be shown',
+    },
+    recalculateLive: {
+      label: 'Recalculate totals on the fly?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table',
     },
 
     // internal use
@@ -439,6 +531,104 @@ export default class OdConfigurationEditor extends LightningElement {
     return this._automaticOutputVariables;
   }
 
+  // =================================================================
+  // setter for inputs
+  // =================================================================
+  // Set the fields with the data that was stored from the flow.
+  set inputVariables(variables) {
+    this._inputVariables = variables || [];
+    this._initializeValues();
+  }
+
+  // Set a local variable with the data that was stored from flow.
+  set elementInfo(info) {
+    this._elementInfo = info || {};
+  }
+
+  set automaticOutputVariables(value) {
+    this._automaticOutputVariables = value || {};
+  }
+
+  // =================================================================
+  // getter methods
+  // =================================================================
+  get inputType() {
+    const type = this.genericTypeMappings.find(({ typeName }) => typeName === 'T');
+    return type && type.typeValue;
+  }
+
+  get isObjectSelected() {
+    return this.inputType && !this.isLoading;
+  }
+
+  get canAdd() {
+    return this.inputValues.canAdd.value === YES_NO.YES;
+  }
+
+  get canEdit() {
+    return this.inputValues.canEdit.value === YES_NO.YES;
+  }
+
+  get editInline() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get editFlow() {
+    return this.inputValues.editType.value === INLINE_FLOW.FLOW;
+  }
+
+  get addInline() {
+    return this.inputValues.addType.value === INLINE_FLOW.INLINE;
+  }
+
+  get addFlow() {
+    return this.inputValues.addType.value === INLINE_FLOW.FLOW;
+  }
+
+  get canDelete() {
+    return this.inputValues.canDelete.value === YES_NO.YES;
+  }
+
+  get canBulkDelete() {
+    return this.inputValues.canBulkDelete.value === YES_NO.YES;
+  }
+
+  get canBulkEdit() {
+    return this.inputValues.canBulkEdit.value === YES_NO.YES;
+  }
+
+  get isMasterDetail() {
+    return this.inputValues.isMasterDetail.value === YES_NO.YES;
+  }
+
+  get canDeleteEditable() {
+    return !this.canBulkDelete;
+  }
+
+  get canEditEditable() {
+    return !this.canBulkEdit;
+  }
+
+  get addTypeEditable() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get inlineSave() {
+    return this.inputValues.inlineSave.value === YES_NO.YES;
+  }
+
+  get listenToPlatformEvent() {
+    return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
+  }
+
+  get paginationEnabled() {
+    return this.inputValues.pagination.value === YES_NO.YES;
+  }
+
+  get groupingEnabled() {
+    return this.inputValues.grouping.value === YES_NO.YES;
+  }
+
   get emptyColumns() {
     return !this.inputValues.columns.value;
   }
@@ -449,11 +639,6 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get paginationAlignmentOptions() {
     return Object.values(ALIGNMENT_OPTIONS);
-  }
-
-  get inputType() {
-    const type = this.genericTypeMappings.find(({ typeName }) => typeName === 'T');
-    return type && type.typeValue;
   }
 
   get dataCollectionOptions() {
@@ -587,97 +772,72 @@ export default class OdConfigurationEditor extends LightningElement {
     return result;
   }
 
-  // =================================================================
-  // setter for inputs
-  // =================================================================
-  // Set the fields with the data that was stored from the flow.
-  set inputVariables(variables) {
-    this._inputVariables = variables || [];
-    this._initializeValues();
+  get summarizedColumns() {
+    const result = [];
+
+    if (this.fields.length > 0) {
+      // add the summarized columns here
+      JSON.parse(this.inputValues.columns.value)
+        .filter((col) => col.typeAttributes.config.summarize)
+        .forEach((sumCol) => {
+          result.push(this.fields.find((fld) => fld.value === sumCol.fieldName));
+        });
+    }
+
+    return result;
   }
 
-  // Set a local variable with the data that was stored from flow.
-  set elementInfo(info) {
-    this._elementInfo = info || {};
+  get groupingFieldOptions() {
+    // get all the fields that can be used from the object
+    const result = this.fields.filter((fld) => AVAILABLE_FIELDS_GROUPING.includes(fld.type));
+
+    // add the summarize columns if not there and any
+    const sumColumns = this.summarizedColumns.filter(
+      (col) => AVAILABLE_FIELDS_GROUPING.includes(col.type) && !result.find((fld) => fld.fieldName === col.value),
+    );
+
+    if (sumColumns.length > 0) {
+      result.push(sumColumns);
+    }
+
+    return sortArrayByProperty(result, 'label');
   }
 
-  set automaticOutputVariables(value) {
-    this._automaticOutputVariables = value || {};
+  get groupingSortFieldOptions() {
+    // add the summarized columns here
+    const result = this.summarizedColumns;
+
+    if (!result.find((col) => col.value === this.inputValues.groupingField.value)) {
+      result.push(this.fields.find((fld) => fld.value === this.inputValues.groupingField.value));
+    }
+
+    return sortArrayByProperty(result, 'label');
   }
 
-  // =================================================================
-  // getter methods
-  // =================================================================
-  get isObjectSelected() {
-    return this.inputType && !this.isLoading;
+  get groupContentSortFieldOptions() {
+    const result = [];
+
+    if (this.fields.length > 0) {
+      JSON.parse(this.inputValues.columns.value)
+        .filter((col) => !col.typeAttributes.config.isCustom)
+        .forEach((col) => {
+          result.push(this.fields.find((fld) => fld.value === col.fieldName));
+        });
+    }
+
+    return result;
   }
 
-  get canAdd() {
-    return this.inputValues.canAdd.value === YES_NO.YES;
+  get groupingFieldConfiguration() {
+    return this.fields.length > 0 && this.fields.find((fld) => fld.value === this.inputValues.groupingField.value);
   }
 
-  get canEdit() {
-    return this.inputValues.canEdit.value === YES_NO.YES;
+  get isGroupingFieldPicklist() {
+    return this.groupingFieldConfiguration.type === FIELD_TYPES.SELECT;
   }
 
-  get editInline() {
-    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
-  }
-
-  get editFlow() {
-    return this.inputValues.editType.value === INLINE_FLOW.FLOW;
-  }
-
-  get addInline() {
-    return this.inputValues.addType.value === INLINE_FLOW.INLINE;
-  }
-
-  get addFlow() {
-    return this.inputValues.addType.value === INLINE_FLOW.FLOW;
-  }
-
-  get canDelete() {
-    return this.inputValues.canDelete.value === YES_NO.YES;
-  }
-
-  get canBulkDelete() {
-    return this.inputValues.canBulkDelete.value === YES_NO.YES;
-  }
-
-  get canBulkEdit() {
-    return this.inputValues.canBulkEdit.value === YES_NO.YES;
-  }
-
-  get isMasterDetail() {
-    return this.inputValues.isMasterDetail.value === YES_NO.YES;
-  }
-
-  get canDeleteEditable() {
-    return !this.canBulkDelete;
-  }
-
-  get canEditEditable() {
-    return !this.canBulkEdit;
-  }
-
-  get addTypeEditable() {
-    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
-  }
-
-  get inlineSave() {
-    return this.inputValues.inlineSave.value === YES_NO.YES;
-  }
-
-  get listenToPlatformEvent() {
-    return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
-  }
-
-  get paginationEnabled() {
-    return this.inputValues.pagination.value === YES_NO.YES;
-  }
-
-  get groupingEnabled() {
-    return this.inputValues.grouping.value === YES_NO.YES;
+  get isGroupingSourceDataset() {
+    return this.inputValues.groupingSource.value === GROUPING_SOURCE.FIELD;
   }
 
   // =================================================================
@@ -787,6 +947,17 @@ export default class OdConfigurationEditor extends LightningElement {
             this._doDispatchChange(detailLinked);
           }
         });
+      }
+
+      // if it's grouping source and the value is field, send the source field data too
+      if (event.detail.fieldName === 'groupingSource' && value === GROUPING_SOURCE.FIELD) {
+        const detail = {
+          name: 'groupingSourceFieldData',
+          newValue: this.groupingFieldConfiguration.options.map((opt) => opt.value).join(','),
+          newValueDataType: this.inputValues.groupingSourceFieldData.valueType,
+        };
+
+        this._doDispatchChange(detail);
       }
     }
   }
