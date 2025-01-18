@@ -135,12 +135,10 @@
 }
 
 /* Grouping and summarize */
-.od-datatable tr[data-row-key-value^="grouping-"],
 .od-datatable tr[data-row-key-value^="summarize-"] {
   pointer-events: none;
 }
 
-.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox,
 .od-datatable tr[data-row-key-value^="summarize-"] > td > lightning-primitive-cell-checkbox {
   display: none !important;
 }
@@ -148,6 +146,7 @@
 .od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
 .od-datatable tr[data-row-key-value^="summarize-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"] {
   display: block;
+  align-content: center;
   height: var(--height-row);
 }
 
@@ -162,8 +161,10 @@
 .od-datatable th div.groupCell,
 .od-datatable td div.groupCell,
 .od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
-.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td {
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td,
+.od-datatable tr[data-row-key-value^="grouping-"]:hover > td[data-col-key-value*="SELECTABLE_CHECKBOX"].slds-has-focus:hover {
   background-color: #9999 !important;
+  box-shadow: none !important;
   margin-bottom: 5px;
 }
 
@@ -172,6 +173,12 @@
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+.od-datatable table.slds-table > tbody > tr[data-row-key-value^="grouping-"]:hover > th.slds-has-focus:hover,
+.od-datatable table.slds-table > tbody > tr[data-row-key-value^="grouping-"]:hover > td.slds-has-focus:hover {
+  box-shadow: none !important;
+}
+
 
 .od-datatable tr[data-row-key-value="summarize-totals"] th div.summarizeCell,
 .od-datatable tr[data-row-key-value="summarize-totals"] td div.summarizeCell,

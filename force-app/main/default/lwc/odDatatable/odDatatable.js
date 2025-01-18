@@ -366,10 +366,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get hasChanges() {
-    return (
-      (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
-      this._tableData.filter((rec) => rec._hasChanges).length > 0
-    );
+    return this.wasChanged;
   }
 
   get standardButtonsDisabled() {
@@ -1435,6 +1432,13 @@ export default class ODDatatable extends LightningElement {
       rec._hasChanges = true;
     });
 
+    // update all the collapsed rows too
+    Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
+      this._collapsedRecordsByGroupId[key].forEach((rec) => {
+        rec._hasChanges = true;
+      });
+    });
+
     // dispatch the outputs to parent in case someone is listening to it
     this.dispatchEvent(
       new CustomEvent('changevalues', {
@@ -1465,6 +1469,12 @@ export default class ODDatatable extends LightningElement {
       // update all the rows with the _hasChanges
       this._tableData.forEach((rec) => {
         rec._hasChanges = false;
+      });
+
+      Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
+        this._collapsedRecordsByGroupId[key].forEach((rec) => {
+          rec._hasChanges = false;
+        });
       });
     }
 
@@ -1604,20 +1614,74 @@ export default class ODDatatable extends LightningElement {
     ];
 
     this._tableData = newData;
+
+    this.selectedRowsIds = [...this.selectedRowsIds];
   }
 
   // =================================================================
   // handler methods
   // =================================================================
   handleSelectRow(event) {
-    this._selectedRows = [];
-    event.detail.selectedRows.forEach((sr) => {
-      if (!sr.isDeleted) {
-        this._selectedRows.push(sr);
-      }
-    });
+    if (event.detail.config.action) {
+      this._selectedRows = [];
 
-    this.selectedRowsIds = this._selectedRows.map((sr) => sr._id);
+      event.detail.selectedRows.forEach((sr) => {
+        if (!sr.isDeleted) {
+          this._selectedRows.push(sr);
+        }
+      });
+
+      // if it's not a selectAllRows and not a deselectAllRows
+
+      if (event.detail.config.action !== 'selectAllRows' && event.detail.config.action !== 'deselectAllRows') {
+        if (event.detail.config.action === 'rowSelect') {
+          event.detail.selectedRows.forEach((selRow) => {
+            const row = this._tableData.find((rec) => rec._id === selRow._id);
+
+            // if it is a group record being selected
+            if (row._originalRecord._isGroupRecord) {
+              // select the children, based on the collapsed flag
+              if (row._originalRecord._isCollapsed) {
+                this._collapsedRecordsByGroupId[row._groupId].forEach((rec) => {
+                  this._selectedRows.push(rec);
+                });
+              } else {
+                this._tableData
+                  .filter((rec) => rec._groupId === row._groupId && rec._id !== row._id)
+                  .forEach((rec) => {
+                    this._selectedRows.push(rec);
+                  });
+              }
+            }
+          });
+        } else if (event.detail.config.action === 'rowDeselect') {
+          const row = this._tableData.find((rec) => rec._id === event.detail.config.value);
+          if (row._originalRecord._isGroupRecord) {
+            this._selectedRows = this._selectedRows.filter((rec) => rec._groupId !== row._groupId);
+          } else {
+            // check if for that group there is any other that is not group or summarize, otherwise filter them
+            if (
+              this._selectedRows.filter(
+                (rec) =>
+                  rec._groupId === row._groupId &&
+                  !rec._originalRecord._isGroupRecord &&
+                  !rec._originalRecord._isSummarizeRecord,
+              ).length === 0
+            ) {
+              this._selectedRows = this._selectedRows.filter((rec) => rec._groupId !== row._groupId);
+            }
+          }
+        }
+      } else if (event.detail.config.action === 'selectAllRows') {
+        Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
+          this._collapsedRecordsByGroupId[key].forEach((rec) => {
+            this._selectedRows.push(rec);
+          });
+        });
+      }
+
+      this.selectedRowsIds = this._selectedRows.map((sr) => sr._id);
+    }
   }
 
   @api
@@ -1709,13 +1773,45 @@ export default class ODDatatable extends LightningElement {
 
   handleBulkDelete() {
     const recordsAvailable = JSON.parse(JSON.stringify(this._tableData));
-    this._selectedRowsToProcessBulk.forEach((row) => {
-      const recordIndex = recordsAvailable.findIndex((rc) => rc._id === row._id);
 
-      this._doDelete(recordIndex);
+    this._selectedRowsToProcessBulk.forEach((row) => {
+      let record;
+      let recordIndex = recordsAvailable.findIndex((rc) => rc._id === row._id);
+
+      // found in the table data
+      if (recordIndex !== -1) {
+        this._doDelete(recordIndex);
+        record = recordsAvailable[recordIndex];
+      } else {
+        // check in the collapsed groups
+        recordIndex = this._collapsedRecordsByGroupId[row._groupId].findIndex((rc) => rc._id === row._id);
+        if (recordIndex !== -1) {
+          record = this._collapsedRecordsByGroupId[row._groupId][recordIndex];
+          if (record.isNew) {
+            this._collapsedRecordsByGroupId[row._groupId] = [
+              ...this._collapsedRecordsByGroupId[row._groupId].slice(0, recordIndex),
+              ...this._collapsedRecordsByGroupId[row._groupId].slice(recordIndex + 1),
+            ];
+          } else {
+            record = {
+              ...record,
+              isDeleted: true,
+              ...ROW_BUTTON_CONFIGURATION.UNDELETE,
+            };
+
+            this._collapsedRecordsByGroupId[row._groupId] = [
+              ...this._collapsedRecordsByGroupId[row._groupId].slice(0, recordIndex),
+              {
+                ...record,
+              },
+              ...this._collapsedRecordsByGroupId[row._groupId].slice(recordIndex + 1),
+            ];
+          }
+        }
+      }
 
       // update the outputs
-      this._doUpdateOutputs(recordsAvailable[recordIndex], EVENTS.DELETE);
+      this._doUpdateOutputs(record, EVENTS.DELETE);
     });
     this._selectedRows = [];
     this.selectedRowsIds = [];
@@ -1813,7 +1909,11 @@ export default class ODDatatable extends LightningElement {
   }
 
   handleOpenBulkFlow(event) {
-    this._doOpenFlowButton(event.target.dataset.name, undefined, this.selectedRowsIds);
+    this._doOpenFlowButton(
+      event.target.dataset.name,
+      undefined,
+      this._selectedRowsToProcessBulk.map((row) => row._id),
+    );
   }
 
   handleOpenBottomNavFlow(event) {
