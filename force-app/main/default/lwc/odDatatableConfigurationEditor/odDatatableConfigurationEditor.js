@@ -403,6 +403,14 @@ export default class OdConfigurationEditor extends LightningElement {
       helpText:
         'If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table',
     },
+    canCollapseGroups: {
+      label: 'Can Collapse/Expand Groups?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled you can click on the group row to collapse or expand. All calculations will include the collapsed rows, and if you change/add/delete a row, collapse it and save it will still save the changed rows.',
+    },
 
     // internal use
     uniqueTableName: {

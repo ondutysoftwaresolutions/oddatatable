@@ -145,6 +145,10 @@
                 role="inputOnly"
                 default="No"
                 description="If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table" />
+            <property name="canCollapseGroups" label="Can Collapse/Expand Groups?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled you can click on the group row to collapse or expand. All calculations will include the collapsed rows, and if you change/add/delete a row, collapse it and save it will still save the changed rows." />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

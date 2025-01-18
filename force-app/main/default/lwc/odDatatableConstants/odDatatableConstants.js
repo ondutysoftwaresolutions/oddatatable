@@ -242,6 +242,8 @@ export const EMPTY_STRING = '--empty--';
 export const EVENTS = {
   ADD: 'add',
   CHANGE: 'change',
+  GROUP_COLLAPSE: 'groupCollapse',
+  GROUP_EXPAND: 'groupExpand',
   OPEN_FLOW: 'openFlow',
   NAVIGATE_BACK: CUSTOM_TYPES.NAVIGATE_BACK,
   NAVIGATE_NEXT: CUSTOM_TYPES.NAVIGATE_NEXT,
@@ -271,6 +273,18 @@ export const ROW_BUTTON_CONFIGURATION = {
     iconName: 'utility:undelete',
     _deleteAction: EVENTS.UNDELETE,
     tooltip: 'Restore this record',
+  },
+  GROUP_COLLAPSE: {
+    buttonVariant: 'base',
+    iconName: 'utility:chevronup',
+    action: EVENTS.GROUP_COLLAPSE,
+    tooltip: 'Collapse this group',
+  },
+  GROUP_EXPAND: {
+    buttonVariant: 'base',
+    iconName: 'utility:chevrondown',
+    action: EVENTS.GROUP_EXPAND,
+    tooltip: 'Expand this group',
   },
 };
 
@@ -386,6 +400,7 @@ export const BUTTON_VARIANTS = [
   {
     label: 'Neutral',
     value: 'neutral',
+    default: true,
   },
   {
     label: 'Success',

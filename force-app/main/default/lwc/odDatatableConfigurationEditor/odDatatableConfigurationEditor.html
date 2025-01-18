@@ -216,6 +216,19 @@
             help-text={inputValues.groupContentSortDirection.helpText}
           >
           </c-od-datatable-input-generic>
+          <c-od-datatable-input-generic
+            field-name="canCollapseGroups"
+            type={inputValues.canCollapseGroups.type}
+            editable
+            toggle-value-active={yesNo.YES}
+            toggle-value-inactive={yesNo.NO}
+            class="slds-size--1-of-1"
+            value={inputValues.canCollapseGroups.value}
+            label={inputValues.canCollapseGroups.label}
+            onupdatefield={handleInputChange}
+            help-text={inputValues.canCollapseGroups.helpText}
+          >
+          </c-od-datatable-input-generic>
         </template>
       </template>
     </fieldset>

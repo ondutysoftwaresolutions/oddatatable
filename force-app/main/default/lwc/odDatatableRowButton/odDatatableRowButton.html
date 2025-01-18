@@ -1,7 +1,7 @@
 <template>
   <div class={cellClassesToUse}>
     <template lwc:if={showButton}>
-      <template lwc:if={isIconButton}>
+      <template lwc:if={isButtonIcon}>
         <lightning-button-icon
           icon-name={theIconName}
           variant={iconVariant}
@@ -13,10 +13,12 @@
       </template>
       <template lwc:else>
         <lightning-button
-          class="btn-inside-table-row"
+          class={theClassesForButton}
           onclick={handleClick}
-          label={label}
-          variant={config.buttonVariant}
+          label={theLabelForButton}
+          variant={theVariantForButton}
+          icon-name={theIconNameForButton}
+          icon-position={theIconPositionForButton}
         >
         </lightning-button>
       </template>

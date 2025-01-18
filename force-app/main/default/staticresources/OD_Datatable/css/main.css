@@ -166,7 +166,12 @@
   background-color: #9999 !important;
   margin-bottom: 5px;
 }
-  
+
+.od-datatable tr[data-row-key-value^="grouping-"]:hover th,
+.od-datatable tr[data-row-key-value^="grouping-"]:hover td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
 
 .od-datatable tr[data-row-key-value="summarize-totals"] th div.summarizeCell,
 .od-datatable tr[data-row-key-value="summarize-totals"] td div.summarizeCell,
@@ -204,4 +209,19 @@
 .od-datatable tr[data-row-key-value^="grouping-"] th,
 .od-datatable tr[data-row-key-value^="grouping-"] td  {
   border-top: 0;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--slds-g-color-neutral-base-10, var(--lwc-colorTextDefault, rgb(3, 45, 96)));
+  text-decoration: none;
+  min-height: var(--height-row);
+  border: 0;
+  border-radius: 0;
+  transform: none !important;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button::after {
+  content: none !important;
 }

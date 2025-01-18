@@ -96,6 +96,7 @@ export default class ODDatatable extends LightningElement {
   @api groupingSource = GROUPING_SOURCE.DATASET;
   @api groupingSourceFieldData;
   @api showEmptyGroups;
+  @api canCollapseGroups;
 
   // summarize
   @api showTotalsByGroup;
@@ -136,6 +137,9 @@ export default class ODDatatable extends LightningElement {
 
   // platform event
   _subscription;
+
+  // grouping
+  _collapsedRecordsByGroupId = {};
 
   // =================================================================
   // validate flow method
@@ -353,6 +357,14 @@ export default class ODDatatable extends LightningElement {
     return this.inlineSave === YES_NO.YES;
   }
 
+  get _navigateNextAfterSave() {
+    return this.navigateNextAfterSave === YES_NO.YES;
+  }
+
+  get _canDelete() {
+    return this.canDelete === YES_NO.YES;
+  }
+
   get hasChanges() {
     return (
       (this.outputAddedRows.length > 0 || this.outputDeletedRows.length > 0 || this.outputEditedRows.length > 0) &&
@@ -438,6 +450,18 @@ export default class ODDatatable extends LightningElement {
 
   get showGrouping() {
     return this.grouping === YES_NO.YES;
+  }
+
+  get _showTotalsByGroup() {
+    return this.showTotalsByGroup === YES_NO.YES;
+  }
+
+  get _canCollapseGroups() {
+    return this.canCollapseGroups === YES_NO.YES;
+  }
+
+  get _recalculateLive() {
+    return this.recalculateLive === YES_NO.YES;
   }
 
   get _selectedRowsToProcessBulk() {
@@ -592,8 +616,7 @@ export default class ODDatatable extends LightningElement {
 
     // Create an array to store group information including summaries
     let groupsWithSummaries = Object.entries(groupedData).map(([group, items]) => {
-      const summary =
-        this.showTotalsByGroup === YES_NO.YES ? this._checkAndSummarize(items, group || NO_GROUP) : undefined;
+      const summary = this._showTotalsByGroup ? this._checkAndSummarize(items, group || NO_GROUP) : undefined;
       return {
         group,
         items,
@@ -666,9 +689,11 @@ export default class ODDatatable extends LightningElement {
       // Add the group as an element
       flattened.push({
         _id: `grouping-${groupId}`,
+        _groupId: groupId,
         [firstColumnField]: group,
         _originalRecord: {
           _isGroupRecord: true,
+          _isCollapsible: this._canCollapseGroups,
         },
       });
 
@@ -682,7 +707,7 @@ export default class ODDatatable extends LightningElement {
 
       // add the summary row if it exists
       if (summary && newItems.length > 0) {
-        flattened.push(summary);
+        flattened.push({ ...summary, _groupId: groupId });
       }
 
       return flattened;
@@ -787,15 +812,13 @@ export default class ODDatatable extends LightningElement {
 
   _recalculateColumn(column, record, forceRecalculation = false) {
     // only if recalculate live is enabled and is inlineEdit or inlineAdd and new record
-    if (
-      this.recalculateLive === YES_NO.YES &&
-      (forceRecalculation || this._editInline || (this._addInline && record.isNew))
-    ) {
+    if (this._recalculateLive && (forceRecalculation || this._editInline || (this._addInline && record.isNew))) {
       // if the column is summarizable
       if (column.typeAttributes.config.summarize) {
         const group = record._groupId;
 
         let newData = JSON.parse(JSON.stringify(this._tableData));
+
         let rowToUpdateIndex;
         let values;
         let newValue;
@@ -807,7 +830,14 @@ export default class ODDatatable extends LightningElement {
           rowToUpdateIndex = newData.findIndex((row) => row._id === `summarize-${group}`);
 
           if (rowToUpdateIndex !== -1) {
-            values = newData
+            let dataToCalculate = JSON.parse(JSON.stringify(newData));
+
+            // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
+            if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
+              dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
+            }
+
+            values = dataToCalculate
               .filter(
                 (row) =>
                   row._groupId === group &&
@@ -846,7 +876,14 @@ export default class ODDatatable extends LightningElement {
         rowToUpdateIndex = newData.findIndex((row) => row._id === 'summarize-totals');
 
         if (rowToUpdateIndex !== -1) {
-          values = newData
+          let dataToCalculate = JSON.parse(JSON.stringify(newData));
+
+          // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
+          if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
+            dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
+          }
+
+          values = dataToCalculate
             .filter(
               (row) => !row.isDeleted && !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
             )
@@ -975,7 +1012,7 @@ export default class ODDatatable extends LightningElement {
     }
 
     // add an extra column to the end if we have the option to delete
-    if (this.canDelete === YES_NO.YES) {
+    if (this._canDelete) {
       columnsConfiguration.push({
         type: ROW_BUTTON_TYPE,
         initialWidth: 50,
@@ -986,7 +1023,7 @@ export default class ODDatatable extends LightningElement {
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
-          config: { cellClasses: 'slds-text-align--center' },
+          config: { cellClasses: 'slds-text-align--center', isButtonIcon: true },
         },
       });
     }
@@ -1248,7 +1285,6 @@ export default class ODDatatable extends LightningElement {
             this._doUpdateRecord(99999, newRecord);
           }
 
-          // TODO test
           this._buildRecords(this._tableData, true);
         } else {
           // multiple records
@@ -1423,6 +1459,8 @@ export default class ODDatatable extends LightningElement {
     this.outputDeletedRows = [];
     this.outputEditedRows = [];
 
+    this._collapsedRecordsByGroupId = {};
+
     if (cleanHasChanges) {
       // update all the rows with the _hasChanges
       this._tableData.forEach((rec) => {
@@ -1436,8 +1474,15 @@ export default class ODDatatable extends LightningElement {
   _doRefreshDataAfterSave(records = [], deletedRecords = []) {
     const newRecords = [];
 
+    const dataWithCollapsed = this._tableData;
+
+    // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
+    if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
+      dataWithCollapsed.push(...Object.values(this._collapsedRecordsByGroupId).flat());
+    }
+
     // this is for updates and deletes
-    this._tableData.forEach((rec) => {
+    dataWithCollapsed.forEach((rec) => {
       const recordIndexEdit = records.findIndex((rc) => rec._id === rc.Id);
       const recordIndexDelete = deletedRecords.findIndex((rc) => rec._id === rc._id);
 
@@ -1465,7 +1510,7 @@ export default class ODDatatable extends LightningElement {
     this._buildRecords(newRecords, true);
 
     // if save and next is enabled, navigate to next screen
-    if (this.navigateNextAfterSave === YES_NO.YES) {
+    if (this._navigateNextAfterSave) {
       this.saveAndNext = true;
 
       // navigate to the next screen
@@ -1507,6 +1552,60 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
+  _doCollapseGroup(groupId, recordIndex) {
+    // collect the records for future expand and calculations
+    this._collapsedRecordsByGroupId[groupId] = this._tableData.filter(
+      (dt) => dt._groupId === groupId && !dt._originalRecord._isGroupRecord,
+    );
+
+    // filter the data shown in the table
+    let newData = this._tableData.filter(
+      (dt) => dt._groupId !== groupId || (dt._groupId === groupId && dt._originalRecord._isGroupRecord),
+    );
+
+    // update the current record as isCollapsed
+    newData = [
+      ...newData.slice(0, recordIndex),
+      {
+        ...newData[recordIndex],
+        _originalRecord: {
+          ...newData[recordIndex]._originalRecord,
+          _isCollapsed: true,
+        },
+      },
+      ...newData.slice(recordIndex + 1),
+    ];
+
+    this._tableData = newData;
+  }
+
+  _doExpandGroup(groupId, recordIndex) {
+    // get the elements to add
+    const elementsToAdd = this._collapsedRecordsByGroupId[groupId] || [];
+
+    // add the elements to the table data
+    let newData = JSON.parse(JSON.stringify(this._tableData));
+    newData.splice(recordIndex + 1, 0, ...elementsToAdd);
+
+    // delete from the object that tracks the collapsed sections
+    delete this._collapsedRecordsByGroupId[groupId];
+
+    // update the current record as isCollapsed: false
+    newData = [
+      ...newData.slice(0, recordIndex),
+      {
+        ...newData[recordIndex],
+        _originalRecord: {
+          ...newData[recordIndex]._originalRecord,
+          _isCollapsed: false,
+        },
+      },
+      ...newData.slice(recordIndex + 1),
+    ];
+
+    this._tableData = newData;
+  }
+
   // =================================================================
   // handler methods
   // =================================================================
@@ -1533,6 +1632,8 @@ export default class ODDatatable extends LightningElement {
     // doing it here as if we delete, then we don't have that index anymore (if it's new)
     let record = this._tableData[recordIndex];
 
+    let updateOutputs = true;
+
     switch (action) {
       case EVENTS.DELETE:
         this._doDelete(recordIndex);
@@ -1552,6 +1653,7 @@ export default class ODDatatable extends LightningElement {
         break;
       case EVENTS.CHANGE:
         if (this._editWithFlow) {
+          updateOutputs = false;
           this._doAddEditWithFlow(record);
         } else {
           this._doChangeField(recordIndex, fieldName, value, record);
@@ -1576,11 +1678,21 @@ export default class ODDatatable extends LightningElement {
       case EVENTS.NAVIGATE_BACK:
         this._doNavigateBack();
         break;
+      case EVENTS.GROUP_COLLAPSE:
+        updateOutputs = false;
+
+        this._doCollapseGroup(record._groupId, recordIndex);
+        break;
+      case EVENTS.GROUP_EXPAND:
+        updateOutputs = false;
+
+        this._doExpandGroup(record._groupId, recordIndex);
+        break;
       default:
         break;
     }
 
-    if (!this._editWithFlow) {
+    if (updateOutputs) {
       // update the outputs
       this._doUpdateOutputs(record, action);
     }

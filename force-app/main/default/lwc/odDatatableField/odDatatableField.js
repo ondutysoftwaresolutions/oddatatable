@@ -74,6 +74,10 @@ export default class OdDatatableField extends LightningElement {
     return undefined;
   }
 
+  get isGroupRecordCollapsibleCell() {
+    return this.record._isGroupRecord && this.record._isCollapsible;
+  }
+
   get showField() {
     let hidden = this.config.hidden;
     if (this.config.hidden && this.config.hiddenType === HIDDEN_TYPE_OPTIONS.RECORD.value) {
