@@ -139,6 +139,7 @@
   pointer-events: none;
 }
 
+.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox > .slds-radio,
 .od-datatable tr[data-row-key-value^="summarize-"] > td > lightning-primitive-cell-checkbox {
   display: none !important;
 }
@@ -186,7 +187,6 @@
 .od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > td {
   background-color: #aaa !important;
   color: white;
-  border-top: 2px solid #999;
 }
 
 .od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) th div.summarizeCell,
@@ -231,4 +231,8 @@
 
 .od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button::after {
   content: none !important;
+}
+
+.od-datatable tr.slds-is-selected .slds-radio [type=radio]:focus + .slds-radio__label .slds-radio_faux {
+  box-shadow: none !important;
 }

@@ -25,11 +25,12 @@
         class="od-datatable"
         data={dataToShow}
         columns={columnsToShow}
-        show-row-number-column={showRowNumberColumn}
+        show-row-number-column={showColumnRowNumber}
         selected-rows={selectedRowsIds}
-        hide-checkbox-column={notBulkOperation}
+        hide-checkbox-column={selectionDisabled}
         onrowselection={handleSelectRow}
         onrowaction={handleRowAction}
+        max-row-selection={maxiumRowSelection}
       >
       </c-od-datatable-custom>
     </template>

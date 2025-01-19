@@ -1,20 +1,6 @@
 <template>
-  <template lwc:if={inputValues.columns.value}>
-    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Preview</h1>
-    </div>
-    <fieldset class="slds-box slds-align--absolute-center">
-      <lightning-button
-        label="Preview Datatable"
-        icon-name="utility:preview"
-        onclick={handleShowPreview}
-        variant="brand"
-      >
-      </lightning-button>
-    </fieldset>
-  </template>
   <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
-    <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Configure Datatable</h1>
+    <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Columns and Data</h1>
   </div>
 
   <!-- Object and columns -->
@@ -87,9 +73,127 @@
         help-text={inputValues.noRecordsMessage.helpText}
       >
       </c-od-datatable-input-generic>
+      <c-od-datatable-input-generic
+        field-name="showRowNumberColumn"
+        type={inputValues.showRowNumberColumn.type}
+        editable={showRowNumberEditable}
+        toggle-value-active={yesNo.YES}
+        toggle-value-inactive={yesNo.NO}
+        class="slds-size--1-of-1"
+        value={inputValues.showRowNumberColumn.value}
+        label={inputValues.showRowNumberColumn.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.showRowNumberColumn.helpText}
+      >
+      </c-od-datatable-input-generic>
+    </fieldset>
+
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Pagination</h1>
+    </div>
+
+    <!-- Pagination -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Pagination</legend>
+      <c-od-datatable-input-generic
+        field-name="pagination"
+        type={inputValues.pagination.type}
+        editable
+        toggle-value-active={yesNo.YES}
+        toggle-value-inactive={yesNo.NO}
+        class="slds-size--1-of-1"
+        value={inputValues.pagination.value}
+        label={inputValues.pagination.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.pagination.helpText}
+      >
+      </c-od-datatable-input-generic>
+      <template lwc:if={paginationEnabled}>
+        <c-od-datatable-input-generic
+          field-name="pageSize"
+          type={inputValues.pageSize.type}
+          editable
+          scale="0"
+          class="slds-size--1-of-1"
+          value={inputValues.pageSize.value}
+          label={inputValues.pageSize.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.pageSize.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="paginationAlignment"
+          type={fieldTypes.SELECT}
+          editable
+          options={paginationAlignmentOptions}
+          class="slds-size--1-of-1"
+          value={inputValues.paginationAlignment.value}
+          label={inputValues.paginationAlignment.label}
+          required
+          opened={dropdowns.paginationAlignment}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.paginationAlignment.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="paginationShowOptions"
+          type={inputValues.paginationShowOptions.type}
+          editable
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.paginationShowOptions.value}
+          label={inputValues.paginationShowOptions.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.paginationShowOptions.helpText}
+        >
+        </c-od-datatable-input-generic>
+      </template>
+    </fieldset>
+
+    <!-- Selection -->
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Selection</h1>
+    </div>
+
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Selection</legend>
+      <c-od-datatable-input-generic
+        field-name="canSelect"
+        type={inputValues.canSelect.type}
+        editable={canSelectEditable}
+        toggle-value-active={yesNo.YES}
+        toggle-value-inactive={yesNo.NO}
+        class="slds-size--1-of-1"
+        value={inputValues.canSelect.value}
+        label={inputValues.canSelect.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.canSelect.helpText}
+      >
+      </c-od-datatable-input-generic>
+      <template lwc:if={canSelectEnabled}>
+        <c-od-datatable-input-generic
+          field-name="selectionType"
+          type={inputValues.selectionType.type}
+          editable={canSelectEditable}
+          options={selectionTypeOptions}
+          class="slds-size--1-of-1"
+          value={inputValues.selectionType.value}
+          label={inputValues.selectionType.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.selectionType.helpText}
+        >
+        </c-od-datatable-input-generic>
+      </template>
     </fieldset>
 
     <!-- Grouping -->
+    <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+      <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Grouping and Summarize</h1>
+    </div>
+
     <fieldset class="slds-box slds-grid slds-wrap">
       <legend>Grouping</legend>
       <c-od-datatable-input-generic
@@ -267,67 +371,6 @@
         </c-od-datatable-input-generic>
       </fieldset>
     </template>
-
-    <!-- Pagination -->
-    <fieldset class="slds-box slds-grid slds-wrap">
-      <legend>Pagination</legend>
-      <c-od-datatable-input-generic
-        field-name="pagination"
-        type={inputValues.pagination.type}
-        editable
-        toggle-value-active={yesNo.YES}
-        toggle-value-inactive={yesNo.NO}
-        class="slds-size--1-of-1"
-        value={inputValues.pagination.value}
-        label={inputValues.pagination.label}
-        onupdatefield={handleInputChange}
-        help-text={inputValues.pagination.helpText}
-      >
-      </c-od-datatable-input-generic>
-      <template lwc:if={paginationEnabled}>
-        <c-od-datatable-input-generic
-          field-name="pageSize"
-          type={inputValues.pageSize.type}
-          editable
-          scale="0"
-          class="slds-size--1-of-1"
-          value={inputValues.pageSize.value}
-          label={inputValues.pageSize.label}
-          onupdatefield={handleInputChange}
-          help-text={inputValues.pageSize.helpText}
-        >
-        </c-od-datatable-input-generic>
-        <c-od-datatable-input-generic
-          field-name="paginationAlignment"
-          type={fieldTypes.SELECT}
-          editable
-          options={paginationAlignmentOptions}
-          class="slds-size--1-of-1"
-          value={inputValues.paginationAlignment.value}
-          label={inputValues.paginationAlignment.label}
-          required
-          opened={dropdowns.paginationAlignment}
-          onfocusdropdown={handleOnFocusDropdown}
-          onblurdropdown={handleOnBlurDropdown}
-          onupdatefield={handleInputChange}
-          help-text={inputValues.paginationAlignment.helpText}
-        >
-        </c-od-datatable-input-generic>
-        <c-od-datatable-input-generic
-          field-name="paginationShowOptions"
-          type={inputValues.paginationShowOptions.type}
-          editable
-          toggle-value-active={yesNo.YES}
-          toggle-value-inactive={yesNo.NO}
-          class="slds-size--1-of-1"
-          value={inputValues.paginationShowOptions.value}
-          label={inputValues.paginationShowOptions.label}
-          onupdatefield={handleInputChange}
-          help-text={inputValues.paginationShowOptions.helpText}
-        >
-        </c-od-datatable-input-generic>
-      </template>
-    </fieldset>
 
     <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
       <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">
@@ -756,6 +799,19 @@
           label="Process Configuration JSON"
           icon-name="utility:paste"
           onclick={handleProcessConfigurationToClipboard}
+          variant="brand"
+        >
+        </lightning-button>
+      </fieldset>
+
+      <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
+        <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Preview</h1>
+      </div>
+      <fieldset class="slds-box slds-align--absolute-center">
+        <lightning-button
+          label="Preview Datatable"
+          icon-name="utility:preview"
+          onclick={handleShowPreview}
           variant="brand"
         >
         </lightning-button>

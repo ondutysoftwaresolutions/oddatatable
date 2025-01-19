@@ -512,3 +512,8 @@ export const GROUPING_SOURCE = {
   FIELD: 'Field',
   DATASET: 'Dataset',
 };
+
+export const SELECTION_TYPES = {
+  SINGLE: 'Single Row',
+  MULTIPLE: 'Multiple Rows',
+};

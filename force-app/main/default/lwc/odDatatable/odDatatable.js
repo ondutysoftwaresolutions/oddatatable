@@ -17,6 +17,7 @@ import {
   INLINE_FLOW,
   PLATFORM_EVENT_CHANNEL_NAME,
   ROW_BUTTON_TYPE,
+  SELECTION_TYPES,
   SORT_DIRECTION,
 } from 'c/odDatatableConstants';
 import {
@@ -42,7 +43,7 @@ export default class ODDatatable extends LightningElement {
   @api objectName;
   @api columns;
   @api noRecordsMessage;
-  @api showRowNumberColumn;
+  @api showRowNumberColumn = YES_NO.YES;
 
   // master detail configuration
   @api isMasterDetail;
@@ -66,6 +67,10 @@ export default class ODDatatable extends LightningElement {
   @api bulkDeleteLabel = 'Delete';
   @api canBulkEdit;
   @api bulkEditLabel = 'Bulk Edit';
+
+  // selection
+  @api canSelect;
+  @api selectionType;
 
   // save
   @api inlineSave;
@@ -107,6 +112,7 @@ export default class ODDatatable extends LightningElement {
   @api outputAddedRows = [];
   @api outputEditedRows = [];
   @api outputDeletedRows = [];
+  @api outputSelectedRows = [];
   @api rowRecordId;
   @api rowRecordIds;
   @api rowButtonClicked;
@@ -224,7 +230,9 @@ export default class ODDatatable extends LightningElement {
       this._buildRecords(this.tableData);
 
       // clean the output variables
-      this._doCleanOutputs(true, false);
+      if (!this.afterValidate) {
+        this._doCleanOutputs(true, false);
+      }
     } else if (result.error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(result.error);
@@ -317,8 +325,34 @@ export default class ODDatatable extends LightningElement {
     return this.bulkDeleteLabel && this.bulkDeleteLabel !== EMPTY_STRING;
   }
 
-  get notBulkOperation() {
-    return this.canBulkDelete === YES_NO.NO && this.canBulkEdit === YES_NO.NO && this.otherBulkFlowButtons.length === 0;
+  get showColumnRowNumber() {
+    return this.showRowNumberColumn === YES_NO.YES && !this.showGrouping && !this._anySummarizedColumn;
+  }
+
+  get selectionDisabled() {
+    return (
+      this.canBulkDelete === YES_NO.NO &&
+      this.canBulkEdit === YES_NO.NO &&
+      this.otherBulkFlowButtons.length === 0 &&
+      this.canSelect === YES_NO.NO
+    );
+  }
+
+  get _isSingleSelection() {
+    return this.selectionType === SELECTION_TYPES.SINGLE;
+  }
+
+  get maxiumRowSelection() {
+    // if any bulk operation then the selection is always multiple
+    if (this.canBulkDelete === YES_NO.YES || this.canBulkEdit === YES_NO.YES || this.otherBulkFlowButtons.length > 0) {
+      return;
+    } else {
+      if (this._isSingleSelection) {
+        return 1;
+      } else {
+        return;
+      }
+    }
   }
 
   get bulkOperationDisabled() {
@@ -471,6 +505,10 @@ export default class ODDatatable extends LightningElement {
     return this._selectedRows.map((sr) => sr._id);
   }
 
+  get _anySummarizedColumn() {
+    return this.columnsToShow.filter((col) => col.typeAttributes.config.summarize).length > 0;
+  }
+
   // =================================================================
   // private methods
   // =================================================================
@@ -479,9 +517,13 @@ export default class ODDatatable extends LightningElement {
       const result = JSON.parse(sessionStorage[this._storageTag]);
 
       if (result) {
-        this.outputAddedRows = result.added || [];
-        this.outputEditedRows = result.edited || [];
-        this.outputDeletedRows = result.deleted || [];
+        this.outputAddedRows = result.added ? JSON.parse(JSON.stringify(result.added)) : [];
+        this.outputEditedRows = result.edited ? JSON.parse(JSON.stringify(result.edited)) : [];
+        this.outputDeletedRows = result.deleted ? JSON.parse(JSON.stringify(result.deleted)) : [];
+
+        if (this.outputAddedRows.length > 0 || this.outputEditedRows.length > 0 || this.outputDeletedRows.length > 0) {
+          this.wasChanged = true;
+        }
 
         this.afterValidate = true;
 
@@ -913,6 +955,7 @@ export default class ODDatatable extends LightningElement {
         this._doNavigateNext(fieldName, record);
       } else {
         this._selectedRows = [];
+        this.outputSelectedRows = [];
       }
     }
   }
@@ -1221,10 +1264,10 @@ export default class ODDatatable extends LightningElement {
       }
     });
 
-    // check and add labels to summarize rows
-    result = this._checkAndAddLabelToFirstColumn(result, group);
-
     if (Object.keys(result).length > 0) {
+      // check and add labels to summarize rows
+      result = this._checkAndAddLabelToFirstColumn(result, group);
+
       return {
         ...result,
         _id: `summarize-${group || 'totals'}`,
@@ -1661,6 +1704,11 @@ export default class ODDatatable extends LightningElement {
       // if it's not a selectAllRows and not a deselectAllRows
       if (event.detail.config.action !== 'selectAllRows' && event.detail.config.action !== 'deselectAllRows') {
         if (event.detail.config.action === 'rowSelect') {
+          // if it's single selection, remove all the others
+          if (this._isSingleSelection) {
+            this._selectedRows = [];
+          }
+
           event.detail.selectedRows.forEach((selRow) => {
             if (!this._selectedRows.find((rec) => rec._id === selRow._id)) {
               const row = this._tableData.find((rec) => rec._id === selRow._id);
@@ -1751,6 +1799,10 @@ export default class ODDatatable extends LightningElement {
       } else if (event.detail.config.action === 'deselectAllRows') {
         this._selectedRows = [];
       }
+
+      this.outputSelectedRows = JSON.parse(JSON.stringify(this._selectedRows)).filter(
+        (rec) => !rec._originalRecord._isGroupRecord && !rec._originalRecord._isSummarizeRecord,
+      );
     }
   }
 
@@ -1882,7 +1934,10 @@ export default class ODDatatable extends LightningElement {
       // update the outputs
       this._doUpdateOutputs(record, EVENTS.DELETE);
     });
+
     this._selectedRows = [];
+
+    this.outputSelectedRows = [];
   }
 
   handleOpenBulkEdit() {
@@ -1937,6 +1992,8 @@ export default class ODDatatable extends LightningElement {
       });
     });
     this._selectedRows = [];
+
+    this.outputSelectedRows = [];
 
     this.handleCloseBulkEdit();
   }

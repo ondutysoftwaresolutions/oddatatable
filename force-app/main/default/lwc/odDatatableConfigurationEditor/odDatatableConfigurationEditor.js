@@ -12,6 +12,7 @@ import {
   EMPTY_STRING,
   INLINE_FLOW,
   GROUPING_SOURCE,
+  SELECTION_TYPES,
   SORT_DIRECTION,
 } from 'c/odDatatableConstants';
 import { reduceErrors, generateRandomString, sortArrayByProperty } from 'c/odDatatableUtils';
@@ -73,6 +74,17 @@ export default class OdConfigurationEditor extends LightningElement {
     {
       label: GROUPING_SOURCE.FIELD,
       value: GROUPING_SOURCE.FIELD,
+    },
+  ];
+
+  selectionTypeOptions = [
+    {
+      label: SELECTION_TYPES.MULTIPLE,
+      value: SELECTION_TYPES.MULTIPLE,
+    },
+    {
+      label: SELECTION_TYPES.SINGLE,
+      value: SELECTION_TYPES.SINGLE,
     },
   ];
 
@@ -140,7 +152,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: '',
       helpText:
-        "Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed",
+        "Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed.",
     },
     addFlowInputVariables: {
       label: 'Flow Input Variables',
@@ -173,7 +185,7 @@ export default class OdConfigurationEditor extends LightningElement {
         },
       ],
       helpText:
-        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow',
+        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow.',
     },
     editLabel: {
       label: 'Edit Label',
@@ -188,7 +200,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: '',
       helpText:
-        "Screen flow name to fire whenever the edit button in the row is clicked.  A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed",
+        "Screen flow name to fire whenever the edit button in the row is clicked.  A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed.",
     },
     editFlowInputVariables: {
       label: 'Flow Input Variables',
@@ -214,6 +226,15 @@ export default class OdConfigurationEditor extends LightningElement {
           field: 'canDelete',
           on: YES_NO.YES,
         },
+        {
+          field: 'canSelect',
+          on: YES_NO.YES,
+        },
+        {
+          field: 'selectionType',
+          on: YES_NO.YES,
+          value: SELECTION_TYPES.MULTIPLE,
+        },
       ],
       helpText:
         "Add a selection and a button to delete several at one time. This will add a flag 'isDeleted' to the record and you will need to write these back to the Object with a Record Delete in the Flow.",
@@ -235,6 +256,15 @@ export default class OdConfigurationEditor extends LightningElement {
         {
           field: 'canEdit',
           on: YES_NO.YES,
+        },
+        {
+          field: 'canSelect',
+          on: YES_NO.YES,
+        },
+        {
+          field: 'selectionType',
+          on: YES_NO.YES,
+          value: SELECTION_TYPES.MULTIPLE,
         },
       ],
       helpText:
@@ -278,35 +308,35 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
       helpText:
-        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id',
+        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id.',
     },
     platformEventMatchingFieldName: {
       label: 'Refresh Matching Field',
       type: FIELD_TYPES.STRING,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection',
+        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection.',
     },
     platformEventMatchingId: {
       label: 'Refresh Matching Id',
       type: FIELD_TYPES.STRING,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event',
+        'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event.',
     },
     pagination: {
       label: 'Pagination Enabled?',
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
-      helpText: 'If enabled, the data will be paginated and a control for the pagination will be displayed',
+      helpText: 'If enabled, the data will be paginated and a control for the pagination will be displayed.',
     },
     pageSize: {
       label: 'Page Size',
       type: FIELD_TYPES.INTEGER,
       valueType: FIELD_TYPES.STRING,
       value: 10,
-      helpText: 'Number of records to display per page',
+      helpText: 'Number of records to display per page.',
     },
     paginationShowOptions: {
       label: 'Display Navigation Options?',
@@ -314,35 +344,42 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
       helpText:
-        'If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers',
+        'If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers.',
     },
     paginationAlignment: {
       label: 'Alignment',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
       value: ALIGNMENT_OPTIONS.CENTER.value,
-      helpText: 'Alignment for the pagination controls',
+      helpText: 'Alignment for the pagination controls.',
     },
     grouping: {
       label: 'Grouping Enabled?',
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
-      helpText: 'If enabled, the data will be grouped by the field specified',
+      helpText: 'If enabled, the data will be grouped by the field specified.',
+      linked: [
+        {
+          field: 'showRowNumberColumn',
+          on: YES_NO.YES,
+          value: YES_NO.NO,
+        },
+      ],
     },
     groupingField: {
       label: 'Group By',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'Field to group the data by. If the field is not present in the dataset then it will not group the data',
+        'Field to group the data by. If the field is not present in the dataset then it will not group the data.',
     },
     groupSortField: {
       label: 'Sort Group By',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field',
+        'Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field.',
     },
     groupSortDirection: {
       label: 'Group Sort Direction',
@@ -350,7 +387,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: SORT_DIRECTION.ASC.value,
       helpText:
-        'Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC',
+        'Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC.',
     },
     groupContentSortField: {
       label: 'Sort Content of Group By',
@@ -364,7 +401,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: SORT_DIRECTION.ASC.value,
       helpText:
-        'Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC',
+        'Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC.',
     },
     groupingSource: {
       label: 'Source',
@@ -379,7 +416,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for',
+        'If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for.',
     },
     showEmptyGroups: {
       label: 'Show Empty?',
@@ -393,7 +430,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
-      helpText: 'If enabled, a line with the totals by group will be shown',
+      helpText: 'If enabled, a line with the totals by group will be shown.',
     },
     recalculateLive: {
       label: 'Recalculate totals on the fly?',
@@ -401,7 +438,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
       helpText:
-        'If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table',
+        'If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table.',
     },
     canCollapseGroups: {
       label: 'Can Collapse/Expand Groups?',
@@ -410,6 +447,30 @@ export default class OdConfigurationEditor extends LightningElement {
       value: YES_NO.NO,
       helpText:
         'If enabled you can click on the group row to collapse or expand. All calculations will include the collapsed rows, and if you change/add/delete a row, collapse it and save it will still save the changed rows.',
+    },
+    canSelect: {
+      label: 'Selection Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled a checkbox or radio button will be displayed to allow the selection of the row. NOTE: if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then the checkbox will display regardless of this being No.',
+    },
+    selectionType: {
+      label: 'Type of Selection',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: SELECTION_TYPES.MULTIPLE,
+      helpText:
+        'Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE:  if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row.',
+    },
+    showRowNumberColumn: {
+      label: 'Show the column with the row number?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled an extra column at the beginning will be added to show the number of the row. This will only work if grouping is disabled and there are no summarized columns.',
     },
 
     // internal use
@@ -436,7 +497,7 @@ export default class OdConfigurationEditor extends LightningElement {
       label: 'Master-Detail Configuration',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
-      helpText: 'JSON string with the columns and values for the master detail relationships',
+      helpText: 'JSON string with the columns and values for the master detail relationships.',
     },
     masterDetailField1: {
       label: 'First Master-Detail Field',
@@ -613,6 +674,16 @@ export default class OdConfigurationEditor extends LightningElement {
     return !this.canBulkDelete;
   }
 
+  get canSelectEditable() {
+    return (
+      !this.canBulkDelete && !this.canBulkEdit && !this._areThereAnyBulkFlowButtons(this.inputValues.columns.value)
+    );
+  }
+
+  get canSelectEnabled() {
+    return this.inputValues.canSelect.value === YES_NO.YES;
+  }
+
   get canEditEditable() {
     return !this.canBulkEdit;
   }
@@ -647,6 +718,10 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get paginationAlignmentOptions() {
     return Object.values(ALIGNMENT_OPTIONS);
+  }
+
+  get showRowNumberEditable() {
+    return !this.groupingEnabled && this.summarizedColumns.length === 0;
   }
 
   get dataCollectionOptions() {
@@ -905,6 +980,14 @@ export default class OdConfigurationEditor extends LightningElement {
     this.dispatchEvent(valueChangedEvent);
   }
 
+  _areThereAnyBulkFlowButtons(columns) {
+    return (
+      JSON.parse(columns).filter(
+        (cl) => cl.typeAttributes.config && cl.typeAttributes.config.showAs && cl.typeAttributes.config.showAsMultiple,
+      ).length > 0
+    );
+  }
+
   // =================================================================
   // handler methods
   // =================================================================
@@ -1051,13 +1134,43 @@ export default class OdConfigurationEditor extends LightningElement {
 
   handleSaveColumnsConfiguration(event) {
     if (event && event.detail) {
-      const detail = {
+      let detail = {
         name: 'columns',
         newValue: event.detail.value,
         newValueDataType: 'string',
       };
 
       this._doDispatchChange(detail);
+
+      // if there is any bulk navigation button, trigger the change to can select and select multiple
+      if (this._areThereAnyBulkFlowButtons(event.detail.value)) {
+        detail = {
+          name: 'canSelect',
+          newValue: YES_NO.YES,
+          newValueDataType: 'string',
+        };
+
+        this._doDispatchChange(detail);
+
+        detail = {
+          name: 'selectionType',
+          newValue: SELECTION_TYPES.MULTIPLE,
+          newValueDataType: 'string',
+        };
+
+        this._doDispatchChange(detail);
+      }
+
+      // if there is at least one summarized column, trigger the change for show row numbers to false
+      if (JSON.parse(event.detail.value).filter((col) => col.typeAttributes.config.summarize).length > 0) {
+        detail = {
+          name: 'showRowNumberColumn',
+          newValue: YES_NO.NO,
+          newValueDataType: 'string',
+        };
+
+        this._doDispatchChange(detail);
+      }
 
       this.handleCloseColumnsConfigurator();
     }
