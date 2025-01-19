@@ -115,7 +115,8 @@ export default class ODDatatable extends LightningElement {
   @track columnsToShow = [];
   @track columnsForBulkEdit = [];
   @track recordsToShow = [];
-  @track selectedRowsIds = [];
+
+  @track _selectedRows = [];
 
   isLoading = true;
   errorMessage = false;
@@ -130,7 +131,6 @@ export default class ODDatatable extends LightningElement {
   _allColumns = [];
   _validInvalidFields = {};
   afterValidate = false;
-  _selectedRows = [];
 
   _originalTableData;
   _tableData;
@@ -467,6 +467,10 @@ export default class ODDatatable extends LightningElement {
     );
   }
 
+  get selectedRowsIds() {
+    return this._selectedRows.map((sr) => sr._id);
+  }
+
   // =================================================================
   // private methods
   // =================================================================
@@ -585,332 +589,6 @@ export default class ODDatatable extends LightningElement {
     }
 
     this._tableData = result;
-  }
-
-  _groupData(data) {
-    // first check if the grouping field is in the dataset
-    const fieldInDataSet = data[0].hasOwnProperty(this.groupingField);
-
-    if (!fieldInDataSet) {
-      return data;
-    }
-
-    // group the data by the field
-    let groupedData = {};
-
-    // grouping source is the data
-    if (this.groupingSource === GROUPING_SOURCE.DATASET) {
-      groupedData = Object.groupBy(data, (dt) => dt[this.groupingField] || '');
-    } else {
-      // grouping source is the picklist
-      this.groupingSourceFieldData.split(',').forEach((value) => {
-        groupedData[value] = data.filter((dt) => dt[this.groupingField] === value);
-      });
-
-      // add the ones with empty value
-      groupedData[''] = data.filter((dt) => !dt[this.groupingField]);
-    }
-
-    // Create an array to store group information including summaries
-    let groupsWithSummaries = Object.entries(groupedData).map(([group, items]) => {
-      const summary = this._showTotalsByGroup ? this._checkAndSummarize(items, group || NO_GROUP) : undefined;
-      return {
-        group,
-        items,
-        summary,
-      };
-    });
-
-    // Sort the groups based on either group name or summary values
-    groupsWithSummaries = groupsWithSummaries.sort((a, b) => {
-      if (this.groupSortField && this.groupSortField !== this.groupingField) {
-        // If sorting by a summary field
-        if (a.summary && b.summary) {
-          const valueA = a.summary[this.groupSortField];
-          const valueB = b.summary[this.groupSortField];
-
-          // Handle empty/null/undefined values
-          const isEmptyA = valueA === null || valueA === undefined || valueA === '';
-          const isEmptyB = valueB === null || valueB === undefined || valueB === '';
-
-          if (isEmptyA && isEmptyB) return 0;
-          if (isEmptyA) return 1;
-          if (isEmptyB) return -1;
-
-          // Handle numeric values
-          if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return this.groupSortDirection === SORT_DIRECTION.ASC.value ? valueA - valueB : valueB - valueA;
-          }
-
-          // Handle string values
-          return this.groupSortDirection === SORT_DIRECTION.ASC.value
-            ? String(valueA).localeCompare(String(valueB))
-            : String(valueB).localeCompare(String(valueA));
-        }
-      } else {
-        // Default sorting by group name
-        const isEmptyA = !a.group || a.group === '';
-        const isEmptyB = !b.group || b.group === '';
-
-        if (isEmptyA && isEmptyB) return 0;
-        if (isEmptyA) return 1;
-        if (isEmptyB) return -1;
-
-        return this.groupSortDirection === SORT_DIRECTION.ASC.value
-          ? a.group.localeCompare(b.group)
-          : b.group.localeCompare(a.group);
-      }
-    });
-
-    // Sort items within each group if needed
-    if (this.groupContentSortField) {
-      groupsWithSummaries.forEach((groupData) => {
-        groupData.items = sortArrayByProperty(
-          groupData.items,
-          this.groupContentSortField,
-          this.groupContentSortDirection,
-        );
-      });
-    }
-
-    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
-
-    // Flatten the sorted groups back into a single array
-    return groupsWithSummaries.reduce((flattened, { group, items, summary }) => {
-      if (this.groupingSource === GROUPING_SOURCE.FIELD && this.showEmptyGroups === YES_NO.NO && items.length === 0) {
-        return flattened;
-      }
-
-      const groupId = group || NO_GROUP;
-
-      // Add the group as an element
-      flattened.push({
-        _id: `grouping-${groupId}`,
-        _groupId: groupId,
-        [firstColumnField]: group,
-        _originalRecord: {
-          _isGroupRecord: true,
-          _isCollapsible: this._canCollapseGroups,
-        },
-      });
-
-      const newItems = items.map((item) => ({
-        ...item,
-        _groupId: groupId,
-      }));
-
-      // Add all items in that group
-      flattened.push(...newItems);
-
-      // add the summary row if it exists
-      if (summary && newItems.length > 0) {
-        flattened.push({ ...summary, _groupId: groupId });
-      }
-
-      return flattened;
-    }, []);
-  }
-
-  _checkAndAddLabelToFirstColumn(record, group, columnFieldName = undefined) {
-    let groupToUse = group;
-    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
-
-    if (columnFieldName === firstColumnField || !columnFieldName) {
-      if (record[firstColumnField]) {
-        if (groupToUse === NO_GROUP) {
-          groupToUse = ' ';
-        }
-
-        if (groupToUse) {
-          record[firstColumnField] = `Totals ${groupToUse}:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
-        } else {
-          record[firstColumnField] = `TOTALS:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
-        }
-      } else {
-        if (groupToUse) {
-          record[firstColumnField] = `Totals ${groupToUse}:`;
-        } else {
-          record[firstColumnField] = `TOTALS:`;
-        }
-      }
-    }
-
-    return record;
-  }
-
-  _checkAndSummarize(data, group = undefined) {
-    let result = {};
-
-    this.columnsToShow.forEach((column) => {
-      if (column.typeAttributes.config.summarize) {
-        const values = data
-          .map((row) => row[column.fieldName])
-          .filter((value) => value !== '' && value !== null && value !== undefined);
-
-        result[column.fieldName] = this._summarizeColumn(column, values);
-      }
-    });
-
-    // check and add labels to summarize rows
-    result = this._checkAndAddLabelToFirstColumn(result, group);
-
-    if (Object.keys(result).length > 0) {
-      return {
-        ...result,
-        _id: `summarize-${group || 'totals'}`,
-        _originalRecord: {
-          _isSummarizeRecord: true,
-        },
-      };
-    }
-
-    return undefined;
-  }
-
-  _summarizeColumn(column, values) {
-    let result;
-    switch (column.typeAttributes.config.summarizeType) {
-      case 'max':
-        result = values.length ? Math.max(...values) : null;
-        // For dates
-        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
-          result = values.reduce((max, current) => (current > max ? current : max));
-        }
-        break;
-
-      case 'min':
-        result = values.length ? Math.min(...values) : null;
-        // For dates
-        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
-          result = values.reduce((min, current) => (current < min ? current : min));
-        }
-        break;
-
-      case 'sum':
-        result = values.reduce((sum, current) => sum + (Number(current) || 0), 0);
-        break;
-
-      case 'avg':
-        if (values.length) {
-          const sum = values.reduce((acc, current) => acc + (Number(current) || 0), 0);
-          result = sum / values.length;
-        } else {
-          result = 0;
-        }
-        break;
-
-      case 'count':
-        result = `Count: ${values.length.toString()}`;
-        break;
-    }
-
-    return result;
-  }
-
-  _recalculateColumn(column, record, forceRecalculation = false) {
-    // only if recalculate live is enabled and is inlineEdit or inlineAdd and new record
-    if (this._recalculateLive && (forceRecalculation || this._editInline || (this._addInline && record.isNew))) {
-      // if the column is summarizable
-      if (column.typeAttributes.config.summarize) {
-        const group = record._groupId;
-
-        let newData = JSON.parse(JSON.stringify(this._tableData));
-
-        let rowToUpdateIndex;
-        let values;
-        let newValue;
-        let newObject = {};
-
-        // calculate for group
-        if (group) {
-          // get the row to update
-          rowToUpdateIndex = newData.findIndex((row) => row._id === `summarize-${group}`);
-
-          if (rowToUpdateIndex !== -1) {
-            let dataToCalculate = JSON.parse(JSON.stringify(newData));
-
-            // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
-            if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
-              dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
-            }
-
-            values = dataToCalculate
-              .filter(
-                (row) =>
-                  row._groupId === group &&
-                  !row.isDeleted &&
-                  !row._originalRecord._isGroupRecord &&
-                  !row._originalRecord._isSummarizeRecord,
-              )
-              .map((row) => row[column.fieldName])
-              .filter((value) => value !== '' && value !== null && value !== undefined);
-
-            // calculate the totals
-            newValue = this._summarizeColumn(column, values);
-
-            newObject = {
-              [column.fieldName]: newValue,
-            };
-
-            // check and add labels to summarize rows
-            newObject = this._checkAndAddLabelToFirstColumn(newObject, group, column.fieldName);
-
-            // update the data
-            newData = [
-              ...newData.slice(0, rowToUpdateIndex),
-              {
-                ...newData[rowToUpdateIndex],
-                ...newObject,
-              },
-              ...newData.slice(rowToUpdateIndex + 1),
-            ];
-          }
-        }
-
-        // calculate grand totals
-
-        // get the row to update
-        rowToUpdateIndex = newData.findIndex((row) => row._id === 'summarize-totals');
-
-        if (rowToUpdateIndex !== -1) {
-          let dataToCalculate = JSON.parse(JSON.stringify(newData));
-
-          // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
-          if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
-            dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
-          }
-
-          values = dataToCalculate
-            .filter(
-              (row) => !row.isDeleted && !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
-            )
-            .map((row) => row[column.fieldName])
-            .filter((value) => value !== '' && value !== null && value !== undefined);
-
-          // calculate the totals
-          newValue = this._summarizeColumn(column, values);
-
-          newObject = {
-            [column.fieldName]: newValue,
-          };
-
-          // check and add labels to summarize rows
-          newObject = this._checkAndAddLabelToFirstColumn(newObject, undefined, column.fieldName);
-
-          // update the data
-          newData = [
-            ...newData.slice(0, rowToUpdateIndex),
-            {
-              ...newData[rowToUpdateIndex],
-              ...newObject,
-            },
-            ...newData.slice(rowToUpdateIndex + 1),
-          ];
-        }
-
-        this._tableData = newData;
-      }
-    }
   }
 
   _buildColumns(columnsFromObject) {
@@ -1235,7 +913,6 @@ export default class ODDatatable extends LightningElement {
         this._doNavigateNext(fieldName, record);
       } else {
         this._selectedRows = [];
-        this.selectedRowsIds = [];
       }
     }
   }
@@ -1378,6 +1055,414 @@ export default class ODDatatable extends LightningElement {
   }
 
   // =================================================================
+  // Group and summarize methods
+  // =================================================================
+  _groupData(data) {
+    // first check if the grouping field is in the dataset
+    const fieldInDataSet = data[0].hasOwnProperty(this.groupingField);
+
+    if (!fieldInDataSet) {
+      return data;
+    }
+
+    // group the data by the field
+    let groupedData = {};
+
+    // grouping source is the data
+    if (this.groupingSource === GROUPING_SOURCE.DATASET) {
+      groupedData = Object.groupBy(data, (dt) => dt[this.groupingField] || '');
+    } else {
+      // grouping source is the picklist
+      this.groupingSourceFieldData.split(',').forEach((value) => {
+        groupedData[value] = data.filter((dt) => dt[this.groupingField] === value);
+      });
+
+      // add the ones with empty value
+      groupedData[''] = data.filter((dt) => !dt[this.groupingField]);
+    }
+
+    // Create an array to store group information including summaries
+    let groupsWithSummaries = Object.entries(groupedData).map(([group, items]) => {
+      const summary = this._showTotalsByGroup ? this._checkAndSummarize(items, group || NO_GROUP) : undefined;
+      return {
+        group,
+        items,
+        summary,
+      };
+    });
+
+    // Sort the groups based on either group name or summary values
+    groupsWithSummaries = groupsWithSummaries.sort((a, b) => {
+      if (this.groupSortField && this.groupSortField !== this.groupingField) {
+        // If sorting by a summary field
+        if (a.summary && b.summary) {
+          const valueA = a.summary[this.groupSortField];
+          const valueB = b.summary[this.groupSortField];
+
+          // Handle empty/null/undefined values
+          const isEmptyA = valueA === null || valueA === undefined || valueA === '';
+          const isEmptyB = valueB === null || valueB === undefined || valueB === '';
+
+          if (isEmptyA && isEmptyB) return 0;
+          if (isEmptyA) return 1;
+          if (isEmptyB) return -1;
+
+          // Handle numeric values
+          if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return this.groupSortDirection === SORT_DIRECTION.ASC.value ? valueA - valueB : valueB - valueA;
+          }
+
+          // Handle string values
+          return this.groupSortDirection === SORT_DIRECTION.ASC.value
+            ? String(valueA).localeCompare(String(valueB))
+            : String(valueB).localeCompare(String(valueA));
+        }
+      } else {
+        // Default sorting by group name
+        const isEmptyA = !a.group || a.group === '';
+        const isEmptyB = !b.group || b.group === '';
+
+        if (isEmptyA && isEmptyB) return 0;
+        if (isEmptyA) return 1;
+        if (isEmptyB) return -1;
+
+        return this.groupSortDirection === SORT_DIRECTION.ASC.value
+          ? a.group.localeCompare(b.group)
+          : b.group.localeCompare(a.group);
+      }
+    });
+
+    // Sort items within each group if needed
+    if (this.groupContentSortField) {
+      groupsWithSummaries.forEach((groupData) => {
+        groupData.items = sortArrayByProperty(
+          groupData.items,
+          this.groupContentSortField,
+          this.groupContentSortDirection,
+        );
+      });
+    }
+
+    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
+
+    // Flatten the sorted groups back into a single array
+    return groupsWithSummaries.reduce((flattened, { group, items, summary }) => {
+      if (this.groupingSource === GROUPING_SOURCE.FIELD && this.showEmptyGroups === YES_NO.NO && items.length === 0) {
+        return flattened;
+      }
+
+      const groupId = group || NO_GROUP;
+
+      // Add the group as an element
+      flattened.push({
+        _id: `grouping-${groupId}`,
+        _groupId: groupId,
+        [firstColumnField]: group,
+        _originalRecord: {
+          _isGroupRecord: true,
+          _isCollapsible: this._canCollapseGroups,
+        },
+      });
+
+      const newItems = items.map((item) => ({
+        ...item,
+        _groupId: groupId,
+      }));
+
+      // Add all items in that group
+      flattened.push(...newItems);
+
+      // add the summary row if it exists
+      if (summary && newItems.length > 0) {
+        flattened.push({ ...summary, _groupId: groupId });
+      }
+
+      return flattened;
+    }, []);
+  }
+
+  _checkAndAddLabelToFirstColumn(record, group, columnFieldName = undefined) {
+    let groupToUse = group;
+    const firstColumnField = this.columnsToShow.find((col) => col.typeAttributes.config.isFirstColumn).fieldName;
+
+    if (columnFieldName === firstColumnField || !columnFieldName) {
+      if (record[firstColumnField]) {
+        if (groupToUse === NO_GROUP) {
+          groupToUse = ' ';
+        }
+
+        if (groupToUse) {
+          record[firstColumnField] = `Totals ${groupToUse}:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+        } else {
+          record[firstColumnField] = `TOTALS:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+        }
+      } else {
+        if (groupToUse) {
+          record[firstColumnField] = `Totals ${groupToUse}:`;
+        } else {
+          record[firstColumnField] = `TOTALS:`;
+        }
+      }
+    }
+
+    return record;
+  }
+
+  _checkAndSummarize(data, group = undefined) {
+    let result = {};
+
+    this.columnsToShow.forEach((column) => {
+      if (column.typeAttributes.config.summarize) {
+        const values = data
+          .map((row) => row[column.fieldName])
+          .filter((value) => value !== '' && value !== null && value !== undefined);
+
+        result[column.fieldName] = this._summarizeColumn(column, values);
+      }
+    });
+
+    // check and add labels to summarize rows
+    result = this._checkAndAddLabelToFirstColumn(result, group);
+
+    if (Object.keys(result).length > 0) {
+      return {
+        ...result,
+        _id: `summarize-${group || 'totals'}`,
+        _originalRecord: {
+          _isSummarizeRecord: true,
+        },
+      };
+    }
+
+    return undefined;
+  }
+
+  _summarizeColumn(column, values) {
+    let result;
+    switch (column.typeAttributes.config.summarizeType) {
+      case 'max':
+        result = values.length ? Math.max(...values) : null;
+        // For dates
+        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
+          result = values.reduce((max, current) => (current > max ? current : max));
+        }
+        break;
+
+      case 'min':
+        result = values.length ? Math.min(...values) : null;
+        // For dates
+        if (values.length && typeof values[0] === 'string' && values[0].includes('-')) {
+          result = values.reduce((min, current) => (current < min ? current : min));
+        }
+        break;
+
+      case 'sum':
+        result = values.reduce((sum, current) => sum + (Number(current) || 0), 0);
+        break;
+
+      case 'avg':
+        if (values.length) {
+          const sum = values.reduce((acc, current) => acc + (Number(current) || 0), 0);
+          result = sum / values.length;
+        } else {
+          result = 0;
+        }
+        break;
+
+      case 'count':
+        result = `Count: ${values.length.toString()}`;
+        break;
+    }
+
+    return result;
+  }
+
+  _recalculateColumn(column, record, forceRecalculation = false) {
+    // only if recalculate live is enabled and is inlineEdit or inlineAdd and new record
+    if (this._recalculateLive && (forceRecalculation || this._editInline || (this._addInline && record.isNew))) {
+      // if the column is summarizable
+      if (column.typeAttributes.config.summarize) {
+        const group = record._groupId;
+
+        let newData = JSON.parse(JSON.stringify(this._tableData));
+
+        let rowToUpdateIndex;
+        let values;
+        let newValue;
+        let newObject = {};
+
+        // calculate for group
+        if (group) {
+          let fromData = true;
+          // get the row to update
+          if (this._collapsedRecordsByGroupId[group]) {
+            fromData = false;
+            rowToUpdateIndex = this._collapsedRecordsByGroupId[group].findIndex(
+              (row) => row._id === `summarize-${group}`,
+            );
+          } else {
+            rowToUpdateIndex = newData.findIndex((row) => row._id === `summarize-${group}`);
+          }
+
+          if (rowToUpdateIndex !== -1) {
+            let dataToCalculate = JSON.parse(JSON.stringify(newData));
+
+            // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
+            if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
+              dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
+            }
+
+            values = dataToCalculate
+              .filter(
+                (row) =>
+                  row._groupId === group &&
+                  !row.isDeleted &&
+                  !row._originalRecord._isGroupRecord &&
+                  !row._originalRecord._isSummarizeRecord,
+              )
+              .map((row) => row[column.fieldName])
+              .filter((value) => value !== '' && value !== null && value !== undefined);
+
+            // calculate the totals
+            newValue = this._summarizeColumn(column, values);
+
+            newObject = {
+              [column.fieldName]: newValue,
+            };
+
+            // check and add labels to summarize rows
+            newObject = this._checkAndAddLabelToFirstColumn(newObject, group, column.fieldName);
+
+            // update the data
+            if (fromData) {
+              newData = [
+                ...newData.slice(0, rowToUpdateIndex),
+                {
+                  ...newData[rowToUpdateIndex],
+                  ...newObject,
+                },
+                ...newData.slice(rowToUpdateIndex + 1),
+              ];
+            } else {
+              this._doUpdateCollapsedRecords(rowToUpdateIndex, {
+                ...this._collapsedRecordsByGroupId[group][rowToUpdateIndex],
+                ...newObject,
+              });
+            }
+          }
+        }
+
+        // calculate grand totals
+
+        // get the row to update
+        rowToUpdateIndex = newData.findIndex((row) => row._id === 'summarize-totals');
+
+        if (rowToUpdateIndex !== -1) {
+          let dataToCalculate = JSON.parse(JSON.stringify(newData));
+
+          // add the collapsed rows too, so we count them in the summaries as they are only "hidden"
+          if (Object.keys(this._collapsedRecordsByGroupId).length > 0) {
+            dataToCalculate = [...dataToCalculate, ...Object.values(this._collapsedRecordsByGroupId).flat()];
+          }
+
+          values = dataToCalculate
+            .filter(
+              (row) => !row.isDeleted && !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
+            )
+            .map((row) => row[column.fieldName])
+            .filter((value) => value !== '' && value !== null && value !== undefined);
+
+          // calculate the totals
+          newValue = this._summarizeColumn(column, values);
+
+          newObject = {
+            [column.fieldName]: newValue,
+          };
+
+          // check and add labels to summarize rows
+          newObject = this._checkAndAddLabelToFirstColumn(newObject, undefined, column.fieldName);
+
+          // update the data
+          newData = [
+            ...newData.slice(0, rowToUpdateIndex),
+            {
+              ...newData[rowToUpdateIndex],
+              ...newObject,
+            },
+            ...newData.slice(rowToUpdateIndex + 1),
+          ];
+        }
+
+        this._tableData = newData;
+      }
+    }
+  }
+
+  _doCollapseGroup(groupId, recordIndex) {
+    // collect the records for future expand and calculations
+    this._collapsedRecordsByGroupId[groupId] = this._tableData.filter(
+      (dt) => dt._groupId === groupId && !dt._originalRecord._isGroupRecord,
+    );
+
+    // filter the data shown in the table
+    let newData = this._tableData.filter(
+      (dt) => dt._groupId !== groupId || (dt._groupId === groupId && dt._originalRecord._isGroupRecord),
+    );
+
+    // update the current record as isCollapsed
+    newData = [
+      ...newData.slice(0, recordIndex),
+      {
+        ...newData[recordIndex],
+        _originalRecord: {
+          ...newData[recordIndex]._originalRecord,
+          _isCollapsed: true,
+        },
+      },
+      ...newData.slice(recordIndex + 1),
+    ];
+
+    this._tableData = newData;
+  }
+
+  _doExpandGroup(groupId, recordIndex) {
+    // get the elements to add
+    const elementsToAdd = this._collapsedRecordsByGroupId[groupId] || [];
+
+    // add the elements to the table data
+    let newData = JSON.parse(JSON.stringify(this._tableData));
+    newData.splice(recordIndex + 1, 0, ...elementsToAdd);
+
+    // delete from the object that tracks the collapsed sections
+    delete this._collapsedRecordsByGroupId[groupId];
+
+    // update the current record as isCollapsed: false
+    newData = [
+      ...newData.slice(0, recordIndex),
+      {
+        ...newData[recordIndex],
+        _originalRecord: {
+          ...newData[recordIndex]._originalRecord,
+          _isCollapsed: false,
+        },
+      },
+      ...newData.slice(recordIndex + 1),
+    ];
+
+    this._tableData = newData;
+  }
+
+  _doUpdateCollapsedRecords(recordIndex, newObj) {
+    this._collapsedRecordsByGroupId[newObj._groupId] = [
+      ...this._collapsedRecordsByGroupId[newObj._groupId].slice(0, recordIndex),
+      {
+        ...newObj,
+      },
+      ...this._collapsedRecordsByGroupId[newObj._groupId].slice(recordIndex + 1),
+    ];
+  }
+
+  // =================================================================
   // update output methods
   // =================================================================
   _doUpdateOutputs(record, action) {
@@ -1481,6 +1566,9 @@ export default class ODDatatable extends LightningElement {
     this._doRemoveSessionStorage();
   }
 
+  // =================================================================
+  // Save methods
+  // =================================================================
   _doRefreshDataAfterSave(records = [], deletedRecords = []) {
     const newRecords = [];
 
@@ -1528,7 +1616,7 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  _doCleanDataToSend(data) {
+  _doCleanDataToSave(data) {
     const copyData = JSON.parse(JSON.stringify(data));
 
     copyData.forEach((record) => {
@@ -1542,6 +1630,9 @@ export default class ODDatatable extends LightningElement {
     return copyData;
   }
 
+  // =================================================================
+  // Navigate methods
+  // =================================================================
   _doNavigateBack() {
     if (this.availableActions.find((action) => action === 'BACK')) {
       const navigateBackEvent = new FlowNavigationBackEvent();
@@ -1562,100 +1653,69 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  _doCollapseGroup(groupId, recordIndex) {
-    // collect the records for future expand and calculations
-    this._collapsedRecordsByGroupId[groupId] = this._tableData.filter(
-      (dt) => dt._groupId === groupId && !dt._originalRecord._isGroupRecord,
-    );
-
-    // filter the data shown in the table
-    let newData = this._tableData.filter(
-      (dt) => dt._groupId !== groupId || (dt._groupId === groupId && dt._originalRecord._isGroupRecord),
-    );
-
-    // update the current record as isCollapsed
-    newData = [
-      ...newData.slice(0, recordIndex),
-      {
-        ...newData[recordIndex],
-        _originalRecord: {
-          ...newData[recordIndex]._originalRecord,
-          _isCollapsed: true,
-        },
-      },
-      ...newData.slice(recordIndex + 1),
-    ];
-
-    this._tableData = newData;
-  }
-
-  _doExpandGroup(groupId, recordIndex) {
-    // get the elements to add
-    const elementsToAdd = this._collapsedRecordsByGroupId[groupId] || [];
-
-    // add the elements to the table data
-    let newData = JSON.parse(JSON.stringify(this._tableData));
-    newData.splice(recordIndex + 1, 0, ...elementsToAdd);
-
-    // delete from the object that tracks the collapsed sections
-    delete this._collapsedRecordsByGroupId[groupId];
-
-    // update the current record as isCollapsed: false
-    newData = [
-      ...newData.slice(0, recordIndex),
-      {
-        ...newData[recordIndex],
-        _originalRecord: {
-          ...newData[recordIndex]._originalRecord,
-          _isCollapsed: false,
-        },
-      },
-      ...newData.slice(recordIndex + 1),
-    ];
-
-    this._tableData = newData;
-
-    this.selectedRowsIds = [...this.selectedRowsIds];
-  }
-
   // =================================================================
   // handler methods
   // =================================================================
   handleSelectRow(event) {
     if (event.detail.config.action) {
-      this._selectedRows = [];
-
-      event.detail.selectedRows.forEach((sr) => {
-        if (!sr.isDeleted) {
-          this._selectedRows.push(sr);
-        }
-      });
-
       // if it's not a selectAllRows and not a deselectAllRows
-
       if (event.detail.config.action !== 'selectAllRows' && event.detail.config.action !== 'deselectAllRows') {
         if (event.detail.config.action === 'rowSelect') {
           event.detail.selectedRows.forEach((selRow) => {
-            const row = this._tableData.find((rec) => rec._id === selRow._id);
+            if (!this._selectedRows.find((rec) => rec._id === selRow._id)) {
+              const row = this._tableData.find((rec) => rec._id === selRow._id);
 
-            // if it is a group record being selected
-            if (row._originalRecord._isGroupRecord) {
-              // select the children, based on the collapsed flag
-              if (row._originalRecord._isCollapsed) {
-                this._collapsedRecordsByGroupId[row._groupId].forEach((rec) => {
-                  this._selectedRows.push(rec);
-                });
-              } else {
-                this._tableData
-                  .filter((rec) => rec._groupId === row._groupId && rec._id !== row._id)
-                  .forEach((rec) => {
+              // add the selected row first
+              this._selectedRows.push(row);
+
+              // if it is a group record being selected
+              if (row._originalRecord._isGroupRecord) {
+                // select the children, based on the collapsed flag
+                if (row._originalRecord._isCollapsed) {
+                  this._collapsedRecordsByGroupId[row._groupId].forEach((rec) => {
                     this._selectedRows.push(rec);
                   });
+                } else {
+                  this._tableData
+                    .filter((rec) => rec._groupId === row._groupId && rec._id !== row._id)
+                    .forEach((rec) => {
+                      this._selectedRows.push(rec);
+                    });
+                }
+              } else {
+                // check if for that group there is any other that is not group or summarize, otherwise mark the group and summarize too
+                if (
+                  this._tableData.filter(
+                    (rec) =>
+                      rec._groupId === row._groupId &&
+                      !rec.isDeleted &&
+                      !rec._originalRecord._isGroupRecord &&
+                      !rec._originalRecord._isSummarizeRecord &&
+                      !this._selectedRows.find((rc) => rc._id === rec._id) &&
+                      rec._id !== row._id,
+                  ).length === 0
+                ) {
+                  this._tableData
+                    .filter(
+                      (rec) =>
+                        rec._groupId === row._groupId &&
+                        rec._id !== row._id &&
+                        !this._selectedRows.find((rc) => rc._id === rec._id) &&
+                        (rec._originalRecord._isGroupRecord || rec._originalRecord._isSummarizeRecord),
+                    )
+                    .forEach((rec) => {
+                      this._selectedRows.push(rec);
+                    });
+                }
               }
             }
           });
         } else if (event.detail.config.action === 'rowDeselect') {
           const row = this._tableData.find((rec) => rec._id === event.detail.config.value);
+
+          // remove the unselected row first
+          this._selectedRows = this._selectedRows.filter((rec) => rec._id !== row._id);
+
           if (row._originalRecord._isGroupRecord) {
             this._selectedRows = this._selectedRows.filter((rec) => rec._groupId !== row._groupId);
           } else {
@@ -1673,14 +1733,24 @@ export default class ODDatatable extends LightningElement {
           }
         }
       } else if (event.detail.config.action === 'selectAllRows') {
-        Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
-          this._collapsedRecordsByGroupId[key].forEach((rec) => {
+        // add all the rows from the table data that are not deleted
+        this._tableData
+          .filter((rec) => !rec.isDeleted)
+          .forEach((rec) => {
             this._selectedRows.push(rec);
           });
-        });
-      }
 
-      this.selectedRowsIds = this._selectedRows.map((sr) => sr._id);
+        // add from the collapsed rows too
+        Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
+          this._collapsedRecordsByGroupId[key]
+            .filter((rec) => !rec.isDeleted)
+            .forEach((rec) => {
+              this._selectedRows.push(rec);
+            });
+        });
+      } else if (event.detail.config.action === 'deselectAllRows') {
+        this._selectedRows = [];
+      }
     }
   }
 
@@ -1799,13 +1869,12 @@ export default class ODDatatable extends LightningElement {
               ...ROW_BUTTON_CONFIGURATION.UNDELETE,
             };
 
-            this._collapsedRecordsByGroupId[row._groupId] = [
-              ...this._collapsedRecordsByGroupId[row._groupId].slice(0, recordIndex),
-              {
-                ...record,
-              },
-              ...this._collapsedRecordsByGroupId[row._groupId].slice(recordIndex + 1),
-            ];
+            this._doUpdateCollapsedRecords(recordIndex, record);
+
+            // recalculate totals if needed
+            this.columnsToShow.forEach((cl) => {
+              this._recalculateColumn(cl, record, true);
+            });
           }
         }
       }
@@ -1814,7 +1883,6 @@ export default class ODDatatable extends LightningElement {
       this._doUpdateOutputs(record, EVENTS.DELETE);
     });
     this._selectedRows = [];
-    this.selectedRowsIds = [];
   }
 
   handleOpenBulkEdit() {
@@ -1836,21 +1904,39 @@ export default class ODDatatable extends LightningElement {
         if (row._id !== fl.value) {
           // check the if only empty
           if ((onlyEmpty && !row[fl.fieldName]) || !onlyEmpty) {
-            const detail = {
-              action: EVENTS.CHANGE,
-              recordId: row._id,
-              fieldName: fl.fieldName,
-              value: fl.value,
-              isValid: fl.isValid,
-            };
+            // update the data if in the table or collapsed
+            if (this._tableData.find((rc) => rc._id === row._id)) {
+              const detail = {
+                action: EVENTS.CHANGE,
+                recordId: row._id,
+                fieldName: fl.fieldName,
+                value: fl.value,
+                isValid: fl.isValid,
+              };
 
-            this.handleRowAction({ detail });
+              this.handleRowAction({ detail });
+            } else {
+              const recordIndex = this._collapsedRecordsByGroupId[row._groupId].findIndex((rc) => rc._id === row._id);
+              const record = {
+                ...this._collapsedRecordsByGroupId[row._groupId][recordIndex],
+                [fl.fieldName]: fl.value,
+              };
+              this._doUpdateCollapsedRecords(recordIndex, record);
+
+              // recalculate totals if needed
+              this._recalculateColumn(
+                this.columnsToShow.find((cl) => cl.fieldName === fl.fieldName),
+                record,
+              );
+
+              // update the outputs
+              this._doUpdateOutputs(record, EVENTS.CHANGE);
+            }
           }
         }
       });
     });
     this._selectedRows = [];
-    this.selectedRowsIds = [];
 
     this.handleCloseBulkEdit();
   }
@@ -1886,9 +1972,9 @@ export default class ODDatatable extends LightningElement {
       saveRecords({
         objectName: this.objectName,
         fields: this._getFieldsToReturn(),
-        recordsToCreate: JSON.stringify(this._doCleanDataToSend(this.outputAddedRows)),
-        recordsToUpdate: JSON.stringify(this._doCleanDataToSend(this.outputEditedRows)),
-        recordsToDelete: JSON.stringify(this._doCleanDataToSend(this.outputDeletedRows)),
+        recordsToCreate: JSON.stringify(this._doCleanDataToSave(this.outputAddedRows)),
+        recordsToUpdate: JSON.stringify(this._doCleanDataToSave(this.outputEditedRows)),
+        recordsToDelete: JSON.stringify(this._doCleanDataToSave(this.outputDeletedRows)),
       })
         .then((rs) => {
           this.isSaving = false;

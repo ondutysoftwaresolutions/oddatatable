@@ -1,40 +1,53 @@
 <template>
-  <template lwc:if={showIcon}>
-    <template lwc:if={tooltipContent}>
-      <template lwc:if={sldsIcon}>
-        <lightning-helptext
-          class="slds-align--absolute-center"
-          icon-name={config.iconName}
-          content={tooltipContent}
-          icon-variant={config.iconVariant}
-        >
-        </lightning-helptext>
-      </template>
-      <template lwc:else>
-        <div class="slds-is-relative">
-          <button
-            class="slds-button slds-button_icon slds-button slds-button_icon"
-            onmouseover={handleToggleSrcIconTooltip}
-            onmouseout={handleToggleSrcIconTooltip}
-          >
-            <img src={srcIconName} class="iconImage" />
-          </button>
-          <template lwc:if={showSrcIconTooltip}>
-            <div class={classesSrcIconTooltip} role="tooltip">
-              <div class="slds-align--absolute-center slds-popover__body">{tooltipContent}</div>
-            </div>
-          </template>
-        </div>
-      </template>
-    </template>
+  <template lwc:if={isGroupRecordCollapsibleCell}>
+    <c-od-datatable-row-button
+      record-id={recordId}
+      name="groupCell"
+      config={config}
+      label=" "
+      record={record}
+      field-name={fieldName}
+    >
+    </c-od-datatable-row-button>
   </template>
   <template lwc:else>
-    <template lwc:if={isSummarizeRecord}>
-      <c-od-datatable-field type={type} record={record} field-name={fieldName} value={content} config={theConfig}>
-      </c-od-datatable-field>
+    <template lwc:if={showIcon}>
+      <template lwc:if={tooltipContent}>
+        <template lwc:if={sldsIcon}>
+          <lightning-helptext
+            class="slds-align--absolute-center"
+            icon-name={config.iconName}
+            content={tooltipContent}
+            icon-variant={config.iconVariant}
+          >
+          </lightning-helptext>
+        </template>
+        <template lwc:else>
+          <div class="slds-is-relative">
+            <button
+              class="slds-button slds-button_icon slds-button slds-button_icon"
+              onmouseover={handleToggleSrcIconTooltip}
+              onmouseout={handleToggleSrcIconTooltip}
+            >
+              <img src={srcIconName} class="iconImage" />
+            </button>
+            <template lwc:if={showSrcIconTooltip}>
+              <div class={classesSrcIconTooltip} role="tooltip">
+                <div class="slds-align--absolute-center slds-popover__body">{tooltipContent}</div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </template>
     </template>
     <template lwc:else>
-      <div class={classesNoIcon}></div>
+      <template lwc:if={isSummarizeRecord}>
+        <c-od-datatable-field type={type} record={record} field-name={fieldName} value={content} config={theConfig}>
+        </c-od-datatable-field>
+      </template>
+      <template lwc:else>
+        <div class={classesNoIcon}></div>
+      </template>
     </template>
   </template>
 </template>

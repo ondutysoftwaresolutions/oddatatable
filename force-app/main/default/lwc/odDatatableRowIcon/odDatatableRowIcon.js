@@ -3,6 +3,7 @@ import { HIDDEN_TYPE_OPTIONS } from 'c/odDatatableConstants';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 
 export default class OdDatatableRowIcon extends LightningElement {
+  @api recordId;
   @api content;
   @api config;
   @api record;
@@ -44,6 +45,10 @@ export default class OdDatatableRowIcon extends LightningElement {
 
   get isSummarizeRecord() {
     return this.record._isSummarizeRecord;
+  }
+
+  get isGroupRecordCollapsibleCell() {
+    return this.record._isGroupRecord && this.record._isCollapsible;
   }
 
   get classesSrcIconTooltip() {
