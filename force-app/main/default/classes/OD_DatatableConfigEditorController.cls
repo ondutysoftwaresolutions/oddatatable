@@ -448,6 +448,9 @@ public without sharing class OD_DatatableConfigEditorController {
       return getRecords(objectName, fields, 'Id', listIdsToQuery);
     } catch (AuraHandledException e) {
       throw e;
+    } catch (DmlException e) {
+      System.debug('Pabli >>>> ' + e);
+      throw e;
     } catch (Exception exc) {
       String message =
         'ERROR while trying to save the records: ' +
