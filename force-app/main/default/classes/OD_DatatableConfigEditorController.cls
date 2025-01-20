@@ -449,7 +449,6 @@ public without sharing class OD_DatatableConfigEditorController {
     } catch (AuraHandledException e) {
       throw e;
     } catch (DmlException e) {
-      System.debug('Pabli >>>> ' + e);
       throw e;
     } catch (Exception exc) {
       String message =
