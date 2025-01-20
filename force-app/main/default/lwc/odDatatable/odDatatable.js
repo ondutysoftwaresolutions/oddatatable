@@ -43,7 +43,7 @@ export default class ODDatatable extends LightningElement {
   @api objectName;
   @api columns;
   @api noRecordsMessage;
-  @api showRowNumberColumn = YES_NO.YES;
+  @api showRowNumberColumn;
 
   // master detail configuration
   @api isMasterDetail;
@@ -69,7 +69,7 @@ export default class ODDatatable extends LightningElement {
   @api bulkEditLabel = 'Bulk Edit';
 
   // selection
-  @api canSelect;
+  @api canSelect = YES_NO.NO;
   @api selectionType;
 
   // save
