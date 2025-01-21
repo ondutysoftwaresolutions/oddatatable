@@ -1142,34 +1142,36 @@ export default class OdConfigurationEditor extends LightningElement {
 
       this._doDispatchChange(detail);
 
-      // if there is any bulk navigation button, trigger the change to can select and select multiple
-      if (this._areThereAnyBulkFlowButtons(event.detail.value)) {
-        detail = {
-          name: 'canSelect',
-          newValue: YES_NO.YES,
-          newValueDataType: 'string',
-        };
+      if (event.detail.value) {
+        // if there is any bulk navigation button, trigger the change to can select and select multiple
+        if (this._areThereAnyBulkFlowButtons(event.detail.value)) {
+          detail = {
+            name: 'canSelect',
+            newValue: YES_NO.YES,
+            newValueDataType: 'string',
+          };
 
-        this._doDispatchChange(detail);
+          this._doDispatchChange(detail);
 
-        detail = {
-          name: 'selectionType',
-          newValue: SELECTION_TYPES.MULTIPLE,
-          newValueDataType: 'string',
-        };
+          detail = {
+            name: 'selectionType',
+            newValue: SELECTION_TYPES.MULTIPLE,
+            newValueDataType: 'string',
+          };
 
-        this._doDispatchChange(detail);
-      }
+          this._doDispatchChange(detail);
+        }
 
-      // if there is at least one summarized column, trigger the change for show row numbers to false
-      if (JSON.parse(event.detail.value).filter((col) => col.typeAttributes.config.summarize).length > 0) {
-        detail = {
-          name: 'showRowNumberColumn',
-          newValue: YES_NO.NO,
-          newValueDataType: 'string',
-        };
+        // if there is at least one summarized column, trigger the change for show row numbers to false
+        if (JSON.parse(event.detail.value).filter((col) => col.typeAttributes.config.summarize).length > 0) {
+          detail = {
+            name: 'showRowNumberColumn',
+            newValue: YES_NO.NO,
+            newValueDataType: 'string',
+          };
 
-        this._doDispatchChange(detail);
+          this._doDispatchChange(detail);
+        }
       }
 
       this.handleCloseColumnsConfigurator();
