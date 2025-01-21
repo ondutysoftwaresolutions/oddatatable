@@ -914,10 +914,11 @@ export default class ODDatatable extends LightningElement {
     this._doOpenFlow(modalProps, record);
   }
 
-  _doSendToCaller(record) {
+  _doSendToCaller(action, record) {
     this.dispatchEvent(
       new CustomEvent('clickrowbutton', {
         detail: {
+          action: action,
           record: record,
         },
       }),
@@ -1856,7 +1857,7 @@ export default class ODDatatable extends LightningElement {
         this._doOpenFlowButton(fieldName, record);
         break;
       case EVENTS.SEND_TO_CALLER:
-        this._doSendToCaller(record);
+        this._doSendToCaller(action, record);
         break;
       case EVENTS.NAVIGATE_NEXT:
         this._doNavigateNext(fieldName, record);
