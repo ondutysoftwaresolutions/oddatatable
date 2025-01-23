@@ -12,6 +12,12 @@ export default class OdDatatableRowButton extends LightningElement {
   @api record;
 
   get cellClassesToUse() {
+    let cellClasses = this.config.cellClasses || '';
+
+    if (this.config.alignment) {
+      cellClasses = `${cellClasses} slds-text-align--${this.config.alignment.toLowerCase()}`;
+    }
+
     const disableClass =
       !this._isDelete &&
       !this._isUndelete &&
@@ -21,7 +27,7 @@ export default class OdDatatableRowButton extends LightningElement {
         ? 'disabled'
         : 'enabled';
 
-    return `rowButton ${this.config.cellClasses} ${this.isDeleted ? 'deleted-record' : ''} ${disableClass} ${this._isGroupRecord ? 'groupCell alignItemsCenter slds-grid' : ''} ${this._isSummarizeRecord ? 'summarizeCell' : ''}`;
+    return `rowButton ${cellClasses} ${this.isDeleted ? 'deleted-record' : ''} ${disableClass} ${this._isGroupRecord ? 'groupCell' : ''} ${this._isSummarizeRecord ? 'summarizeCell' : ''}`;
   }
 
   get showButton() {
@@ -114,7 +120,7 @@ export default class OdDatatableRowButton extends LightningElement {
   }
 
   get theClassesForButton() {
-    return `btn-inside-table-row ${this._isGroupRecord ? 'slds-size--1-of-1' : ''}`;
+    return `btn-inside-table-row ${this._isGroupRecord ? 'displayValue slds-size--1-of-1' : ''}`;
   }
 
   get _isDelete() {

@@ -7,39 +7,193 @@
   >
     <div slot="title" class="title-popup">Configure Flow Input Variables</div>
     <div slot="body" class={bodyClasses}>
-      <span class="slds-p-bottom--x-small slds-text-heading--medium"> Flow Input Variables </span>
-      <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
-      <div class="slds-m-bottom--large slds-m-top--medium slds-p-around--xx-small">
-        <table class="columnsTable">
-          <thead>
-            <tr>
-              <th class="slds-p-around--x-small" style="width: 300px">Input Variable Name</th>
-              <th class="slds-p-around--x-small" style="width: 150px">Type</th>
-              <th class="slds-p-around--x-small" style="width: 300px">
-                Value
-                <lightning-helptext
-                  class="help-text"
-                  content="You need to select a formula, constant or variable to pre-populate the input field that will go through to the selected flow"
-                ></lightning-helptext>
-              </th>
-              <th class="slds-p-around--x-small" style="width: 300px">Fixed value</th>
-              <th class="slds-p-around--x-small" style="width: 50px"></th>
-            </tr>
-          </thead>
-          <tbody class="">
-            <template lwc:if={isEdit}>
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Flow Input Variables</legend>
+        <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+        <div class="slds-m-bottom--large slds-m-top--medium slds-p-around--xx-small slds-size--1-of-1">
+          <table class="columnsTable" style="display: table">
+            <thead>
+              <tr>
+                <th class="slds-p-around--x-small" style="width: 300px">Input Variable Name</th>
+                <th class="slds-p-around--x-small" style="width: 150px">Type</th>
+                <th class="slds-p-around--x-small" style="width: 300px">
+                  Value
+                  <lightning-helptext
+                    class="help-text"
+                    content="You need to select a formula, constant or variable to pre-populate the input field that will go through to the selected flow"
+                  ></lightning-helptext>
+                </th>
+                <th class="slds-p-around--x-small" style="width: 300px">Fixed value</th>
+                <th class="slds-p-around--x-small" style="width: 50px"></th>
+              </tr>
+            </thead>
+            <tbody class="">
+              <template lwc:if={isEdit}>
+                <template lwc:if={single}>
+                  <tr>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordId">
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Current Record Id">
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </template>
+                <template lwc:if={multiple}>
+                  <tr>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordIds">
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic
+                        type={fieldTypes.TEXT}
+                        field-name="value"
+                        value="Selected Record Ids"
+                      >
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </template>
+              </template>
+              <template for:each={inputsToDisplayTable} for:item="input">
+                <tr key={input.id}>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.TEXT}
+                      field-name="name"
+                      editable
+                      value={input.name}
+                      data-id={input.id}
+                      onupdatefield={handleUpdateName}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      field-name="type"
+                      type={fieldTypes.SELECT}
+                      editable
+                      data-id={input.id}
+                      inside-popup-height={popupHeight}
+                      options={availableTypes}
+                      placeholder="Select Type..."
+                      value={input.type}
+                      onupdatefield={handleUpdateType}
+                      opened={input.typeOpened}
+                      onfocusdropdown={handleTypeOnFocusDropdown}
+                      onblurdropdown={handleTypeOnBlurDropdown}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <template lwc:if={input.showEmptyValueOptions}>
+                      <span class="slds-p-around--xx-small slds-m-left--xx-small">
+                        There aren't any formula, constant or variable with the selected type.
+                      </span>
+                    </template>
+                    <template lwc:else>
+                      <c-od-datatable-input-generic
+                        field-name="value"
+                        type={fieldTypes.SELECT}
+                        editable
+                        data-id={input.id}
+                        options={input.availableValues}
+                        placeholder="Select Value..."
+                        inside-popup-height={popupHeight}
+                        value={input.value}
+                        onupdatefield={handleUpdateValue}
+                        opened={input.valueOpened}
+                        onfocusdropdown={handleValueOnFocusDropdown}
+                        onblurdropdown={handleValueOnBlurDropdown}
+                      >
+                      </c-od-datatable-input-generic>
+                    </template>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.TEXT}
+                      field-name="fixedValue"
+                      editable
+                      value={input.fixedValue}
+                      data-id={input.id}
+                      onupdatefield={handleUpdateFixedValue}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td class="slds-text-align--center">
+                    <lightning-button-icon
+                      icon-name="utility:delete"
+                      variant="bare"
+                      class="icon-inside-table-row"
+                      onclick={handleDelete}
+                      tooltip="Delete this Input variable"
+                      data-id={input.id}
+                    >
+                    </lightning-button-icon>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <div class="slds-size--1-of-1 slds-p-top--small">
+            <lightning-button
+              label="Add Input Variable"
+              title="Add Input Variable"
+              icon-name="utility:add"
+              onclick={handleAdd}
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="slds-box slds-grid slds-wrap slds-m-top--medium">
+        <legend>Flow Output Variables</legend>
+        <div class="slds-m-top--medium slds-p-around--xx-small slds-size--1-of-1">
+          <table class="columnsTable" style="display: table">
+            <thead>
+              <tr>
+                <th class="slds-p-around--x-small" style="width: 300px">Output Variable Name</th>
+                <th class="slds-p-around--x-small" style="width: 150px">Type</th>
+                <th class="slds-p-around--x-small" style="width: 300px">SObject</th>
+                <th class="slds-p-around--x-small" style="width: 300px">Description</th>
+              </tr>
+            </thead>
+            <tbody>
               <template lwc:if={single}>
                 <tr>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordId">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordOutput">
                     </c-od-datatable-input-generic>
                   </td>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Record">
                     </c-od-datatable-input-generic>
                   </td>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Current Record Id">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={objectName}>
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.TEXT}
+                      field-name="description"
+                      value="This will be used to update the record in the table"
+                    >
                     </c-od-datatable-input-generic>
                   </td>
                 </tr>
@@ -47,197 +201,55 @@
               <template lwc:if={multiple}>
                 <tr>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordIds">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
                     </c-od-datatable-input-generic>
                   </td>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Text">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
                     </c-od-datatable-input-generic>
                   </td>
                   <td>
-                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value="Selected Record Ids">
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.TEXT}
+                      field-name="description"
+                      value="This will be used to update the records in the table"
+                    >
                     </c-od-datatable-input-generic>
                   </td>
                 </tr>
               </template>
-            </template>
-            <template for:each={inputsToDisplayTable} for:item="input">
-              <tr key={input.id}>
-                <td>
-                  <c-od-datatable-input-generic
-                    type={fieldTypes.TEXT}
-                    field-name="name"
-                    editable
-                    value={input.name}
-                    data-id={input.id}
-                    onupdatefield={handleUpdateName}
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic
-                    field-name="type"
-                    type={fieldTypes.SELECT}
-                    editable
-                    data-id={input.id}
-                    inside-popup-height={popupHeight}
-                    options={availableTypes}
-                    placeholder="Select Type..."
-                    value={input.type}
-                    onupdatefield={handleUpdateType}
-                    opened={input.typeOpened}
-                    onfocusdropdown={handleTypeOnFocusDropdown}
-                    onblurdropdown={handleTypeOnBlurDropdown}
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <template lwc:if={input.showEmptyValueOptions}>
-                    <span class="slds-p-around--xx-small slds-m-left--xx-small">
-                      There aren't any formula, constant or variable with the selected type.
-                    </span>
-                  </template>
-                  <template lwc:else>
+              <template lwc:if={bottomNav}>
+                <tr>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
                     <c-od-datatable-input-generic
-                      field-name="value"
-                      type={fieldTypes.SELECT}
-                      editable
-                      data-id={input.id}
-                      options={input.availableValues}
-                      placeholder="Select Value..."
-                      inside-popup-height={popupHeight}
-                      value={input.value}
-                      onupdatefield={handleUpdateValue}
-                      opened={input.valueOpened}
-                      onfocusdropdown={handleValueOnFocusDropdown}
-                      onblurdropdown={handleValueOnBlurDropdown}
+                      type={fieldTypes.TEXT}
+                      field-name="description"
+                      value="This will replace all the records in the table"
                     >
                     </c-od-datatable-input-generic>
-                  </template>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic
-                    type={fieldTypes.TEXT}
-                    field-name="fixedValue"
-                    editable
-                    value={input.fixedValue}
-                    data-id={input.id}
-                    onupdatefield={handleUpdateFixedValue}
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-                <td class="slds-text-align--center">
-                  <lightning-button-icon
-                    icon-name="utility:delete"
-                    variant="bare"
-                    class="icon-inside-table-row"
-                    onclick={handleDelete}
-                    tooltip="Delete this Input variable"
-                    data-id={input.id}
-                  >
-                  </lightning-button-icon>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-        <div class="slds-size--1-of-1 slds-p-top--small">
-          <lightning-button
-            label="Add Input Variable"
-            title="Add Input Variable"
-            icon-name="utility:add"
-            onclick={handleAdd}
-          >
-          </lightning-button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
         </div>
-      </div>
-      <span class="slds-p-bottom--x-small slds-text-heading--medium"> Flow Output Variables</span>
-      <div class="slds-m-top--medium slds-p-around--xx-small">
-        <table class="columnsTable">
-          <thead>
-            <tr>
-              <th class="slds-p-around--x-small" style="width: 300px">Output Variable Name</th>
-              <th class="slds-p-around--x-small" style="width: 150px">Type</th>
-              <th class="slds-p-around--x-small" style="width: 300px">SObject</th>
-              <th class="slds-p-around--x-small" style="width: 300px">Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template lwc:if={single}>
-              <tr>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordOutput">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Record">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={objectName}>
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic
-                    type={fieldTypes.TEXT}
-                    field-name="description"
-                    value="This will be used to update the record in the table"
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-              </tr>
-            </template>
-            <template lwc:if={multiple}>
-              <tr>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic
-                    type={fieldTypes.TEXT}
-                    field-name="description"
-                    value="This will be used to update the records in the table"
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-              </tr>
-            </template>
-            <template lwc:if={bottomNav}>
-              <tr>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="name" value="recordsOutput">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value="Records">
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="value" value={multipleObjectName}>
-                  </c-od-datatable-input-generic>
-                </td>
-                <td>
-                  <c-od-datatable-input-generic
-                    type={fieldTypes.TEXT}
-                    field-name="description"
-                    value="This will replace all the records in the table"
-                  >
-                  </c-od-datatable-input-generic>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+      </fieldset>
     </div>
     <div slot="footer" class="footer-popup slds-grid">
       <div class="slds-align--absolute-center slds-size--12-of-12">

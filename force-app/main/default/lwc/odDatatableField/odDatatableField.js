@@ -88,9 +88,14 @@ export default class OdDatatableField extends LightningElement {
   }
 
   get cellClasses() {
+    let cellClassesToUse = this.config.cellClasses || '';
+    if (this.config.alignment) {
+      cellClassesToUse = `${cellClassesToUse} slds-text-align--${this.config.alignment.toLowerCase()}`;
+    }
+
     return this.isDeleted
       ? 'deleted-record'
-      : `${this.config.cellClasses || ''} ${this.record?._isGroupRecord ? 'groupCell' : ''} ${this.record?._isSummarizeRecord ? 'summarizeCell' : ''}`;
+      : `${cellClassesToUse} ${this.record?._isGroupRecord ? 'groupCell' : ''} ${this.record?._isSummarizeRecord ? 'summarizeCell' : ''}`;
   }
 
   get lookupConfig() {

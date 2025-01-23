@@ -2,10 +2,6 @@
   --height-row: 42px;
 }
 
-.slds-modal__container {
-	min-width: 70% !important;
-}
-
 #wrapper-body > .quick-actions-panel, 
 #wrapper-body > .quick-actions-panel > .slds-modal__content,
 .od-datatable-dropdown-open flowruntime-lwc-body {
@@ -158,7 +154,19 @@
  {
   font-weight: 700;
   min-height: var(--height-row);
+  line-height: 34px;
 }
+
+.od-datatable th div.groupCell .displayValue,
+.od-datatable td div.groupCell .displayValue,
+.od-datatable th div.summarizeCell .displayValue,
+.od-datatable td div.summarizeCell .displayValue {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  line-height: 34px;
+}
+
 .od-datatable th div.groupCell,
 .od-datatable td div.groupCell,
 .od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
@@ -218,7 +226,7 @@
   border-top: 0;
 }
 
-.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button {
+.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .displayValue .slds-button {
   width: 100%;
   justify-content: flex-start;
   color: var(--slds-g-color-neutral-base-10, var(--lwc-colorTextDefault, rgb(3, 45, 96)));
@@ -227,6 +235,10 @@
   border: 0;
   border-radius: 0;
   transform: none !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
 }
 
 .od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button::after {

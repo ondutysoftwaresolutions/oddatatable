@@ -1,7 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
-import { getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
+import { generateRandomString, getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 import { FIELD_TYPES, FLOW_DATA_TYPES } from 'c/odDatatableConstants';
-import { generateRandomString } from 'c/odDatatableUtils';
 
 export default class OdDatatableConfigurationFlowInputVariables extends LightningElement {
   @api objectName;

@@ -517,3 +517,7 @@ export const SELECTION_TYPES = {
   SINGLE: 'Single Row',
   MULTIPLE: 'Multiple Rows',
 };
+
+export const HEADER_ACTION_TYPES = {
+  SET_VALUE: 'setValue',
+};

@@ -58,6 +58,7 @@
                 <th class="slds-p-around--x-small" style="min-width: 350px">Icon/Button Configuration</th>
                 <th class="slds-p-around--x-small" style="min-width: 350px">Hidden/Summarize Configuration</th>
                 <th class="slds-p-around--x-small" style="min-width: 250px">Default Value</th>
+                <th class="slds-p-around--x-small" style="min-width: 100px">Header Actions</th>
                 <th class="slds-p-around--x-small" style="min-width: 100px">Width (px)</th>
                 <th class="slds-p-around--x-small" style="min-width: 100px">Alignment</th>
                 <th class="slds-p-around--x-small" style="min-width: 100px">Order</th>
@@ -489,6 +490,17 @@
                     </template>
                   </td>
                   <td>
+                    <lightning-button-icon
+                      title="Configure Header Actions"
+                      alternative-text="Configure Header Actions"
+                      icon-name="utility:settings"
+                      class="slds-align--absolute-center slds-form-element slds-p-around--xx-small"
+                      data-value={field.value}
+                      onclick={handleOpenHeaderActions}
+                    >
+                    </lightning-button-icon>
+                  </td>
+                  <td>
                     <c-od-datatable-input-generic
                       type={fieldTypes.INTEGER}
                       field-name="initialWidth"
@@ -598,5 +610,17 @@
       bottom-nav={flowBottomNav}
     >
     </c-od-datatable-configuration-flow-input-variables>
+  </template>
+
+  <!-- Header Actions popup -->
+  <template lwc:if={showHeaderActions}>
+    <c-od-datatable-configuration-column-header-actions
+      actions={customHeaderActions}
+      column={headerActionColumn}
+      onclose={handleCloseHeaderActions}
+      onsave={handleSaveHeaderActions}
+      hide-default={hideDefaultHeaderActions}
+    >
+    </c-od-datatable-configuration-column-header-actions>
   </template>
 </template>

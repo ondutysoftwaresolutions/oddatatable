@@ -42,7 +42,7 @@
         <template lwc:else>
           <template lwc:if={isMulti}>
             <lightning-formatted-text
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               id={fieldName}
               value={theValue}
             >
@@ -58,7 +58,7 @@
               options={theOptions}
               object-name={parentObjectName}
               server-side-configuration={lookupConfiguration}
-              class="slds-p-around--xx-small slds-size--1-of-1"
+              class="slds-p-around--xx-small slds-size--1-of-1 displayValue"
             >
             </c-od-datatable-input-autocomplete>
           </template>
@@ -122,7 +122,7 @@
             format-style="currency"
             currency-code={currencyCode}
             minimum-fraction-digits={decimalsFormat}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
           >
           </lightning-formatted-number>
         </template>
@@ -151,7 +151,7 @@
           <lightning-formatted-number
             id={fieldName}
             minimum-fraction-digits={decimalsFormat}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
             value={theValue}
           >
           </lightning-formatted-number>
@@ -184,7 +184,7 @@
             value={theValue}
             format-style="percent-fixed"
             minimum-fraction-digits={decimalsFormat}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
           >
           </lightning-formatted-number>
         </template>
@@ -212,7 +212,7 @@
         <template lwc:else>
           <lightning-formatted-date-time
             value={theValue}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
             id={fieldName}
             year="numeric"
             month="2-digit"
@@ -244,7 +244,7 @@
         <template lwc:else>
           <lightning-formatted-date-time
             value={theValue}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
             id={fieldName}
             year="numeric"
             month="2-digit"
@@ -276,7 +276,7 @@
         <template lwc:else>
           <lightning-formatted-rich-text
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
             value={theValue}
           >
           </lightning-formatted-rich-text>
@@ -301,7 +301,7 @@
         <template lwc:else>
           <lightning-formatted-rich-text
             id={fieldName}
-            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+            class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
             value={theValue}
           >
           </lightning-formatted-rich-text>
@@ -340,7 +340,7 @@
         <template lwc:else>
           <template lwc:if={isUrl}>
             <lightning-formatted-url
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               value={theValue}
               target="_blank"
             >
@@ -348,28 +348,28 @@
           </template>
           <template lwc:elseif={isPhone}>
             <lightning-formatted-phone
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               value={theValue}
             >
             </lightning-formatted-phone>
           </template>
           <template lwc:elseif={isEmail}>
             <lightning-formatted-email
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               value={theValue}
             >
             </lightning-formatted-email>
           </template>
           <template lwc:elseif={isTextWithHTML}>
             <lightning-formatted-rich-text
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               value={theValue}
             >
             </lightning-formatted-rich-text>
           </template>
           <template lwc:else>
             <lightning-formatted-text
-              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small"
+              class="slds-p-around--xx-small slds-size--1-of-1 slds-m-left--xx-small displayValue"
               value={theValue}
             ></lightning-formatted-text>
           </template>

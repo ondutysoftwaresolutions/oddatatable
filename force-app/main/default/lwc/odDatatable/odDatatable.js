@@ -7,6 +7,8 @@ import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorControl
 import saveRecords from '@salesforce/apex/OD_DatatableConfigEditorController.saveRecords';
 import getRecords from '@salesforce/apex/OD_DatatableConfigEditorController.getRecords';
 import {
+  ALIGNMENT_OPTIONS,
+  HEADER_ACTION_TYPES,
   YES_NO,
   EMPTY_STRING,
   EVENTS,
@@ -114,6 +116,7 @@ export default class ODDatatable extends LightningElement {
   @api outputDeletedRows = [];
   @api outputSelectedRows = [];
   @api rowRecordId;
+  @api rowRecord;
   @api rowRecordIds;
   @api rowButtonClicked;
   @api wasChanged = false;
@@ -723,7 +726,7 @@ export default class ODDatatable extends LightningElement {
           label: { fieldName: '_editLabel' },
           isDeleted: { fieldName: 'isDeleted' },
           hasChanges: { fieldName: '_hasChanges' },
-          config: { cellClasses: 'slds-text-align--center' },
+          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value },
         },
       });
     }
@@ -740,7 +743,7 @@ export default class ODDatatable extends LightningElement {
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
-          config: { cellClasses: 'slds-text-align--center', isButtonIcon: true },
+          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value, isButtonIcon: true },
         },
       });
     }
@@ -914,18 +917,20 @@ export default class ODDatatable extends LightningElement {
     this._doOpenFlow(modalProps, record);
   }
 
-  _doSendToCaller(action, record) {
+  _doSendToCaller(fieldName, record) {
+    const column = this.columnsToShow.find((cl) => cl.fieldName === fieldName);
     this.dispatchEvent(
       new CustomEvent('clickrowbutton', {
         detail: {
-          action: action,
+          fieldName: fieldName,
+          label: column.label || column.tableLabel,
           record: record,
         },
       }),
     );
   }
 
-  async _doOpenFlowButton(fieldName, record, selectedIds = undefined) {
+  async _doOpenFlowButton(fieldName, record, recordsSelected = undefined) {
     const modalProps = {
       size: 'small',
       label: 'Flow Button',
@@ -934,6 +939,7 @@ export default class ODDatatable extends LightningElement {
     };
 
     const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
+    const selectedIds = recordsSelected ? recordsSelected.map((row) => row._id) : undefined;
 
     // this is an edit
     modalProps.flowName = column.typeAttributes.config.flowName;
@@ -948,9 +954,10 @@ export default class ODDatatable extends LightningElement {
     // if something came back from the flow and we have to navigate next
     if (resultModal && resultModal.isSuccess) {
       if (column.typeAttributes.config.flowNavigateNext) {
-        // set the outputs
-        this.rowRecordId = record ? record._id : undefined;
-        this.rowRecordIds = selectedIds;
+        // set the outputs for the flow if records selected
+        if (recordsSelected) {
+          this.rowRecordIds = selectedIds;
+        }
 
         // navigate next
         this._doNavigateNext(fieldName, record);
@@ -1236,13 +1243,13 @@ export default class ODDatatable extends LightningElement {
         }
 
         if (groupToUse) {
-          record[firstColumnField] = `Totals ${groupToUse}:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+          record[firstColumnField] = `Totals:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
         } else {
           record[firstColumnField] = `TOTALS:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
         }
       } else {
         if (groupToUse) {
-          record[firstColumnField] = `Totals ${groupToUse}:`;
+          record[firstColumnField] = `Totals:`;
         } else {
           record[firstColumnField] = `TOTALS:`;
         }
@@ -1689,7 +1696,12 @@ export default class ODDatatable extends LightningElement {
       if (fieldName) {
         const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
 
-        this.rowButtonClicked = record ? column.typeAttributes.label : column.typeAttributes.config.bulkButtonLabel;
+        if (record) {
+          this.rowRecordId = record._id;
+          this.rowRecord = record;
+        }
+
+        this.rowButtonClicked = column.typeAttributes.label;
       }
 
       const navigateNextEvent = new FlowNavigationNextEvent();
@@ -1857,12 +1869,18 @@ export default class ODDatatable extends LightningElement {
         this._doOpenFlowButton(fieldName, record);
         break;
       case EVENTS.SEND_TO_CALLER:
-        this._doSendToCaller(action, record);
+        updateOutputs = false;
+
+        this._doSendToCaller(fieldName, record);
         break;
       case EVENTS.NAVIGATE_NEXT:
+        updateOutputs = false;
+
         this._doNavigateNext(fieldName, record);
         break;
       case EVENTS.NAVIGATE_BACK:
+        updateOutputs = false;
+
         this._doNavigateBack();
         break;
       case EVENTS.GROUP_COLLAPSE:
@@ -1882,6 +1900,27 @@ export default class ODDatatable extends LightningElement {
     if (updateOutputs) {
       // update the outputs
       this._doUpdateOutputs(record, action);
+    }
+  }
+
+  handleHeaderAction(event) {
+    if (
+      event.detail.action.type === HEADER_ACTION_TYPES.SET_VALUE &&
+      event.detail.columnDefinition.typeAttributes.editable
+    ) {
+      this._tableData
+        .filter((rec) => !rec.isDeleted)
+        .forEach((rec) => {
+          this.handleRowAction({
+            detail: {
+              action: EVENTS.CHANGE,
+              recordId: rec._id,
+              fieldName: event.detail.columnDefinition.fieldName,
+              value: event.detail.action.valueToSet,
+              isValid: true,
+            },
+          });
+        });
     }
   }
 
@@ -2053,11 +2092,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   handleOpenBulkFlow(event) {
-    this._doOpenFlowButton(
-      event.target.dataset.name,
-      undefined,
-      this._selectedRowsToProcessBulk.map((row) => row._id),
-    );
+    this._doOpenFlowButton(event.target.dataset.name, undefined, this._selectedRowsToProcessBulk);
   }
 
   handleOpenBottomNavFlow(event) {

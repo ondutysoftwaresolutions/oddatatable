@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import { HIDDEN_TYPE_OPTIONS } from 'c/odDatatableConstants';
+import { ALIGNMENT_OPTIONS, HIDDEN_TYPE_OPTIONS } from 'c/odDatatableConstants';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 
 export default class OdDatatableRowIcon extends LightningElement {
@@ -84,7 +84,7 @@ export default class OdDatatableRowIcon extends LightningElement {
   get theConfig() {
     if (this.isSummarizeRecord) {
       const newConfig = JSON.parse(JSON.stringify(this.config));
-      newConfig.cellClasses = 'slds-text-align--center';
+      newConfig.alignment = ALIGNMENT_OPTIONS.CENTER.value;
 
       return newConfig;
     }

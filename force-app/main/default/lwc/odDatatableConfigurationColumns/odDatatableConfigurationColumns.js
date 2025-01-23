@@ -15,6 +15,7 @@ import {
   BUTTON_VARIANTS,
   FIELD_TYPES,
   FORMATTED_TYPE_TO_SHOW,
+  HEADER_ACTION_TYPES,
   CUSTOM_BUTTON_TYPES,
   INPUT_GENERIC_TYPE,
   CUSTOM_FIELD_TYPES,
@@ -62,6 +63,13 @@ export default class OdConfigurationColumns extends LightningElement {
   flowSingle;
   flowMultiple;
   flowBottomNav;
+
+  // header actions
+  showHeaderActions = false;
+  hideDefaultHeaderActions;
+  headerActionFieldName;
+  headerActionColumn;
+  customHeaderActions;
 
   // private variables
   _alreadyRendered = false;
@@ -267,13 +275,15 @@ export default class OdConfigurationColumns extends LightningElement {
           tableLabel: col.tableLabel,
           classesType: selectedCustom.flow ? 'slds-size--1-of-1' : 'slds-size--10-of-12',
           typeSpec: typeSpec,
+          hideDefaultActions: col.hideDefaultActions,
+          headerActions: JSON.stringify(col.actions),
           precision: getPrecision(field),
           isMulti: this._isMulti(type),
           isEditable: col.typeAttributes.editable,
           required: col.typeAttributes.required,
           defaultValue: col.typeAttributes.config.defaultValue,
           initialWidth: col.initialWidth,
-          alignment: col.alignment,
+          alignment: col.typeAttributes.config.alignment || col.alignment,
           hidden: col.typeAttributes.config.hidden,
           hiddenType: col.typeAttributes.config.hiddenType,
           hiddenConditionField: col.typeAttributes.config.hiddenConditionField,
@@ -393,8 +403,12 @@ export default class OdConfigurationColumns extends LightningElement {
         iteration++;
 
         return { ...fl, ...newField };
+      } else {
+        // get the field from the fields to display table
+        const fieldIndex = this.fieldsToDisplayTable.findIndex((fld) => fld.value === fl.value);
+
+        return { ...fl, ...this.fieldsToDisplayTable[fieldIndex] };
       }
-      return fl;
     });
 
     return result;
@@ -563,9 +577,8 @@ export default class OdConfigurationColumns extends LightningElement {
         tableLabel: field.tableLabel,
         order: field.order,
         fieldName: field.value,
-        alignment: field.alignment,
         wrapText: true,
-        hideDefaultActions: true,
+        hideDefaultActions: isEmpty(field.hideDefaultActions) ? true : field.hideDefaultActions,
         typeAttributes: {
           type: field.type,
           recordId: { fieldName: '_id' },
@@ -579,7 +592,7 @@ export default class OdConfigurationColumns extends LightningElement {
           },
           config: {
             showAs: field.showAs,
-            cellClasses: `slds-text-align--${field.alignment || ALIGNMENT_OPTIONS.LEFT.value}`,
+            alignment: field.alignment || ALIGNMENT_OPTIONS.LEFT.value,
             hidden: field.hidden,
             hiddenConditionField: field.hiddenConditionField,
             hiddenType: field.hiddenType || HIDDEN_TYPE_OPTIONS.COLUMN.value,
@@ -588,6 +601,18 @@ export default class OdConfigurationColumns extends LightningElement {
           },
         },
       };
+
+      // if we have custom header actions
+      if (field.headerActions && JSON.parse(field.headerActions).length > 0) {
+        const headerActions = JSON.parse(field.headerActions);
+        const actionsToSave = [];
+
+        if (field.isEditable) {
+          actionsToSave.push(...headerActions.filter((ha) => ha.type === HEADER_ACTION_TYPES.SET_VALUE));
+        }
+
+        fieldToAdd.actions = actionsToSave;
+      }
 
       // for object field columns
       if (field.isFieldColumn) {
@@ -811,6 +836,53 @@ export default class OdConfigurationColumns extends LightningElement {
       });
 
       this.handleCloseFlowInputVariables();
+    }
+  }
+
+  handleOpenHeaderActions(event) {
+    this.headerActionFieldName = event.target.dataset.value;
+    const configuration = this.selectedFields.find((fl) => fl.value === this.headerActionFieldName);
+    this.customHeaderActions = configuration.headerActions || null;
+    this.hideDefaultHeaderActions = isEmpty(configuration.hideDefaultActions) ? true : configuration.hideDefaultActions;
+    this.headerActionColumn = configuration;
+
+    this.showHeaderActions = true;
+  }
+
+  handleCloseHeaderActions() {
+    this.showHeaderActions = false;
+  }
+
+  handleSaveHeaderActions(event) {
+    if (event && event.detail) {
+      // update default hide actions
+      this.handleUpdateField({
+        target: {
+          dataset: {
+            value: this.headerActionFieldName,
+          },
+        },
+        detail: {
+          fieldName: 'hideDefaultActions',
+          value: event.detail.hideDefaultActions,
+        },
+      });
+
+      // update custom header actions
+      if (event.detail.value) {
+        this.handleUpdateField({
+          target: {
+            dataset: {
+              value: this.headerActionFieldName,
+            },
+          },
+          detail: {
+            fieldName: 'headerActions',
+            value: event.detail.value,
+          },
+        });
+        this.handleCloseHeaderActions();
+      }
     }
   }
 
