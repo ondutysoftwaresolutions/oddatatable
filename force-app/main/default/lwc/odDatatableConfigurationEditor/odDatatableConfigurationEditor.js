@@ -1282,6 +1282,20 @@ export default class OdConfigurationEditor extends LightningElement {
 
       this.inputValues = configuration;
 
+      // dispatch the changes
+      Object.keys(this.inputValues).forEach((key) => {
+        const element = this.inputValues[key];
+
+        // dispatch the change
+        const detail = {
+          name: key,
+          newValue: element.value ? element.value : null,
+          newValueDataType: element.valueType,
+        };
+
+        this._doDispatchChange(detail);
+      });
+
       // display a success toast
       Toast.show(
         {
