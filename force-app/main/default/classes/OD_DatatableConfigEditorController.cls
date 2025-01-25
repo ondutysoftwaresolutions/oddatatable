@@ -497,7 +497,7 @@ public without sharing class OD_DatatableConfigEditorController {
       throw e;
     } catch (Exception exc) {
       String message =
-        'ERROR while trying to save the records: ' +
+        'ERROR while trying to get the related list configuration the records: ' +
         exc.getMessage() +
         ' / ' +
         exc.getStackTraceString();
@@ -525,19 +525,30 @@ public without sharing class OD_DatatableConfigEditorController {
     Id recordId,
     String fields
   ) {
-    // build the query
-    String query = 'SELECT Id';
+    try {
+      // build the query
+      String query = 'SELECT Id';
 
-    // add fields if any
-    if (String.isNotBlank(fields)) {
-      query += ', ' + String.escapeSingleQuotes(fields);
+      // add fields if any
+      if (String.isNotBlank(fields)) {
+        query += ', ' + String.escapeSingleQuotes(fields);
+      }
+
+      query += ' FROM ' + objectName + ' WHERE ' + fieldApiName + ' = :recordId';
+
+      SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, Database.query(query));
+
+      return securityDecision.getRecords();
+    } catch (Exception exc) {
+      String message =
+        'ERROR while trying to get the related list records: ' +
+        exc.getMessage() +
+        ' / ' +
+        exc.getStackTraceString();
+      AuraHandledException e = new AuraHandledException(message);
+      e.setMessage(message);
+      throw e;
     }
-
-    query += ' FROM ' + objectName + ' WHERE ' + fieldApiName + ' = :recordId';
-
-    SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, Database.query(query));
-
-    return securityDecision.getRecords();
   }
 
   public class ConfigurationWrapper {

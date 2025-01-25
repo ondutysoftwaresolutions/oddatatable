@@ -319,4 +319,75 @@ public class OD_DatatableConfigEditorControllerTest {
 
     Test.stopTest();
   }
+
+  @IsTest
+  static void testGetConfigurationRelatedListSuccess() {
+    Test.startTest();
+
+    String tableConfiguration = OD_DatatableConfigEditorController.getConfigurationRelatedList('Test');
+
+    Test.stopTest();
+
+    Assert.isNotNull(tableConfiguration, 'There is not a table configuration string for that custom metadata');
+  }
+
+  @IsTest
+  static void testGetConfigurationRelatedListFail() {
+    Test.startTest();
+
+    try {
+      String tableConfiguration = OD_DatatableConfigEditorController.getConfigurationRelatedList('Test1');
+    } catch (Exception e) {
+      Assert.isTrue(
+        e.getMessage()
+          .contains(
+            'There is no custom metadata record in the OD_Datatable_JSON_Configuration__mdt with the name Test1. Please add the record or change the name in the component.'
+          ),
+        'Wrong error message'
+      );
+    }
+
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testGetRecordsRelatedListSuccess() {
+    Account acc = [SELECT Id FROM Account LIMIT 1];
+
+    Test.startTest();
+
+    List<SObject> records = OD_DatatableConfigEditorController.getRecordsRelatedList(
+      'Contact',
+      'AccountId',
+      acc.Id,
+      'FirstName,LastName'
+    );
+
+    Test.stopTest();
+
+    Assert.isTrue(records.size() == 3, 'There are not 3 contacts');
+  }
+
+  @IsTest
+  static void testGetRecordsRelatedListFail() {
+    Account acc = [SELECT Id FROM Account LIMIT 1];
+
+    Test.startTest();
+
+    try {
+      List<SObject> records = OD_DatatableConfigEditorController.getRecordsRelatedList(
+        'Contact',
+        'AccountId__c',
+        acc.Id,
+        'FirstName,LastName'
+      );
+    } catch (Exception e) {
+      Assert.isTrue(
+        e.getMessage().contains('ERROR while trying to get the related list records:'),
+        'Wrong error message'
+      );
+    }
+
+    Test.stopTest();
+  }
 }
