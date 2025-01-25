@@ -1609,7 +1609,6 @@ export default class ODDatatable extends LightningElement {
       this.saveAndNext = false;
       this.rowRecordId = null;
       this.rowButtonClicked = null;
-      this.wasChanged = false;
     }
 
     this.outputAddedRows = [];
@@ -1619,6 +1618,8 @@ export default class ODDatatable extends LightningElement {
     this._collapsedRecordsByGroupId = {};
 
     if (cleanHasChanges) {
+      this.wasChanged = false;
+
       // update all the rows with the _hasChanges
       this._tableData.forEach((rec) => {
         rec._hasChanges = false;
@@ -1696,6 +1697,16 @@ export default class ODDatatable extends LightningElement {
     });
 
     return copyData;
+  }
+
+  _doDispatchAfterSave(records) {
+    this.dispatchEvent(
+      new CustomEvent('aftersave', {
+        detail: {
+          recordIds: records.map((record) => ({ recordId: record.Id })),
+        },
+      }),
+    );
   }
 
   // =================================================================
@@ -2163,12 +2174,16 @@ export default class ODDatatable extends LightningElement {
       // delete it from the storage
       this._doRemoveSessionStorage();
 
+      const recordsToCreate = this._doCleanDataToSave(this.outputAddedRows);
+      const recordsToEdit = this._doCleanDataToSave(this.outputEditedRows);
+      const recordsToDelete = this._doCleanDataToSave(this.outputDeletedRows);
+
       saveRecords({
         objectName: this.objectName,
         fields: this._getFieldsToReturn(),
-        recordsToCreate: JSON.stringify(this._doCleanDataToSave(this.outputAddedRows)),
-        recordsToUpdate: JSON.stringify(this._doCleanDataToSave(this.outputEditedRows)),
-        recordsToDelete: JSON.stringify(this._doCleanDataToSave(this.outputDeletedRows)),
+        recordsToCreate: JSON.stringify(recordsToCreate),
+        recordsToUpdate: JSON.stringify(recordsToEdit),
+        recordsToDelete: JSON.stringify(recordsToDelete),
       })
         .then((rs) => {
           this.isSaving = false;
@@ -2176,6 +2191,9 @@ export default class ODDatatable extends LightningElement {
 
           // refresh the data in the table and clean the outputs
           this._doRefreshDataAfterSave(rs, this.outputDeletedRows);
+
+          // dispatch the after save in case this is being used inside a lightning record page with the ids of the impacted rows
+          this._doDispatchAfterSave([...rs, ...this.outputDeletedRows]);
         })
         .catch((error) => {
           this.isSaving = false;

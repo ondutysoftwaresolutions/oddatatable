@@ -345,6 +345,7 @@ public without sharing class OD_DatatableConfigEditorController {
    * @description		Get the records after insert/update to return updated fields to the UI
    * @param			String objectName : The Name of the object to retrieve
    * @param			String fields : Comma separated field names to retrieve
+   * @param			String fieldNameFilter : The field Name to use in the filter
    * @param			Set<Id> idsToQuery : Set of record ids to retrieve
    * @return			List of found records
    **********************************************************************************************************/
@@ -460,6 +461,83 @@ public without sharing class OD_DatatableConfigEditorController {
       e.setMessage(message);
       throw e;
     }
+  }
+
+  /*********************************************************************************************************
+   * @name			getConfigurationRelatedList
+   * @author			Pablo Martinez <pablo@farmcove.co.uk>
+   * @created			25 / 01 / 2025
+   * @description		Get the Table configuration to use in the component for lightning pages and community pages
+   * @param			String customMetadataName : The DeveloperName of the custom metadata record that contains the table configuration
+   * @return			String with the serialised JSON of the table configuration
+   **********************************************************************************************************/
+  @AuraEnabled(cacheable=true)
+  public static String getConfigurationRelatedList(String customMetadataName) {
+    try {
+      // get the custom metadata
+      List<OD_Datatable_JSON_Configuration__mdt> customMetadatas = [
+        SELECT Table_Configuration__c
+        FROM OD_Datatable_JSON_Configuration__mdt
+        WHERE DeveloperName = :customMetadataName
+        LIMIT 1
+      ];
+
+      if (customMetadatas != null && customMetadatas.size() == 1) {
+        return customMetadatas[0].Table_Configuration__c;
+      } else {
+        String message =
+          'There is no custom metadata record in the OD_Datatable_JSON_Configuration__mdt with the name ' +
+          customMetadataName +
+          '. Please add the record or change the name in the component.';
+        AuraHandledException e = new AuraHandledException(message);
+        e.setMessage(message);
+        throw e;
+      }
+    } catch (AuraHandledException e) {
+      throw e;
+    } catch (Exception exc) {
+      String message =
+        'ERROR while trying to save the records: ' +
+        exc.getMessage() +
+        ' / ' +
+        exc.getStackTraceString();
+      AuraHandledException e = new AuraHandledException(message);
+      e.setMessage(message);
+      throw e;
+    }
+  }
+
+  /*********************************************************************************************************
+   * @name			getRecordsRelatedList
+   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
+   * @created			25 / 01 / 2025
+   * @description		Get the records to display in the table for related lists (lightning record page and community pages)
+   * @param			String objectName : The Name of the object to retrieve
+   * @param			String fieldApiName : The name of the field to filter the records
+   * @param			Id recordId : The Id to filter the records (with the field name above)
+   * @param			String fields : Comma separated field names to retrieve
+   * @return			List of found records
+   **********************************************************************************************************/
+  @AuraEnabled(cacheable=true)
+  public static List<SObject> getRecordsRelatedList(
+    String objectName,
+    String fieldApiName,
+    Id recordId,
+    String fields
+  ) {
+    // build the query
+    String query = 'SELECT Id';
+
+    // add fields if any
+    if (String.isNotBlank(fields)) {
+      query += ', ' + String.escapeSingleQuotes(fields);
+    }
+
+    query += ' FROM ' + objectName + ' WHERE ' + fieldApiName + ' = :recordId';
+
+    SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, Database.query(query));
+
+    return securityDecision.getRecords();
   }
 
   public class ConfigurationWrapper {

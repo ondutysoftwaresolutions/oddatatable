@@ -236,6 +236,7 @@ export default class OdDatatableConfigurationMasterDetailFields extends Lightnin
       result[field.nameProp] = {
         defaultValue: field.defaultValue,
         apiName: field.apiName,
+        lastIndex: field.lastIndex,
       };
     });
 
