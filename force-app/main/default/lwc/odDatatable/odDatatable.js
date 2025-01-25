@@ -109,6 +109,11 @@ export default class ODDatatable extends LightningElement {
   @api showTotalsByGroup;
   @api recalculateLive;
 
+  // exports
+  @api canExport = YES_NO.NO;
+  @api exportGroups = YES_NO.NO;
+  @api exportFileName;
+
   // outputs
   @api saveAndNext = false;
   @api outputAddedRows = [];
@@ -510,6 +515,18 @@ export default class ODDatatable extends LightningElement {
 
   get _anySummarizedColumn() {
     return this.columnsToShow.filter((col) => col.typeAttributes.config.summarize).length > 0;
+  }
+
+  get showExportButton() {
+    return this.canExport === YES_NO.YES;
+  }
+
+  get _doExportGroups() {
+    return this.exportGroups === YES_NO.YES;
+  }
+
+  get _hasExportFileName() {
+    return this.exportFileName && this.exportFileName !== EMPTY_STRING;
   }
 
   // =================================================================
@@ -1710,6 +1727,86 @@ export default class ODDatatable extends LightningElement {
   }
 
   // =================================================================
+  // Export methods
+  // =================================================================
+  _buildCSVContent() {
+    const csvRows = [];
+
+    const columnsToExport = this.columnsToShow.filter((col) => col.type !== ROW_BUTTON_TYPE);
+
+    // add the headers from the columns
+    const headers = [];
+    columnsToExport.forEach((cl) => {
+      headers.push(
+        (cl.label || cl.tableLabel)
+          .replace('* ', '')
+          .replace(/[^a-zA-Z0-9 ]/g, '')
+          .replace(/\s+/g, '_'),
+      );
+    });
+
+    // add the reference (Id)
+    headers.push('ID');
+
+    // add the extra column if needed
+    if (this._doExportGroups) {
+      headers.unshift('Group_Name');
+    }
+
+    csvRows.push(headers.join(','));
+
+    // add the data now
+    JSON.parse(JSON.stringify(this._tableData))
+      .filter((rec) => !rec._originalRecord._isSummarizeRecord && !rec._originalRecord._isGroupRecord)
+      .forEach((rec) => {
+        // build the row
+        const row = columnsToExport.map((e) => {
+          let value = rec[e.fieldName];
+
+          if (value) {
+            // Escape double quotes and wrap in quotes if contains comma or newline
+            if (value.toString().includes(',') || value.toString().includes('\n') || value.toString().includes('"')) {
+              value = '"' + value.toString().replace(/"/g, '""') + '"';
+            }
+          }
+
+          return value;
+        });
+
+        if (rec._groupId && this._doExportGroups) {
+          row.unshift(rec._groupId);
+        }
+
+        // add the id at the end
+        row.push(rec.Id);
+
+        csvRows.push(row.join(','));
+      });
+
+    return csvRows.join('\n');
+  }
+
+  _downloadCSV(data) {
+    const fileName = `${this._hasExportFileName ? this.exportFileName : 'dataExport'}.csv`;
+
+    if (window.navigator.msSaveOrOpenBlob) {
+      const blob = new Blob([data]);
+      window.navigator.msSaveOrOpenBlob(blob, fileName);
+    } else {
+      const charBom = '\uFEFF';
+      const encodedData = encodeURIComponent(data);
+      const content = `data:text/csv;charset=utf-8,${charBom}${encodedData}`;
+
+      const link = document.createElement('a');
+      link.setAttribute('href', content);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+
+      link.click();
+    }
+  }
+
+  // =================================================================
   // handler methods
   // =================================================================
   handleSelectRow(event) {
@@ -2117,5 +2214,11 @@ export default class ODDatatable extends LightningElement {
 
   handleChangePage(e) {
     this.currentPage = parseInt(e.target.dataset.value, 10);
+  }
+
+  handleExport() {
+    const csvContent = this._buildCSVContent();
+
+    this._downloadCSV(csvContent);
   }
 }

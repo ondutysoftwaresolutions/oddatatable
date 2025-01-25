@@ -162,6 +162,17 @@
                 role="inputOnly"
                 default="No"
                 description="If enabled an extra column at the beginning will be added to show the number of the row. This will only work if grouping is disabled and there are no summarized columns." />
+            <property name="canExport" label="Export Enabled?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled a button will display at the top right corner of the table to export the data to a CSV" />
+            <property name="exportGroups" label="Include the groups in the export?" type="String"
+                role="inputOnly"
+                default="No"
+                description="If enabled an extra column will be added to the CSV with the group name. Only works if the grouping is enabled." />
+            <property name="exportFileName" label="Filename for the CSV" type="String"
+                role="inputOnly"
+                description="This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv" />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

@@ -472,6 +472,29 @@ export default class OdConfigurationEditor extends LightningElement {
       helpText:
         'If enabled an extra column at the beginning will be added to show the number of the row. This will only work if grouping is disabled and there are no summarized columns.',
     },
+    canExport: {
+      label: 'Export Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled a button will display at the top right corner of the table to export the data to a CSV',
+    },
+    exportGroups: {
+      label: 'Include the groups in the export?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled an extra column will be added to the CSV with the group name. Only works if the grouping is enabled.',
+    },
+    exportFileName: {
+      label: 'Filename for the CSV',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      canBeEmpty: true,
+      helpText:
+        'This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv',
+    },
 
     // internal use
     uniqueTableName: {
@@ -712,6 +735,10 @@ export default class OdConfigurationEditor extends LightningElement {
     return !this.inputValues.columns.value;
   }
 
+  get columnsConfigured() {
+    return !this.emptyColumns;
+  }
+
   get emptyMasterDetailColumns() {
     return !this.inputValues.masterDetailConfiguration.value;
   }
@@ -722,6 +749,10 @@ export default class OdConfigurationEditor extends LightningElement {
 
   get showRowNumberEditable() {
     return !this.groupingEnabled && this.summarizedColumns.length === 0;
+  }
+
+  get exportEnabled() {
+    return this.inputValues.canExport.value === YES_NO.YES;
   }
 
   get dataCollectionOptions() {
@@ -1234,7 +1265,9 @@ export default class OdConfigurationEditor extends LightningElement {
   }
 
   handleCopyConfigurationToClipboard() {
-    const valueToCopy = JSON.stringify(this.inputValues);
+    const { tableData, ...other } = this.inputValues;
+
+    const valueToCopy = JSON.stringify(other);
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(valueToCopy);
@@ -1276,11 +1309,10 @@ export default class OdConfigurationEditor extends LightningElement {
     } else {
       const configuration = JSON.parse(this.configurationJSON);
 
-      if (!configuration.tableData) {
-        configuration.tableData = this.inputValues.tableData;
-      }
-
-      this.inputValues = configuration;
+      this.inputValues = {
+        ...configuration,
+        tableData: this.inputValues.tableData,
+      };
 
       // dispatch the changes
       Object.keys(this.inputValues).forEach((key) => {
@@ -1295,6 +1327,8 @@ export default class OdConfigurationEditor extends LightningElement {
 
         this._doDispatchChange(detail);
       });
+
+      this.configurationJSON = '';
 
       // display a success toast
       Toast.show(

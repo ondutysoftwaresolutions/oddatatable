@@ -18,6 +18,24 @@
       </div>
     </template>
 
+    <!-- Export -->
+    <template lwc:if={showExportButton}>
+      <div class="slds-grid slds-size--1-of-1 slds-wrap">
+        <div
+          class="slds-col--bump-left slds-grid slds-gutters_xx-small slds-p-bottom--x-small slds-p-right--small slds-wrap"
+        >
+          <lightning-button-icon
+            icon-name="utility:download"
+            alternative-text="Download"
+            title="Download"
+            onclick={handleExport}
+            variant="brand-outline"
+          >
+          </lightning-button-icon>
+        </div>
+      </div>
+    </template>
+
     <!-- Table or no records message -->
     <template lwc:if={tableData.length}>
       <c-od-datatable-custom
