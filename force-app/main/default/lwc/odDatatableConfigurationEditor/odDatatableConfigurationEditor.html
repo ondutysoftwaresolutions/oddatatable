@@ -103,6 +103,23 @@
       </c-od-datatable-input-generic>
     </fieldset>
 
+    <!-- Sharing Context -->
+    <fieldset class="slds-box slds-grid slds-wrap">
+      <legend>Sharing</legend>
+      <c-od-datatable-input-generic
+        field-name="sharingContext"
+        type={inputValues.sharingContext.type}
+        editable
+        options={sharingContextOptions}
+        class="slds-size--1-of-1"
+        value={inputValues.sharingContext.value}
+        label={inputValues.sharingContext.label}
+        onupdatefield={handleInputChange}
+        help-text={inputValues.sharingContext.helpText}
+      >
+      </c-od-datatable-input-generic>
+    </fieldset>
+
     <div class="slds-m-top_small slds-m-bottom_x-small banner-section">
       <h1 class="slds-text-color_inverse slds-text-heading_medium slds-p-around--small">Pagination</h1>
     </div>

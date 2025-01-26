@@ -33,7 +33,11 @@ export default class OdDatatableField extends LightningElement {
   // getter methods
   // =================================================================
   get isEditable() {
-    if (this.record._isGroupRecord || this.record._isSummarizeRecord) {
+    if (
+      this.record._isGroupRecord ||
+      this.record._isSummarizeRecord ||
+      (this.record.UserRecordAccess && !this.record.UserRecordAccess.HasEditAccess && this.config.withSharing)
+    ) {
       return false;
     }
 

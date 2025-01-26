@@ -2,8 +2,8 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import Toast from 'lightning/toast';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
-import getConfiguration from '@salesforce/apex/OD_DatatableConfigEditorController.getConfiguration';
-import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
+import getConfiguration from '@salesforce/apex/OD_DatatableConfigurationController.getConfiguration';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigurationController.getFieldsForObject';
 import {
   ALIGNMENT_OPTIONS,
   AVAILABLE_FIELDS_GROUPING,
@@ -14,6 +14,7 @@ import {
   GROUPING_SOURCE,
   SELECTION_TYPES,
   SORT_DIRECTION,
+  SHARING_CONTEXT,
 } from 'c/odDatatableConstants';
 import { reduceErrors, generateRandomString, sortArrayByProperty } from 'c/odDatatableUtils';
 import OdDatatablePreview from 'c/odDatatablePreview';
@@ -85,6 +86,17 @@ export default class OdConfigurationEditor extends LightningElement {
     {
       label: SELECTION_TYPES.SINGLE,
       value: SELECTION_TYPES.SINGLE,
+    },
+  ];
+
+  sharingContextOptions = [
+    {
+      label: SHARING_CONTEXT.WITHOUT_SHARING,
+      value: SHARING_CONTEXT.WITHOUT_SHARING,
+    },
+    {
+      label: SHARING_CONTEXT.WITH_SHARING,
+      value: SHARING_CONTEXT.WITH_SHARING,
     },
   ];
 
@@ -494,6 +506,14 @@ export default class OdConfigurationEditor extends LightningElement {
       canBeEmpty: true,
       helpText:
         'This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv',
+    },
+    sharingContext: {
+      label: 'Sharing Context',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: SHARING_CONTEXT.WITHOUT_SHARING,
+      helpText:
+        'The sharing context to executes the queries when using the component in record pages or communities. For flows, it is up to the implementation of the flow.',
     },
 
     // internal use

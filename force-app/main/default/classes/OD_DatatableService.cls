@@ -1,9 +1,9 @@
 /*************************************************************************************************************
- * @name			OD_DatatableConfigEditorController
+ * @name			OD_DatatableService
  * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
  * @created			02 / 05 / 2023
- * @description		Controller for the OnDuty Data table Configuration Editor
- * @TestClass		OD_DatatableConfigEditorControllerTest
+ * @description		Service class with inherited sharing to be called by the OD_DatatableRecordsSharing or OD_DatatableRecordsNoSharing
+ * @TestClass		OD_DatatableConfigEditorControllerTest, OD_DatatableRecordsControllerTest
  *
  * Changes (version)
  * -----------------------------------------------------------------------------------------------------------
@@ -12,51 +12,48 @@
  * @version		1.0		2023-05-02		Pablo Martinez			Creation of the class
  *
  **************************************************************************************************************/
-public without sharing class OD_DatatableConfigEditorController {
+public inherited sharing class OD_DatatableService {
   /*********************************************************************************************************
-   * @name			getObjects
+   * @name			getMasterDetailFieldsForObject
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
-   * @created			02 / 05 / 2023
-   * @description		Get a list of available objects to use in the table
-   * @return			List of the object wrapper to use in the UI
+   * @created			08 / 05 / 2023
+   * @description		Get a list of available master-detail fields for the object to use in the table
+   * @param			String objectName : The name of the object to get the fields for
+   * @return			List of the picklist options to use in the UI
    **********************************************************************************************************/
-  @AuraEnabled(cacheable=true)
-  public static ConfigurationWrapper getConfiguration() {
-    ConfigurationWrapper result = new ConfigurationWrapper();
+  public static List<OD_Datatable.PicklistOption> getMasterDetailFieldsForObject(String objectName) {
+    List<OD_Datatable.PicklistOption> result = new List<OD_Datatable.PicklistOption>();
 
-    // objects
-    List<EntityDefinition> listObjects = [
-      SELECT Label, QualifiedApiName
-      FROM EntityDefinition
-      WHERE
-        IsCustomizable = TRUE
-        AND IsCustomSetting = FALSE
-        AND IsQueryable = TRUE
-        AND IsEverUpdatable = TRUE
-        AND IsEverCreatable = TRUE
-        AND IsEverDeletable = TRUE
-      ORDER BY Label
-    ];
+    // this is a list of objects where the Master Details fields don't return the getRelationshipOrder() different than null (Salesforce being Salesforce and breaking that rule)
+    Set<String> standardObjectsMasterDetails = new Set<String>{ 'OpportunityLineItem', 'WorkOrderLineItem ' };
 
-    for (EntityDefinition entity : listObjects) {
-      result.objects.add(new RecordWrapper(entity.QualifiedApiName, entity.Label));
-    }
+    try {
+      // get the object give the string with the object name
+      SObject objectInstance = (SObject) Type.forName(objectName).newInstance();
 
-    // flows
-    List<FlowDefinitionView> listFlows = [
-      SELECT Label, ApiName, ProcessType
-      FROM FlowDefinitionView
-      WHERE IsActive = TRUE AND ProcessType IN ('AutoLaunchedFlow', 'Flow') AND RecordTriggerType = NULL
-      ORDER BY Label
-    ];
+      // get the fields map for the object
+      Map<String, Schema.SObjectField> fieldsMap = objectInstance.getSObjectType().getDescribe().fields.getMap();
 
-    if (listFlows?.size() > 0) {
-      for (FlowDefinitionView flow : listFlows) {
-        result.flows.add(new RecordWrapper(flow.ApiName, flow.Label, flow.ProcessType));
+      // for each field
+      for (String fieldName : fieldsMap.keySet()) {
+        Schema.DescribeFieldResult fieldResult = fieldsMap.get(fieldName).getDescribe();
+
+        if (fieldResult.getReferenceTo().size() == 1 && !fieldResult.isDefaultedOnCreate()) {
+          // check if it's a master detail by get relationship order
+          if (fieldResult.getRelationshipOrder() != null || standardObjectsMasterDetails.contains(objectName)) {
+            // add to the list
+            result.add(new OD_Datatable.PicklistOption(fieldResult.getName(), fieldResult.getLabel()));
+          }
+        }
       }
-    }
 
-    return result;
+      return result;
+    } catch (Exception exc) {
+      String message = 'ERROR while getting the master detail fields for the Object: ' + objectName + '.';
+      AuraHandledException e = new AuraHandledException(message);
+      e.setMessage(message);
+      throw e;
+    }
   }
 
   /*********************************************************************************************************
@@ -67,17 +64,16 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			String objectName : The name of the object to get the fields for
    * @return			List of the field wrapper to use in the UI
    **********************************************************************************************************/
-  @AuraEnabled(cacheable=true)
-  public static List<FieldWrapper> getFieldsForObject(String objectName) {
-    List<FieldWrapper> result = new List<FieldWrapper>();
+  public static List<OD_Datatable.FieldWrapper> getFieldsForObject(String objectName) {
+    List<OD_Datatable.FieldWrapper> result = new List<OD_Datatable.FieldWrapper>();
 
     try {
       // get the object give the string with the object name
-      SObject objectInstance = (SObject) Type.forName('Schema', objectName).newInstance();
+      SObject objectInstance = (SObject) Type.forName(objectName).newInstance();
 
       // get the master detail fields for the object
       Set<String> masterDetailFields = new Set<String>();
-      for (PicklistOption masterDetail : getMasterDetailFieldsForObject(objectName)) {
+      for (OD_Datatable.PicklistOption masterDetail : getMasterDetailFieldsForObject(objectName)) {
         masterDetailFields.add(masterDetail.value.toLowerCase());
       }
 
@@ -97,7 +93,7 @@ public without sharing class OD_DatatableConfigEditorController {
           !fieldResult.isQueryByDistance();
 
         // build the field wrapper
-        FieldWrapper newField = new FieldWrapper();
+        OD_Datatable.FieldWrapper newField = new OD_Datatable.FieldWrapper();
         newField.value = fieldResult.getName();
         newField.label = fieldResult.getLabel();
         newField.type = fieldResult.getType().name().toLowercase();
@@ -126,7 +122,7 @@ public without sharing class OD_DatatableConfigEditorController {
           for (PicklistEntry plEntry : fieldResult.getPicklistValues()) {
             // only add active picklist values
             if (plEntry.isActive()) {
-              newField.options.add(new PicklistOption(plEntry.getValue(), plEntry.getLabel()));
+              newField.options.add(new OD_Datatable.PicklistOption(plEntry.getValue(), plEntry.getLabel()));
             }
 
             // save the default value to send it to the UI
@@ -150,50 +146,6 @@ public without sharing class OD_DatatableConfigEditorController {
       return result;
     } catch (Exception exc) {
       String message = 'ERROR while getting the fields for the Object: ' + objectName + '.';
-      AuraHandledException e = new AuraHandledException(message);
-      e.setMessage(message);
-      throw e;
-    }
-  }
-
-  /*********************************************************************************************************
-   * @name			getMasterDetailFieldsForObject
-   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
-   * @created			08 / 05 / 2023
-   * @description		Get a list of available master-detail fields for the object to use in the table
-   * @param			String objectName : The name of the object to get the fields for
-   * @return			List of the picklist options to use in the UI
-   **********************************************************************************************************/
-  @AuraEnabled(cacheable=true)
-  public static List<PicklistOption> getMasterDetailFieldsForObject(String objectName) {
-    List<PicklistOption> result = new List<PicklistOption>();
-
-    // this is a list of objects where the Master Details fields don't return the getRelationshipOrder() different than null (Salesforce being Salesforce and breaking that rule)
-    Set<String> standardObjectsMasterDetails = new Set<String>{ 'OpportunityLineItem', 'WorkOrderLineItem ' };
-
-    try {
-      // get the object give the string with the object name
-      SObject objectInstance = (SObject) Type.forName('Schema', objectName).newInstance();
-
-      // get the fields map for the object
-      Map<String, Schema.SObjectField> fieldsMap = objectInstance.getSObjectType().getDescribe().fields.getMap();
-
-      // for each field
-      for (String fieldName : fieldsMap.keySet()) {
-        Schema.DescribeFieldResult fieldResult = fieldsMap.get(fieldName).getDescribe();
-
-        if (fieldResult.getReferenceTo().size() == 1 && !fieldResult.isDefaultedOnCreate()) {
-          // check if it's a master detail by get relationship order
-          if (fieldResult.getRelationshipOrder() != null || standardObjectsMasterDetails.contains(objectName)) {
-            // add to the list
-            result.add(new PicklistOption(fieldResult.getName(), fieldResult.getLabel()));
-          }
-        }
-      }
-
-      return result;
-    } catch (Exception exc) {
-      String message = 'ERROR while getting the master detail fields for the Object: ' + objectName + '.';
       AuraHandledException e = new AuraHandledException(message);
       e.setMessage(message);
       throw e;
@@ -245,8 +197,7 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			Integer limitRecords : The number of records to return
    * @return			List of picklist options
    **********************************************************************************************************/
-  @AuraEnabled
-  public static List<PicklistOption> getRecordsForLookup(
+  public static List<OD_Datatable.PicklistOption> getRecordsForLookup(
     String objectName,
     String searchText,
     String searchGroup,
@@ -256,7 +207,7 @@ public without sharing class OD_DatatableConfigEditorController {
     Integer limitRecords
   ) {
     try {
-      List<PicklistOption> result = new List<PicklistOption>();
+      List<OD_Datatable.PicklistOption> result = new List<OD_Datatable.PicklistOption>();
 
       String searchGroupToUse = String.isBlank(searchGroup) ? 'ALL FIELDS' : searchGroup;
       String nameField = String.isBlank(displayField) ? getNameFieldForObject(objectName) : displayField;
@@ -285,7 +236,7 @@ public without sharing class OD_DatatableConfigEditorController {
       if (searchList?.size() > 0) {
         for (List<SObject> listObject : searchList) {
           for (SObject record : listObject) {
-            result.add(new PicklistOption((String) record.get('Id'), (String) record.get(nameField)));
+            result.add(new OD_Datatable.PicklistOption((String) record.get('Id'), (String) record.get(nameField)));
           }
         }
       }
@@ -314,8 +265,7 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			String displayField : The Display field to return, if null the Name field for the object will be used
    * @return			Picklist option
    **********************************************************************************************************/
-  @AuraEnabled
-  public static PicklistOption getLookupRecord(String objectName, String value, String displayField) {
+  public static OD_Datatable.PicklistOption getLookupRecord(String objectName, String value, String displayField) {
     try {
       // get the name field to return
       String nameField = String.isBlank(displayField) ? getNameFieldForObject(objectName) : displayField;
@@ -326,7 +276,7 @@ public without sharing class OD_DatatableConfigEditorController {
       List<SObject> searchList = Database.query(searchQuery);
 
       if (searchList?.size() > 0) {
-        return new PicklistOption(value, (String) searchList[0].get(nameField));
+        return new OD_Datatable.PicklistOption(value, (String) searchList[0].get(nameField));
       }
 
       return null;
@@ -349,7 +299,6 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			Set<Id> idsToQuery : Set of record ids to retrieve
    * @return			List of found records
    **********************************************************************************************************/
-  @AuraEnabled
   public static List<SObject> getRecords(
     String objectName,
     String fields,
@@ -357,7 +306,7 @@ public without sharing class OD_DatatableConfigEditorController {
     List<Id> idsToQuery
   ) {
     // build the query
-    String query = 'SELECT Id';
+    String query = 'SELECT Id, UserRecordAccess.HasEditAccess, UserRecordAccess.HasDeleteAccess';
 
     // add fields if any
     if (String.isNotBlank(fields)) {
@@ -383,7 +332,6 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			String recordsToDelete : JSON string of the list of records to delete
    * @return			List<SObject> with the new and updated SObject records
    **********************************************************************************************************/
-  @AuraEnabled
   public static List<SObject> saveRecords(
     String objectName,
     String fields,
@@ -464,50 +412,6 @@ public without sharing class OD_DatatableConfigEditorController {
   }
 
   /*********************************************************************************************************
-   * @name			getConfigurationRelatedList
-   * @author			Pablo Martinez <pablo@farmcove.co.uk>
-   * @created			25 / 01 / 2025
-   * @description		Get the Table configuration to use in the component for lightning pages and community pages
-   * @param			String customMetadataName : The DeveloperName of the custom metadata record that contains the table configuration
-   * @return			String with the serialised JSON of the table configuration
-   **********************************************************************************************************/
-  @AuraEnabled(cacheable=true)
-  public static String getConfigurationRelatedList(String customMetadataName) {
-    try {
-      // get the custom metadata
-      List<OD_Datatable_JSON_Configuration__mdt> customMetadatas = [
-        SELECT Table_Configuration__c
-        FROM OD_Datatable_JSON_Configuration__mdt
-        WHERE DeveloperName = :customMetadataName
-        LIMIT 1
-      ];
-
-      if (customMetadatas != null && customMetadatas.size() == 1) {
-        return customMetadatas[0].Table_Configuration__c;
-      } else {
-        String message =
-          'There is no custom metadata record in the OD_Datatable_JSON_Configuration__mdt with the name ' +
-          customMetadataName +
-          '. Please add the record or change the name in the component.';
-        AuraHandledException e = new AuraHandledException(message);
-        e.setMessage(message);
-        throw e;
-      }
-    } catch (AuraHandledException e) {
-      throw e;
-    } catch (Exception exc) {
-      String message =
-        'ERROR while trying to get the related list configuration the records: ' +
-        exc.getMessage() +
-        ' / ' +
-        exc.getStackTraceString();
-      AuraHandledException e = new AuraHandledException(message);
-      e.setMessage(message);
-      throw e;
-    }
-  }
-
-  /*********************************************************************************************************
    * @name			getRecordsRelatedList
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
    * @created			25 / 01 / 2025
@@ -518,7 +422,6 @@ public without sharing class OD_DatatableConfigEditorController {
    * @param			String fields : Comma separated field names to retrieve
    * @return			List of found records
    **********************************************************************************************************/
-  @AuraEnabled(cacheable=true)
   public static List<SObject> getRecordsRelatedList(
     String objectName,
     String fieldApiName,
@@ -527,7 +430,7 @@ public without sharing class OD_DatatableConfigEditorController {
   ) {
     try {
       // build the query
-      String query = 'SELECT Id';
+      String query = 'SELECT Id, UserRecordAccess.HasEditAccess, UserRecordAccess.HasDeleteAccess';
 
       // add fields if any
       if (String.isNotBlank(fields)) {
@@ -548,124 +451,6 @@ public without sharing class OD_DatatableConfigEditorController {
       AuraHandledException e = new AuraHandledException(message);
       e.setMessage(message);
       throw e;
-    }
-  }
-
-  public class ConfigurationWrapper {
-    @AuraEnabled
-    public List<RecordWrapper> objects;
-
-    @AuraEnabled
-    public List<RecordWrapper> flows;
-
-    public ConfigurationWrapper() {
-      this.objects = new List<RecordWrapper>();
-      this.flows = new List<RecordWrapper>();
-    }
-  }
-
-  public class RecordWrapper {
-    @AuraEnabled
-    public String label;
-
-    @AuraEnabled
-    public String value;
-
-    @AuraEnabled
-    public String type;
-
-    public RecordWrapper(String value, String label) {
-      this.label = label;
-      this.value = value;
-      this.type = null;
-    }
-
-    public RecordWrapper(String value, String label, String type) {
-      this.label = label;
-      this.value = value;
-      this.type = type;
-    }
-  }
-
-  public class FieldWrapper implements Comparable {
-    @AuraEnabled
-    public String value;
-
-    @AuraEnabled
-    public String label;
-
-    @AuraEnabled
-    public String type;
-
-    @AuraEnabled
-    public Boolean canEdit;
-
-    @AuraEnabled
-    public Boolean required;
-
-    @AuraEnabled
-    public Integer maxLength;
-
-    @AuraEnabled
-    public Integer precision;
-
-    @AuraEnabled
-    public Integer scale;
-
-    @AuraEnabled
-    public Integer digits;
-
-    @AuraEnabled
-    public Boolean isHTML;
-
-    @AuraEnabled
-    public Object defaultValue;
-
-    @AuraEnabled
-    public String parentObjectName;
-
-    @AuraEnabled
-    public String parentObjectLabel;
-
-    @AuraEnabled
-    public Boolean canBeUsedInWhere;
-
-    @AuraEnabled
-    public Boolean isMasterDetail;
-
-    @AuraEnabled
-    public List<PicklistOption> options;
-
-    @AuraEnabled
-    public String helpText;
-
-    public FieldWrapper() {
-      this.options = new List<PicklistOption>();
-    }
-
-    public Integer compareTo(Object compareTo) {
-      FieldWrapper curField = (FieldWrapper) compareTo;
-
-      if (label == curField.label) {
-        return 0;
-      }
-      if (label > curField.label) {
-        return 1;
-      }
-      return -1;
-    }
-  }
-
-  public class PicklistOption {
-    @AuraEnabled
-    public String value;
-
-    @AuraEnabled
-    public String label;
-
-    public PicklistOption(String value, String label) {
-      this.value = value;
-      this.label = label;
     }
   }
 }

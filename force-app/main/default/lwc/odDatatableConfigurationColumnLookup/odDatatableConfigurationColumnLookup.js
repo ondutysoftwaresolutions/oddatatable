@@ -1,5 +1,5 @@
 import { LightningElement, wire, api, track } from 'lwc';
-import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigurationController.getFieldsForObject';
 import { FIELD_TYPES, DATE_FIELDS, FIELDS_STRING, SERVER_SIDE_SEARCH, SORT_DIRECTION } from 'c/odDatatableConstants';
 import { reduceErrors, getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 

@@ -173,6 +173,9 @@
             <property name="exportFileName" label="Filename for the CSV" type="String"
                 role="inputOnly"
                 description="This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv" />
+            <property name="sharingContext" label="Sharing Context" type="String"
+                role="inputOnly" default="without"
+                description="The sharing context to executes the queries when using the component in record pages or communities. For flows, it's up to the implementation of the flow." />
 
             <!-- Hidden inputs / only used internally -->
             <property name="masterDetailConfiguration" label="Master-Detail Configuration"

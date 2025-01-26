@@ -54,6 +54,7 @@ export default class ODInputGeneric extends LightningElement {
   @api isLastRecord;
   @api isFirstColumn;
   @api isLastColumn;
+  @api withSharing = false;
   @api richTextFormats = [
     'font',
     'size',

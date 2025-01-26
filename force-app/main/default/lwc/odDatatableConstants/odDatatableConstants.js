@@ -521,3 +521,8 @@ export const SELECTION_TYPES = {
 export const HEADER_ACTION_TYPES = {
   SET_VALUE: 'setValue',
 };
+
+export const SHARING_CONTEXT = {
+  WITH_SHARING: 'With Sharing',
+  WITHOUT_SHARING: 'Without Sharing',
+};

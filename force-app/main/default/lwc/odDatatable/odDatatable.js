@@ -3,9 +3,9 @@ import { loadStyle } from 'lightning/platformResourceLoader';
 import { FlowNavigationBackEvent, FlowNavigationNextEvent } from 'lightning/flowSupport';
 import { subscribe, unsubscribe } from 'lightning/empApi';
 import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
-import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigEditorController.getFieldsForObject';
-import saveRecords from '@salesforce/apex/OD_DatatableConfigEditorController.saveRecords';
-import getRecords from '@salesforce/apex/OD_DatatableConfigEditorController.getRecords';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableRecordsController.getFieldsForObject';
+import saveRecords from '@salesforce/apex/OD_DatatableRecordsController.saveRecords';
+import getRecords from '@salesforce/apex/OD_DatatableRecordsController.getRecords';
 import {
   ALIGNMENT_OPTIONS,
   HEADER_ACTION_TYPES,
@@ -21,6 +21,7 @@ import {
   ROW_BUTTON_TYPE,
   SELECTION_TYPES,
   SORT_DIRECTION,
+  SHARING_CONTEXT,
 } from 'c/odDatatableConstants';
 import {
   reduceErrors,
@@ -46,6 +47,12 @@ export default class ODDatatable extends LightningElement {
   @api columns;
   @api noRecordsMessage;
   @api showRowNumberColumn;
+
+  // Record page
+  @api inRecordPage = false;
+
+  // sharing
+  @api sharingContext = SHARING_CONTEXT.WITH_SHARING;
 
   // master detail configuration
   @api isMasterDetail;
@@ -227,7 +234,7 @@ export default class ODDatatable extends LightningElement {
   // =================================================================
   // wire methods
   // =================================================================
-  @wire(getFieldsForObject, { objectName: '$objectName' })
+  @wire(getFieldsForObject, { withSharing: '$_withSharing', objectName: '$objectName' })
   _getFields(result) {
     if (result.data) {
       this.isLoading = false;
@@ -529,6 +536,10 @@ export default class ODDatatable extends LightningElement {
     return this.exportFileName && this.exportFileName !== EMPTY_STRING;
   }
 
+  get _withSharing() {
+    return this.sharingContext === SHARING_CONTEXT.WITH_SHARING && this.inRecordPage;
+  }
+
   // =================================================================
   // private methods
   // =================================================================
@@ -773,6 +784,9 @@ export default class ODDatatable extends LightningElement {
           col.hidden = true;
         }
       }
+
+      // always add the with sharing to the config object
+      (col.typeAttributes.config || {}).withSharing = this._withSharing;
     });
 
     this._allColumns = columnsConfiguration;
@@ -1103,6 +1117,7 @@ export default class ODDatatable extends LightningElement {
 
   _doGetUpdatedData() {
     getRecords({
+      withSharing: this._withSharing,
       objectName: this.objectName,
       fields: this._getFieldsToReturn(),
       fieldNameFilter: this.platformEventMatchingFieldName,
@@ -2179,6 +2194,7 @@ export default class ODDatatable extends LightningElement {
       const recordsToDelete = this._doCleanDataToSave(this.outputDeletedRows);
 
       saveRecords({
+        withSharing: this._withSharing,
         objectName: this.objectName,
         fields: this._getFieldsToReturn(),
         recordsToCreate: JSON.stringify(recordsToCreate),

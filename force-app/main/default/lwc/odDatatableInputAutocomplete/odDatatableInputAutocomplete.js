@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
-import getRecordsForLookup from '@salesforce/apex/OD_DatatableConfigEditorController.getRecordsForLookup';
-import getLookupRecord from '@salesforce/apex/OD_DatatableConfigEditorController.getLookupRecord';
+import getRecordsForLookup from '@salesforce/apex/OD_DatatableRecordsController.getRecordsForLookup';
+import getLookupRecord from '@salesforce/apex/OD_DatatableRecordsController.getLookupRecord';
 import { SERVER_SIDE_SEARCH } from 'c/odDatatableConstants';
 import { isEmpty, reduceErrors } from 'c/odDatatableUtils';
 
@@ -30,6 +30,7 @@ export default class ODInputAutocomplete extends LightningElement {
   @api afterValidate = false;
   @api dropdownOptionClasses = 'slds-input slds-input--bare slds-listbox__item slds-p-left--none';
   @api topPositionShift = 0;
+  @api withSharing = false;
 
   // tracked
   isSearching = false;
@@ -379,7 +380,7 @@ export default class ODInputAutocomplete extends LightningElement {
   _doSearchSelectedRecord() {
     this.isSearching = true;
 
-    const objectToSend = { objectName: this.objectName, value: this.value };
+    const objectToSend = { objectName: this.objectName, value: this.value, withSharing: this.withSharing };
 
     if (this.parsedServerSideConfiguration) {
       objectToSend.displayField = this.parsedServerSideConfiguration.displayField || null;
@@ -406,7 +407,7 @@ export default class ODInputAutocomplete extends LightningElement {
   _doSearchOptions() {
     const searchTxt = this.searchText;
 
-    const objectToSend = { objectName: this.objectName, searchText: searchTxt };
+    const objectToSend = { objectName: this.objectName, searchText: searchTxt, withSharing: this.withSharing };
 
     if (this.parsedServerSideConfiguration) {
       objectToSend.searchGroup = this.parsedServerSideConfiguration.searchGroup || null;

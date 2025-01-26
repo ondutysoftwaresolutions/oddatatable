@@ -1,8 +1,9 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import getRecordsRelatedList from '@salesforce/apex/OD_DatatableConfigEditorController.getRecordsRelatedList';
-import getConfigurationRelatedList from '@salesforce/apex/OD_DatatableConfigEditorController.getConfigurationRelatedList';
+import getRecordsRelatedList from '@salesforce/apex/OD_DatatableRecordsController.getRecordsRelatedList';
+import getConfigurationRelatedList from '@salesforce/apex/OD_DatatableConfigurationController.getConfigurationRelatedList';
 import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import { reduceErrors } from 'c/odDatatableUtils';
+import { SHARING_CONTEXT, INLINE_FLOW, YES_NO } from 'c/odDatatableConstants';
 
 export default class OdDatatableRelatedList extends LightningElement {
   @api recordId;
@@ -35,6 +36,7 @@ export default class OdDatatableRelatedList extends LightningElement {
 
   // get the data
   @wire(getRecordsRelatedList, {
+    withSharing: '$_withSharing',
     objectName: '$relatedObjectApiName',
     fieldApiName: '$fieldApiName',
     recordId: '$recordId',
@@ -94,6 +96,14 @@ export default class OdDatatableRelatedList extends LightningElement {
     fieldsToReturn = fieldsToReturn.endsWith(',') ? fieldsToReturn.slice(0, -1) : fieldsToReturn;
 
     return fieldsToReturn;
+  }
+
+  get _withSharing() {
+    if (!this.configuration) {
+      return undefined;
+    }
+
+    return this.configuration.sharingContext.value === SHARING_CONTEXT.WITH_SHARING;
   }
 
   get masterDetailConfiguration() {

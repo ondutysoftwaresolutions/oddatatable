@@ -19,11 +19,15 @@ export default class OdDatatableRowButton extends LightningElement {
     }
 
     const disableClass =
-      !this._isDelete &&
-      !this._isUndelete &&
-      !this.record?._isGroupRecord &&
-      !this.record?._isSummarizeRecord &&
-      this.hasChanges
+      (!this._isDelete &&
+        !this._isUndelete &&
+        !this.record?._isGroupRecord &&
+        !this.record?._isSummarizeRecord &&
+        this.hasChanges) ||
+      (this._isDelete &&
+        this.record.UserRecordAccess &&
+        !this.record.UserRecordAccess.HasDeleteAccess &&
+        this.config.withSharing)
         ? 'disabled'
         : 'enabled';
 
