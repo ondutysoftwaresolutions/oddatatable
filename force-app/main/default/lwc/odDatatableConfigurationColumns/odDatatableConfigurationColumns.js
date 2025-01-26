@@ -320,7 +320,7 @@ export default class OdConfigurationColumns extends LightningElement {
           hiddenTypeOptions: Object.values(HIDDEN_TYPE_OPTIONS),
           summarizeTypeOptions: this._buildOptionsForSummarize(type),
           canSummarize: !col.typeAttributes.config.hidden && !col.typeAttributes.config.isCustom,
-          canHide: !col.typeAttributes.config.summarize,
+          canHide: !col.typeAttributes.config.summarize && !col.typeAttributes.config.showInBottomNav,
           showAsOptions: !col.typeAttributes.config.isCustom
             ? SHOW_AS_OPTIONS_FIELDS
             : CUSTOM_BUTTON_TYPES.includes(col.typeAttributes.config.customType)
@@ -530,6 +530,10 @@ export default class OdConfigurationColumns extends LightningElement {
       if (showAsOption.icon) {
         objectToUpdate.iconVariant = ICON_VARIANTS[0];
       }
+
+      if (showAsOption.bottomNav) {
+        objectToUpdate.hidden = true;
+      }
     }
 
     // if it's a hidden field
@@ -555,7 +559,7 @@ export default class OdConfigurationColumns extends LightningElement {
     // new object
     const newObject = { ...this.fieldsToDisplayTable[fieldIndex], ...objectToUpdate, ...other };
     newObject.canSummarize = !newObject.hidden && !newObject.isCustom;
-    newObject.canHide = !newObject.summarize;
+    newObject.canHide = !newObject.summarize && !newObject.showInBottomNav;
 
     this.fieldsToDisplayTable[fieldIndex] = newObject;
   }

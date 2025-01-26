@@ -660,7 +660,7 @@ export default class ODDatatable extends LightningElement {
   _getAccessAndBuildRecords(data, afterSave = false) {
     let dataToUse = JSON.parse(JSON.stringify(data));
 
-    if (this._withSharing) {
+    if (this._withSharing && dataToUse.length > 0) {
       getRecords({
         withSharing: this._withSharing,
         objectName: this.objectName,
