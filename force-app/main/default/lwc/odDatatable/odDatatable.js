@@ -48,11 +48,8 @@ export default class ODDatatable extends LightningElement {
   @api noRecordsMessage;
   @api showRowNumberColumn;
 
-  // Record page
-  @api inRecordPage = false;
-
   // sharing
-  @api sharingContext = SHARING_CONTEXT.WITH_SHARING;
+  @api sharingContext = SHARING_CONTEXT.WITHOUT_SHARING;
 
   // master detail configuration
   @api isMasterDetail;
@@ -237,12 +234,10 @@ export default class ODDatatable extends LightningElement {
   @wire(getFieldsForObject, { withSharing: '$_withSharing', objectName: '$objectName' })
   _getFields(result) {
     if (result.data) {
-      this.isLoading = false;
-
       // build the columns
       this._buildColumns(result.data);
 
-      this._buildRecords(this.tableData);
+      this._getAccessAndBuildRecords(this.tableData);
 
       // clean the output variables
       if (!this.afterValidate) {
@@ -264,7 +259,7 @@ export default class ODDatatable extends LightningElement {
 
   set tableData(data = []) {
     if (!this.isLoading) {
-      this._buildRecords(data);
+      this._getAccessAndBuildRecords(data);
     } else {
       this._tableData = data;
     }
@@ -537,7 +532,7 @@ export default class ODDatatable extends LightningElement {
   }
 
   get _withSharing() {
-    return this.sharingContext === SHARING_CONTEXT.WITH_SHARING && this.inRecordPage;
+    return this.sharingContext === SHARING_CONTEXT.WITH_SHARING;
   }
 
   // =================================================================
@@ -605,13 +600,11 @@ export default class ODDatatable extends LightningElement {
     }
   }
 
-  _buildRecords(data, afterSave = false) {
+  _buildRecords(dataToUse, afterSave = false) {
     let result = [];
 
-    this._originalTableData = JSON.parse(
-      JSON.stringify(
-        data.filter((rs) => !rs._originalRecord?._isGroupRecord && !rs._originalRecord?._isSummarizeRecord),
-      ),
+    this._originalTableData = dataToUse.filter(
+      (rs) => !rs._originalRecord?._isGroupRecord && !rs._originalRecord?._isSummarizeRecord,
     );
 
     this._originalTableData.forEach((rec, index, array) => {
@@ -662,6 +655,39 @@ export default class ODDatatable extends LightningElement {
     }
 
     this._tableData = result;
+  }
+
+  _getAccessAndBuildRecords(data, afterSave = false) {
+    let dataToUse = JSON.parse(JSON.stringify(data));
+
+    if (this._withSharing) {
+      getRecords({
+        withSharing: this._withSharing,
+        objectName: this.objectName,
+        fields: '',
+        fieldNameFilter: 'Id',
+        idsToQuery: dataToUse.map((dt) => dt.Id),
+      })
+        .then((accessData) => {
+          this.isLoading = false;
+          this.errorMessage = false;
+
+          dataToUse = dataToUse.map((dt) => ({
+            ...dt,
+            ...JSON.parse(JSON.stringify(accessData.find((ad) => ad.Id === dt.Id) ?? {})),
+          }));
+
+          this._buildRecords(dataToUse, afterSave);
+        })
+        .catch((error) => {
+          this.isLoading = false;
+          this.errorMessage = reduceErrors(error);
+        });
+    } else {
+      this.isLoading = false;
+      this.errorMessage = false;
+      this._buildRecords(dataToUse, afterSave);
+    }
   }
 
   _buildColumns(columnsFromObject) {
@@ -1041,7 +1067,7 @@ export default class ODDatatable extends LightningElement {
             this._doUpdateRecord(99999, newRecord);
           }
 
-          this._buildRecords(this._tableData, true);
+          this._getAccessAndBuildRecords(this._tableData, true);
         } else {
           // multiple records
 
@@ -1069,7 +1095,7 @@ export default class ODDatatable extends LightningElement {
               });
             });
 
-            this._buildRecords(newRecords, true);
+            this._getAccessAndBuildRecords(newRecords, true);
           }
         }
       }
