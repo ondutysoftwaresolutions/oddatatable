@@ -780,7 +780,7 @@ export default class ODDatatable extends LightningElement {
           label: { fieldName: '_editLabel' },
           isDeleted: { fieldName: 'isDeleted' },
           hasChanges: { fieldName: '_hasChanges' },
-          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value },
+          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value, isCustom: true },
         },
       });
     }
@@ -797,7 +797,7 @@ export default class ODDatatable extends LightningElement {
           name: { fieldName: '_deleteAction' },
           hasChanges: { fieldName: '_hasChanges' },
           isDeleted: { fieldName: 'isDeleted' },
-          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value, isButtonIcon: true },
+          config: { alignment: ALIGNMENT_OPTIONS.CENTER.value, isButtonIcon: true, isCustom: true },
         },
       });
     }
