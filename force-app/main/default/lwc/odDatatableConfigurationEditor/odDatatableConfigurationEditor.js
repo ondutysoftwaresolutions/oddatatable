@@ -512,8 +512,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.RADIO_BUTTON_TYPE,
       valueType: FIELD_TYPES.STRING,
       value: SHARING_CONTEXT.WITHOUT_SHARING,
-      helpText:
-        'The sharing context to executes the queries when using the component in record pages or communities. For flows, it is up to the implementation of the flow.',
+      helpText: 'The sharing context to executes the queries when using the component.',
     },
 
     // internal use
