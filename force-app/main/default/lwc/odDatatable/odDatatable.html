@@ -100,7 +100,9 @@
 
     <!-- Buttons -->
     <template lwc:if={isThereAnyButton}>
-      <div class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap">
+      <div
+        class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap od-datatable-buttons"
+      >
         <!-- Add button -->
         <template lwc:if={showAddButton}>
           <template lwc:if={addHasLabel}>
@@ -199,17 +201,51 @@
 
         <!-- Other buttons -->
         <template lwc:if={bottomNavButtons.length}>
-          <template for:each={bottomNavButtons} for:item="btn">
-            <lightning-button
-              key={btn.fieldName}
-              class="slds-m-bottom--small slds-m-right--medium"
-              label={btn.label}
-              title={btn.label}
-              data-name={btn.fieldName}
-              onclick={handleOpenBottomNavFlow}
-              disabled={hasChanges}
-            >
-            </lightning-button>
+          <template lwc:if={otherBottomNavButtons.length}>
+            <template for:each={otherBottomNavButtons} for:item="btn">
+              <lightning-button
+                key={btn.fieldName}
+                class="slds-m-bottom--small slds-m-right--medium"
+                label={btn.label}
+                variant={btn.buttonVariant}
+                title={btn.label}
+                data-name={btn.fieldName}
+                onclick={handleOpenBottomNavFlow}
+                disabled={hasChanges}
+              >
+              </lightning-button>
+            </template>
+          </template>
+        </template>
+        <template lwc:if={mainBottomNavButtons.length}>
+          <template for:each={mainBottomNavButtons} for:item="btn">
+            <lightning-button-group key={btn.fieldName} class="slds-m-bottom--small slds-m-right--medium">
+              <lightning-button
+                label={btn.label}
+                variant={btn.buttonVariant}
+                onclick={handleOpenBottomNavFlow}
+                title={btn.label}
+                data-name={btn.fieldName}
+                disabled={hasChanges}
+              >
+              </lightning-button>
+              <lightning-button-menu
+                alternative-text="Show more options"
+                variant="border-filled"
+                class="moreOptionButtons"
+              >
+                <template for:each={btn.children} for:item="child">
+                  <lightning-menu-item
+                    key={child.fieldName}
+                    label={child.label}
+                    value={child.fieldName}
+                    onclick={handleOpenBottomNavFlow}
+                    data-name={child.fieldName}
+                  >
+                  </lightning-menu-item>
+                </template>
+              </lightning-button-menu>
+            </lightning-button-group>
           </template>
         </template>
       </div>

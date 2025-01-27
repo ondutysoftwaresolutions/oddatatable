@@ -564,6 +564,15 @@
         </lightning-button>
       </div>
       <div class="slds-is-absolute slds-m-right--x-large slds-grid" style="right: 0">
+        <template lwc:if={showGroupButtonsButton}>
+          <lightning-button
+            label="Group Bottom Nav. Buttons"
+            icon-name="utility:layers"
+            class="slds-m-right--x-small"
+            onclick={handleOpenGroupBottomNavButtons}
+          >
+          </lightning-button>
+        </template>
         <lightning-button
           label="Copy Field Columns JSON"
           icon-name="utility:copy"
@@ -622,5 +631,15 @@
       hide-default={hideDefaultHeaderActions}
     >
     </c-od-datatable-configuration-column-header-actions>
+  </template>
+
+  <!-- Group Buttons popup -->
+  <template lwc:if={showGroupButtons}>
+    <c-od-datatable-configuration-column-group-buttons
+      buttons={bottomNavigationButtons}
+      onclose={handleCloseGroupBottomNavButtons}
+      onsave={handleSaveGroupBottomNavButtons}
+    >
+    </c-od-datatable-configuration-column-group-buttons>
   </template>
 </template>

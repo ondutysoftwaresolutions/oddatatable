@@ -433,6 +433,45 @@ export default class ODDatatable extends LightningElement {
     );
   }
 
+  get mainBottomNavButtons() {
+    const result = [];
+    const mainButtons = this.bottomNavButtons.filter((btn) => btn.typeAttributes.config.mainButton);
+
+    // if any main button, check that at least have 1 child
+    if (mainButtons.length > 0) {
+      mainButtons.forEach((mainBtn) => {
+        const children = this.bottomNavButtons.filter(
+          (btn) => btn.typeAttributes.config.groupUnder === mainBtn.fieldName,
+        );
+
+        if (children.length > 0) {
+          result.push({
+            ...mainBtn,
+            children,
+          });
+        }
+      });
+    }
+
+    return result;
+  }
+
+  get _flattenedMainBottomNavButtons() {
+    return this.mainBottomNavButtons.reduce((flat, btn) => {
+      const flattened = [btn];
+      if (btn.children && Array.isArray(btn.children)) {
+        flattened.push(...btn.children);
+      }
+      return [...flat, ...flattened];
+    }, []);
+  }
+
+  get otherBottomNavButtons() {
+    return this.bottomNavButtons.filter(
+      (btn) => !this._flattenedMainBottomNavButtons.some((mainBtn) => mainBtn.fieldName === btn.fieldName),
+    );
+  }
+
   get _listeningToPlatformEvent() {
     return this.listenToPlatformEvent === YES_NO.YES;
   }

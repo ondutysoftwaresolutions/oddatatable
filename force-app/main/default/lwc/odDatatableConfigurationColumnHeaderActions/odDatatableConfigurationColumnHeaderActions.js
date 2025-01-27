@@ -69,7 +69,7 @@ export default class OdDatatableConfigurationColumnHeaderActions extends Lightni
   }
 
   _doUpdateField(id, objectToUpdate) {
-    const actionIndex = this.actionsToDisplayTable.findIndex((fl) => fl.id === id);
+    const actionIndex = this.actionsToDisplayTable.findIndex((act) => act.id === id);
     this.actionsToDisplayTable[actionIndex] = {
       ...this.actionsToDisplayTable[actionIndex],
       ...objectToUpdate,
@@ -98,7 +98,7 @@ export default class OdDatatableConfigurationColumnHeaderActions extends Lightni
   handleDelete(event) {
     const id = event.target.dataset.id;
 
-    const actionIndex = this.actionsToDisplayTable.findIndex((fl) => fl.id === id);
+    const actionIndex = this.actionsToDisplayTable.findIndex((act) => act.id === id);
 
     this.actionsToDisplayTable = [
       ...this.actionsToDisplayTable.slice(0, actionIndex),

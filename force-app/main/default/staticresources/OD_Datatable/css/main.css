@@ -248,3 +248,8 @@
 .od-datatable tr.slds-is-selected .slds-radio [type=radio]:focus + .slds-radio__label .slds-radio_faux {
   box-shadow: none !important;
 }
+
+.od-datatable-buttons lightning-button-menu.moreOptionButtons .slds-button {
+  height: 100%;
+  border-color: var(--slds-c-button-neutral-color-border, var(--sds-c-button-neutral-color-border, var(--slds-g-color-border-base-4, var(--lwc-buttonColorBorderPrimary,rgb(243, 243, 243)))));
+}

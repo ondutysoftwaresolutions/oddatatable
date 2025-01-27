@@ -71,6 +71,9 @@ export default class OdConfigurationColumns extends LightningElement {
   headerActionColumn;
   customHeaderActions;
 
+  // group bottom navigation buttons
+  showGroupButtons = false;
+
   // private variables
   _alreadyRendered = false;
   _allFields;
@@ -110,6 +113,14 @@ export default class OdConfigurationColumns extends LightningElement {
 
   get bodyClasses() {
     return `slds-p-around--large ${getBodyPopupClasses(this)}`;
+  }
+
+  get bottomNavigationButtons() {
+    return this.fieldsToDisplayTable.filter((fld) => fld.showInBottomNav);
+  }
+
+  get showGroupButtonsButton() {
+    return this.bottomNavigationButtons.length > 1;
   }
 
   // =================================================================
@@ -307,6 +318,8 @@ export default class OdConfigurationColumns extends LightningElement {
           icon: col.typeAttributes.config.icon,
           showAsSingle: col.typeAttributes.config.showAsSingle,
           showInBottomNav: col.typeAttributes.config.showInBottomNav,
+          mainButton: col.typeAttributes.config.mainButton,
+          groupUnder: col.typeAttributes.config.groupUnder,
           showAsMultiple: col.typeAttributes.config.showAsMultiple,
           flowName: col.typeAttributes.config.flowName,
           iconName: col.typeAttributes.config.iconName,
@@ -701,6 +714,8 @@ export default class OdConfigurationColumns extends LightningElement {
                 iconName: field.iconName,
                 buttonIconVariant: field.buttonIconVariant,
                 tooltip: field.tooltip,
+                mainButton: field.mainButton,
+                groupUnder: field.groupUnder,
               },
             },
           };
@@ -888,6 +903,34 @@ export default class OdConfigurationColumns extends LightningElement {
         this.handleCloseHeaderActions();
       }
     }
+  }
+
+  handleOpenGroupBottomNavButtons() {
+    this.showGroupButtons = true;
+  }
+
+  handleCloseGroupBottomNavButtons() {
+    this.showGroupButtons = false;
+  }
+
+  handleSaveGroupBottomNavButtons(event) {
+    const buttonsToGroupBy = event.detail.value;
+
+    buttonsToGroupBy.forEach((button) => {
+      // dispatch main button first
+      this.handleUpdateField({
+        detail: { fieldName: 'mainButton', value: button.mainButton },
+        target: { dataset: { value: button.value } },
+      });
+
+      // dispatch group under second
+      this.handleUpdateField({
+        detail: { fieldName: 'groupUnder', value: button.groupUnder !== '-1' ? button.groupUnder : undefined },
+        target: { dataset: { value: button.value } },
+      });
+    });
+
+    this.handleCloseGroupBottomNavButtons();
   }
 
   handleCopyFieldColumnsToClipboard() {
