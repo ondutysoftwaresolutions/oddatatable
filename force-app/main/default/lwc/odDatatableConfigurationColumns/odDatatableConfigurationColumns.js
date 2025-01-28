@@ -416,12 +416,11 @@ export default class OdConfigurationColumns extends LightningElement {
         iteration++;
 
         return { ...fl, ...newField };
-      } else {
-        // get the field from the fields to display table
-        const fieldIndex = this.fieldsToDisplayTable.findIndex((fld) => fld.value === fl.value);
-
-        return { ...fl, ...this.fieldsToDisplayTable[fieldIndex] };
       }
+      // get the field from the fields to display table
+      const fieldIndex = this.fieldsToDisplayTable.findIndex((fld) => fld.value === fl.value);
+
+      return { ...fl, ...this.fieldsToDisplayTable[fieldIndex] };
     });
 
     return result;
@@ -757,21 +756,13 @@ export default class OdConfigurationColumns extends LightningElement {
 
     // add first and last column fields
     const first = result.find(
-      (col) =>
-        col.typeAttributes.config.column &&
-        !col.typeAttributes.config.icon &&
-        !col.typeAttributes.config.isCustom &&
-        !col.typeAttributes.config.hidden,
+      (col) => !col.typeAttributes.config.icon && col.type !== ROW_BUTTON_TYPE && !col.typeAttributes.config.hidden,
     );
     first.typeAttributes.config.isFirstColumn = true;
 
     // Last element
     const last = result.findLast(
-      (col) =>
-        col.typeAttributes.config.column &&
-        !col.typeAttributes.config.icon &&
-        !col.typeAttributes.config.isCustom &&
-        !col.typeAttributes.config.hidden,
+      (col) => !col.typeAttributes.config.icon && col.type !== ROW_BUTTON_TYPE && !col.typeAttributes.config.hidden,
     );
     last.typeAttributes.config.isLastColumn = true;
 
