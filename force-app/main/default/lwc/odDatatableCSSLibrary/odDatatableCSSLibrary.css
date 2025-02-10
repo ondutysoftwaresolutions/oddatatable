@@ -13,6 +13,12 @@
   }
 }
 
+.columnsTable {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 .columnsTable th {
   position: sticky;
   background: #f4f2f2;
@@ -42,11 +48,15 @@
 .deleted-record {
   font-style: italic;
   opacity: 0.3;
-  background: #e7e3e3;
   pointer-events: none;
   min-height: 44px;
   display: flex;
   align-items: center;
+}
+
+.rowButton.deleted-record {
+  justify-content: center;
+  background: rgb(229 229 229 / 30%);
 }
 
 .alignItemsCenter {

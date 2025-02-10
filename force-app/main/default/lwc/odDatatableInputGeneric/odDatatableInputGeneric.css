@@ -3,5 +3,14 @@
 .container {
   min-height: 2vh;
   display: flex;
+  width: 100%;
   align-items: center;
+}
+
+.smallLeftPadding {
+  padding-left: 3%;
+}
+
+.noFlexBasis {
+  flex-basis: 0;
 }

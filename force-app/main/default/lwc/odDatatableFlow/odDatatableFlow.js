@@ -1,10 +1,12 @@
 import { api } from 'lwc';
 import LightningModal from 'lightning/modal';
+import { getFieldsFromString, doReplaceMergeField } from 'c/odDatatableUtils';
 
 export default class OdDatatableFlow extends LightningModal {
   @api flowName;
   @api inputVariables = [];
   @api bottomNavFlow = false;
+  @api currentRecord;
   @api preview = false;
 
   errorMessage = false;
@@ -13,10 +15,21 @@ export default class OdDatatableFlow extends LightningModal {
     const result = [];
 
     this.inputVariables.forEach((iv) => {
+      let valueToUse = iv.value || iv.fixedValue;
+      // if the value contains a reference to current record, replace it here ({{Name}})
+      if (valueToUse.includes('{{') && this.currentRecord) {
+        const fieldsToReplace = getFieldsFromString(valueToUse);
+
+        // for each record field, start the replace
+        fieldsToReplace.forEach((fl) => {
+          valueToUse = doReplaceMergeField(valueToUse, fl, this.currentRecord);
+        });
+      }
+
       result.push({
         name: iv.name,
         type: iv.type,
-        value: iv.value || iv.fixedValue,
+        value: valueToUse,
       });
     });
 

@@ -11,12 +11,8 @@
     <div class={modalContainerClasses}>
       <header class="slds-modal__header" style={style}>
         <template if:false={hideTitleClose}>
-          <button
-            class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
-            title="Close"
-            onclick={handleClose}
-          >
-            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse"> </lightning-icon>
+          <button class="slds-button slds-button--icon-inverse slds-modal__close" title="Close" onclick={handleClose}>
+            <lightning-icon icon-name="utility:close" alternative-text="Close"> </lightning-icon>
             <span class="slds-assistive-text">Close</span>
           </button>
         </template>

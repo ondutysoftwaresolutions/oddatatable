@@ -3,6 +3,7 @@
   <template lwc:if={loaded}>
     <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
     <c-od-datatable-spinner text={savingMessage} show={isSaving}></c-od-datatable-spinner>
+    <!-- This is in case a configuration of a field has changed in Salesforce after building the table -->
     <template lwc:if={fieldsThatChanged.length}>
       <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
         <div class="slds-p-around--medium slds-text-heading_medium">
@@ -16,133 +17,251 @@
         </ul>
       </div>
     </template>
-    <template lwc:if={recordsToShow.length}>
+
+    <!-- Export -->
+    <template lwc:if={showExportButton}>
+      <div class="slds-grid slds-size--1-of-1 slds-wrap">
+        <div
+          class="slds-col--bump-left slds-grid slds-gutters_xx-small slds-p-bottom--x-small slds-p-right--small slds-wrap"
+        >
+          <lightning-button-icon
+            class="exportButton"
+            icon-name="utility:download"
+            alternative-text="Download"
+            title="Download"
+            onclick={handleExport}
+            variant="brand-outline"
+          >
+          </lightning-button-icon>
+        </div>
+      </div>
+    </template>
+
+    <!-- Table or no records message -->
+    <template lwc:if={tableData.length}>
       <c-od-datatable-custom
         key-field="_id"
         class="od-datatable"
-        data={recordsToShow}
+        data={dataToShow}
         columns={columnsToShow}
+        show-row-number-column={showColumnRowNumber}
         selected-rows={selectedRowsIds}
-        hide-checkbox-column={notBulkOperation}
+        hide-checkbox-column={selectionDisabled}
         onrowselection={handleSelectRow}
         onrowaction={handleRowAction}
+        max-row-selection={maxiumRowSelection}
+        onheaderaction={handleHeaderAction}
       >
       </c-od-datatable-custom>
     </template>
     <template lwc:else>
       <div class="slds-p-left--xx-small slds-text-heading--small">{noRecordsMessage}</div>
     </template>
-    <div class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap">
-      <template lwc:if={showAddButton}>
-        <template lwc:if={addHasLabel}>
+
+    <!-- Pagination -->
+    <template lwc:if={showPagination}>
+      <div class={paginationClasses}>
+        <template lwc:if={showPaginationNavigationOptions}>
           <lightning-button
-            label={addLabel}
-            title={addLabel}
-            class="slds-m-bottom--small slds-m-right--medium"
-            icon-name="utility:add"
-            onclick={handleAdd}
-            variant="brand"
-            disabled={standardButtonsDisabled}
+            variant="base"
+            label="First"
+            onclick={handleFirstPage}
+            class="slds-m-right_xx-small"
+            disabled={isFirstPage}
+          >
+          </lightning-button>
+          <lightning-button
+            variant="base"
+            label="Prev"
+            onclick={handlePrevPage}
+            class="slds-m-right_xx-small"
+            disabled={isFirstPage}
           >
           </lightning-button>
         </template>
-        <template lwc:else>
-          <lightning-button-icon
-            icon-name="utility:add"
-            alternative-text="Add"
-            class="slds-m-bottom--small slds-m-right--medium"
-            title="Add"
-            onclick={handleAdd}
-            variant="brand"
-            disabled={standardButtonsDisabled}
-          >
-          </lightning-button-icon>
+        <template for:each={pages} for:item="page">
+          <button key={page.value} onclick={handleChangePage} data-value={page.value} class={page.classes}>
+            {page.page}
+          </button>
         </template>
-      </template>
-      <template lwc:if={showBulkDeleteButton}>
-        <template lwc:if={bulkDeleteHasLabel}>
+        <template lwc:if={showPaginationNavigationOptions}>
           <lightning-button
-            class="slds-m-bottom--small slds-m-right--medium"
-            label={bulkDeleteLabel}
-            title={bulkDeleteLabel}
-            icon-name="utility:delete"
-            onclick={handleBulkDelete}
-            disabled={bulkOperationDisabled}
+            variant="base"
+            label="Next"
+            onclick={handleNextPage}
+            class="slds-m-right_xx-small"
+            disabled={isLastPage}
           >
           </lightning-button>
-        </template>
-        <template lwc:else>
-          <lightning-button-icon
-            class="slds-m-bottom--small slds-m-right--medium"
-            icon-name="utility:delete"
-            alternative-text={bulkDeleteLabel}
-            title={bulkDeleteLabel}
-            onclick={handleBulkDelete}
-            disabled={bulkOperationDisabled}
-          >
-          </lightning-button-icon>
-        </template>
-      </template>
-      <template lwc:if={showBulkEditButton}>
-        <template lwc:if={bulkEditHasLabel}>
-          <lightning-button
-            class="slds-m-bottom--small slds-m-right--medium"
-            label={bulkEditLabel}
-            title={bulkEditLabel}
-            icon-name="utility:edit"
-            onclick={handleOpenBulkEdit}
-            disabled={bulkOperationDisabled}
-          >
+          <lightning-button variant="base" label="Last" onclick={handleLastPage} disabled={isLastPage}>
           </lightning-button>
         </template>
-        <template lwc:else>
-          <lightning-button-icon
-            class="slds-m-bottom--small slds-m-right--medium"
-            icon-name="utility:edit"
-            alternative-text={bulkEditLabel}
-            title={bulkEditLabel}
-            onclick={handleOpenBulkEdit}
-            disabled={bulkOperationDisabled}
-          >
-          </lightning-button-icon>
-        </template>
-      </template>
-      <template lwc:if={otherBulkFlowButtons.length}>
-        <template for:each={otherBulkFlowButtons} for:item="btn">
-          <lightning-button
-            key={btn.fieldName}
-            class="slds-m-bottom--small slds-m-right--medium"
-            label={btn.typeAttributes.config.bulkButtonLabel}
-            title={btn.label}
-            data-name={btn.fieldName}
-            onclick={handleOpenBulkFlow}
-            disabled={bulkOperationDisabled}
-          >
-          </lightning-button>
-        </template>
-      </template>
-      <template lwc:if={bottomNavButtons.length}>
-        <template for:each={bottomNavButtons} for:item="btn">
-          <lightning-button
-            key={btn.fieldName}
-            class="slds-m-bottom--small slds-m-right--medium"
-            label={btn.label}
-            title={btn.label}
-            data-name={btn.fieldName}
-            onclick={handleOpenBottomNavFlow}
-            disabled={hasChanges}
-          >
-          </lightning-button>
-        </template>
-      </template>
-    </div>
-    <template lwc:if={showSaveButtons}>
-      <div class="slds-align--absolute-center slds-grid slds-wrap">
-        <lightning-button label="Cancel" onclick={handleCancel}> </lightning-button>
-        <lightning-button class="slds-m-left--xx-small" label={saveLabel} variant="brand" onclick={handleSave}>
-        </lightning-button>
       </div>
     </template>
+
+    <!-- Buttons -->
+    <template lwc:if={isThereAnyButton}>
+      <div
+        class="slds-grid slds-p-bottom--medium slds-p-left--xx-small slds-p-top--small slds-wrap od-datatable-buttons"
+      >
+        <!-- Add button -->
+        <template lwc:if={showAddButton}>
+          <template lwc:if={addHasLabel}>
+            <lightning-button
+              label={addLabel}
+              title={addLabel}
+              class="slds-m-bottom--small slds-m-right--medium"
+              icon-name="utility:add"
+              onclick={handleAdd}
+              variant="brand"
+              disabled={standardButtonsDisabled}
+            >
+            </lightning-button>
+          </template>
+          <template lwc:else>
+            <lightning-button-icon
+              icon-name="utility:add"
+              alternative-text="Add"
+              class="slds-m-bottom--small slds-m-right--medium"
+              title="Add"
+              onclick={handleAdd}
+              variant="brand"
+              disabled={standardButtonsDisabled}
+            >
+            </lightning-button-icon>
+          </template>
+        </template>
+
+        <!-- Bulk Delete button -->
+        <template lwc:if={showBulkDeleteButton}>
+          <template lwc:if={bulkDeleteHasLabel}>
+            <lightning-button
+              class="slds-m-bottom--small slds-m-right--medium"
+              label={bulkDeleteLabel}
+              title={bulkDeleteLabel}
+              icon-name="utility:delete"
+              onclick={handleBulkDelete}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button>
+          </template>
+          <template lwc:else>
+            <lightning-button-icon
+              class="slds-m-bottom--small slds-m-right--medium"
+              icon-name="utility:delete"
+              alternative-text={bulkDeleteLabel}
+              title={bulkDeleteLabel}
+              onclick={handleBulkDelete}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button-icon>
+          </template>
+        </template>
+
+        <!-- Bulk Edit button -->
+        <template lwc:if={showBulkEditButton}>
+          <template lwc:if={bulkEditHasLabel}>
+            <lightning-button
+              class="slds-m-bottom--small slds-m-right--medium"
+              label={bulkEditLabel}
+              title={bulkEditLabel}
+              icon-name="utility:edit"
+              onclick={handleOpenBulkEdit}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button>
+          </template>
+          <template lwc:else>
+            <lightning-button-icon
+              class="slds-m-bottom--small slds-m-right--medium"
+              icon-name="utility:edit"
+              alternative-text={bulkEditLabel}
+              title={bulkEditLabel}
+              onclick={handleOpenBulkEdit}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button-icon>
+          </template>
+        </template>
+
+        <!-- Bulk Other buttons -->
+        <template lwc:if={otherBulkFlowButtons.length}>
+          <template for:each={otherBulkFlowButtons} for:item="btn">
+            <lightning-button
+              key={btn.fieldName}
+              class="slds-m-bottom--small slds-m-right--medium"
+              label={btn.typeAttributes.config.bulkButtonLabel}
+              title={btn.label}
+              data-name={btn.fieldName}
+              onclick={handleOpenBulkFlow}
+              disabled={bulkOperationDisabled}
+            >
+            </lightning-button>
+          </template>
+        </template>
+
+        <!-- Other buttons -->
+        <template lwc:if={bottomNavButtons.length}>
+          <template lwc:if={otherBottomNavButtons.length}>
+            <template for:each={otherBottomNavButtons} for:item="btn">
+              <lightning-button
+                key={btn.fieldName}
+                class="slds-m-bottom--small slds-m-right--medium"
+                label={btn.label}
+                variant={btn.buttonVariant}
+                title={btn.label}
+                data-name={btn.fieldName}
+                onclick={handleOpenBottomNavFlow}
+                disabled={hasChanges}
+              >
+              </lightning-button>
+            </template>
+          </template>
+        </template>
+        <template lwc:if={mainBottomNavButtons.length}>
+          <template for:each={mainBottomNavButtons} for:item="btn">
+            <lightning-button-group key={btn.fieldName} class="slds-m-bottom--small slds-m-right--medium">
+              <lightning-button
+                label={btn.label}
+                variant={btn.buttonVariant}
+                onclick={handleOpenBottomNavFlow}
+                title={btn.label}
+                data-name={btn.fieldName}
+                disabled={hasChanges}
+              >
+              </lightning-button>
+              <lightning-button-menu
+                alternative-text="Show more options"
+                variant="border-filled"
+                class="moreOptionButtons"
+              >
+                <template for:each={btn.children} for:item="child">
+                  <lightning-menu-item
+                    key={child.fieldName}
+                    label={child.label}
+                    value={child.fieldName}
+                    onclick={handleOpenBottomNavFlow}
+                    data-name={child.fieldName}
+                  >
+                  </lightning-menu-item>
+                </template>
+              </lightning-button-menu>
+            </lightning-button-group>
+          </template>
+        </template>
+      </div>
+
+      <!-- Save and cancel buttons -->
+      <template lwc:if={showSaveButtons}>
+        <div class="slds-align--absolute-center slds-grid slds-wrap">
+          <lightning-button label="Cancel" onclick={handleCancel}> </lightning-button>
+          <lightning-button class="slds-m-left--xx-small" label={saveLabel} variant="brand" onclick={handleSave}>
+          </lightning-button>
+        </div>
+      </template>
+    </template>
+
+    <!-- Popups -->
     <template lwc:if={showBulkEditPopup}>
       <c-od-datatable-bulk-edit
         title={bulkEditLabel}

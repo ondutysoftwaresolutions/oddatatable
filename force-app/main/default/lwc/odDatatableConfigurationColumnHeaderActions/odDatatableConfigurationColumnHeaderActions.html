@@ -1,0 +1,142 @@
+<template>
+  <c-od-datatable-popup
+    onclose={handleClose}
+    container-classes="md"
+    backdrop-classes="modalBackdropsPropertyEditor onTopOfEverything"
+    modal-classes="overFlowInitial onTopOfEverything"
+  >
+    <div slot="title" class="title-popup">Configure Header Actions</div>
+    <div slot="body" class="slds-p-around--large">
+      <fieldset class="slds-box slds-grid slds-wrap">
+        <legend>Default Actions</legend>
+        <div class="slds-size--1-of-1 slds-grid slds-wrap">
+          <c-od-datatable-input-generic
+            type={fieldTypes.CHECKBOX}
+            field-name="hideDefaultActions"
+            value={hideDefaultActions}
+            editable
+            onupdatefield={handleUpdateDefaultActions}
+            label="Hide Default Header Actions?"
+            help-text="Specifies whether to hide the default header actions on a column. If it is set to true the 'Clip text' and 'Wrap text' actions are removed from the actions dropdown menu"
+          >
+          </c-od-datatable-input-generic>
+        </div>
+      </fieldset>
+      <template lwc:if={column.isEditable}>
+        <fieldset class="slds-box slds-grid slds-wrap slds-m-top--medium">
+          <legend>Set Value Custom Actions</legend>
+          <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+          <div class="slds-m-bottom--large slds-m-top--medium slds-p-around--xx-small slds-size--1-of-1">
+            <table class="columnsTable" style="display: table">
+              <thead>
+                <tr>
+                  <th class="slds-p-around--x-small" style="width: 300px">Label</th>
+                  <th class="slds-p-around--x-small" style="width: 150px">
+                    Show checkmark?
+                    <lightning-helptext
+                      class="help-text"
+                      content="Specifies whether a check mark is shown to the left of the action label. If true, a check mark is shown to the left of the menu item. If false, a check mark is not shown but there is space to accommodate one."
+                    >
+                    </lightning-helptext>
+                  </th>
+                  <th class="slds-p-around--x-small" style="width: 300px">Icon Name</th>
+                  <th class="slds-p-around--x-small" style="width: 300px">Value to Set</th>
+                  <th class="slds-p-around--x-small" style="width: 50px"></th>
+                </tr>
+              </thead>
+              <tbody class="">
+                <template for:each={actionsToDisplayTable} for:item="action">
+                  <tr key={action.id}>
+                    <td>
+                      <c-od-datatable-input-generic
+                        type={fieldTypes.TEXT}
+                        field-name="label"
+                        editable
+                        value={action.label}
+                        data-id={action.id}
+                        onupdatefield={handleUpdateLabelSetValue}
+                      >
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic
+                        type={fieldTypes.CHECKBOX}
+                        field-name="checked"
+                        data-id={action.id}
+                        class="slds-text-align--center"
+                        value={action.checked}
+                        editable
+                        onupdatefield={handleUpdateSetValueField}
+                      >
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic
+                        type={fieldTypes.TEXT}
+                        field-name="iconName"
+                        editable
+                        value={action.iconName}
+                        data-id={action.id}
+                        onupdatefield={handleUpdateSetValueField}
+                      >
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td>
+                      <c-od-datatable-input-generic
+                        type={column.type}
+                        field-name="valueToSet"
+                        editable
+                        max-length={column.maxLength}
+                        scale={column.scale}
+                        precision={column.precision}
+                        value={action.valueToSet}
+                        data-id={action.id}
+                        onupdatefield={handleUpdateSetValueField}
+                      >
+                      </c-od-datatable-input-generic>
+                    </td>
+                    <td class="slds-text-align--center">
+                      <lightning-button-icon
+                        icon-name="utility:delete"
+                        variant="bare"
+                        class="icon-inside-table-row"
+                        onclick={handleDelete}
+                        tooltip="Delete this header action"
+                        data-id={action.id}
+                      >
+                      </lightning-button-icon>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <div class="slds-size--1-of-1 slds-p-top--small">
+              <lightning-button
+                label="Add Header Action"
+                title="Add Header Action"
+                icon-name="utility:add"
+                onclick={handleAdd}
+              >
+              </lightning-button>
+            </div>
+          </div>
+        </fieldset>
+      </template>
+    </div>
+    <div slot="footer" class="footer-popup slds-grid">
+      <div class="slds-align--absolute-center slds-size--12-of-12">
+        <lightning-button
+          variant="brand"
+          disabled={disabledSave}
+          name="save"
+          label="Save"
+          title="Save"
+          onclick={handleSave}
+          class="slds-m-right--large"
+        >
+        </lightning-button>
+        <lightning-button name="cancel" label="Cancel" title="Cancel" onclick={handleClose}> </lightning-button>
+      </div>
+    </div>
+  </c-od-datatable-popup>
+</template>

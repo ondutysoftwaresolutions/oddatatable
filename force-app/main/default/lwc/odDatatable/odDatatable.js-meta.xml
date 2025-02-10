@@ -1,136 +1,494 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>56.0</apiVersion>
+    <apiVersion>62.0</apiVersion>
     <masterLabel>On Duty Datatable</masterLabel>
-    <description>Enhanced datatable with the ability to add and remove records</description>
+    <description>Enhanced datatable with lots of functionality</description>
     <isExposed>true</isExposed>
     <targets>
         <target>lightning__FlowScreen</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__FlowScreen"
-            configurationEditor="c-od-datatable-configuration-editor">
+        <targetConfig targets="lightning__FlowScreen" configurationEditor="c-od-datatable-configuration-editor">
             <!-- Object Type -->
-            <propertyType name="T" extends="SObject" label="Datatable Object API Name"
-                description="Select the API Name of the SObject to use in the Datatable" />
+            <propertyType
+        name="T"
+        extends="SObject"
+        label="Datatable Object API Name"
+        description="Select the API Name of the SObject to use in the Datatable."
+      />
             <!-- Inputs -->
-            <property name="tableData" label="Data Source Record Collection" type="{T[]}"
-                role="inputOnly"
-                description="Record Collection variable containing the records to display in the datatable." />
-            <property name="columns" label="Columns" type="String" role="inputOnly" required="true"
-                default="{}"
-                description="JSON string with the columns to display in the datatable." />
-            <property name="noRecordsMessage" label="No Records Message" type="String"
-                role="inputOnly"
-                default="No Records Found"
-                description="Message to display instead of the datatable if there are no records." />
-            <property name="canAdd" label="Can Add?" type="String" role="inputOnly" default="Yes"
-                description="This will add the record to the outputAddedRows and you will need to write these back to the Object with a Record Insert in the Flow." />
-            <property name="addLabel" label="Add Button Label" type="String" role="inputOnly"
-                default="Add"
-                description="Label to show in the Add button, if empty, it will only show the icon." />
-            <property name="addType" label="Add Type" type="String" role="inputOnly"
-                default="Inline"
-                description="Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow." />
-            <property name="addFlowName" label="Flow Name" type="String" role="inputOnly"
-                description="Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed" />
-            <property name="addFlowInputVariables" label="Flow Input Variables" type="String"
-                role="inputOnly"
-                description="JSON string with the input variables to send to the flow." />
-            <property name="canEdit" label="Can Edit?" type="String" role="inputOnly"
-                default="Yes"
-                description="This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow." />
-            <property name="editType" label="Edit Type" type="String" role="inputOnly"
-                default="Inline"
-                description="Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow" />
-            <property name="editLabel" label="Edit Button Label" type="String" role="inputOnly"
-                default="Edit"
-                description="Label to show in the Edit button when Editing with a flow." />
-            <property name="editFlowName" label="Flow Name" type="String" role="inputOnly"
-                description="Screen flow name to fire whenever the edit button in the row is clicked. A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed" />
-            <property name="editFlowInputVariables" label="Flow Input Variables" type="String"
-                role="inputOnly"
-                description="JSON string with the input variables to send to the flow." />
-            <property name="canDelete" label="Can Delete?" type="String" role="inputOnly"
-                default="Yes"
-                description="This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
-            <property name="canBulkDelete" label="Can Bulk Delete?" type="String" role="inputOnly"
-                default="No"
-                description="Add a selection and a button to delete several lines at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow." />
-            <property name="bulkDeleteLabel" label="Bulk Delete Label" type="String"
-                role="inputOnly" default="Delete"
-                description="Label to show in the Bulk Delete button, if empty, it will only show the icon." />
-            <property name="canBulkEdit" label="Can Bulk Edit?" type="String" role="inputOnly"
-                default="No"
-                description="Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow." />
-            <property name="bulkEditLabel" label="Bulk Edit Label" type="String"
-                role="inputOnly" default="Bulk Edit"
-                description="Label to show in the Bulk Edit button, if empty, it will only show the icon." />
-            <property name="isMasterDetail" label="Is Master-Detail?" type="String" role="inputOnly"
-                default="No"
-                description="Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s." />
-            <property name="masterDetailField1" label="First Master-Detail Field" type="String"
-                role="inputOnly" />
-            <property name="masterDetailField2" label="Second Master-Detail Field" type="String"
-                role="inputOnly" />
-            <property name="inlineSave" label="Save Enabled?" type="String" role="inputOnly"
-                default="No"
-                description="If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving." />
-            <property name="saveLabel" label="Save Label" type="String"
-                role="inputOnly" default="Save"
-                description="Label to show in the Save button if inline save is enabled." />
-            <property name="navigateNextAfterSave" label="Navigate Next after Save?" type="String"
-                role="inputOnly"
-                default="No"
-                description="If enabled, after clicking Save it will execute the Next button navigation of the screen and it will output the variable 'saveAndNext' = true." />
-            <property name="listenToPlatformEvent" label="Listen to Platform Event?" type="String"
-                role="inputOnly"
-                default="No"
-                description="If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id" />
-            <property name="platformEventMatchingFieldName" label="Refresh Matching Field"
-                type="String"
-                role="inputOnly"
-                description="The fieldName to use when matching and refreshing with Platform event" />
-            <property name="platformEventMatchingId" label="Refresh Matching Id" type="String"
-                role="inputOnly"
-                description="Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event" />
+            <property
+        name="tableData"
+        label="Data Source Record Collection"
+        type="{T[]}"
+        role="inputOnly"
+        description="Record Collection variable containing the records to display in the datatable."
+      />
+            <property
+        name="columns"
+        label="Columns"
+        type="String"
+        role="inputOnly"
+        required="true"
+        default="{}"
+        description="JSON string with the columns to display in the datatable."
+      />
+            <property
+        name="noRecordsMessage"
+        label="No Records Message"
+        type="String"
+        role="inputOnly"
+        default="No Records Found"
+        description="Message to display instead of the datatable if there are no records."
+      />
+            <property
+        name="canAdd"
+        label="Can Add?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="This will add the record to the outputAddedRows and you will need to write these back to the Object with a Record Insert in the Flow."
+      />
+            <property
+        name="addLabel"
+        label="Add Button Label"
+        type="String"
+        role="inputOnly"
+        default="Add"
+        description="Label to show in the Add button, if empty, it will only show the icon."
+      />
+            <property
+        name="addType"
+        label="Add Type"
+        type="String"
+        role="inputOnly"
+        default="Inline"
+        description="Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow."
+      />
+            <property
+        name="addFlowName"
+        label="Flow Name"
+        type="String"
+        role="inputOnly"
+        description="Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed."
+      />
+            <property
+        name="addFlowInputVariables"
+        label="Flow Input Variables"
+        type="String"
+        role="inputOnly"
+        description="JSON string with the input variables to send to the flow."
+      />
+            <property
+        name="canEdit"
+        label="Can Edit?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow."
+      />
+            <property
+        name="editType"
+        label="Edit Type"
+        type="String"
+        role="inputOnly"
+        default="Inline"
+        description="Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow."
+      />
+            <property
+        name="editLabel"
+        label="Edit Button Label"
+        type="String"
+        role="inputOnly"
+        default="Edit"
+        description="Label to show in the Edit button when Editing with a flow."
+      />
+            <property
+        name="editFlowName"
+        label="Flow Name"
+        type="String"
+        role="inputOnly"
+        description="Screen flow name to fire whenever the edit button in the row is clicked. A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed."
+      />
+            <property
+        name="editFlowInputVariables"
+        label="Flow Input Variables"
+        type="String"
+        role="inputOnly"
+        description="JSON string with the input variables to send to the flow."
+      />
+            <property
+        name="canDelete"
+        label="Can Delete?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow."
+      />
+            <property
+        name="canBulkDelete"
+        label="Can Bulk Delete?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="Add a selection and a button to delete several lines at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow."
+      />
+            <property
+        name="bulkDeleteLabel"
+        label="Bulk Delete Label"
+        type="String"
+        role="inputOnly"
+        default="Delete"
+        description="Label to show in the Bulk Delete button, if empty, it will only show the icon."
+      />
+            <property
+        name="canBulkEdit"
+        label="Can Bulk Edit?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow."
+      />
+            <property
+        name="bulkEditLabel"
+        label="Bulk Edit Label"
+        type="String"
+        role="inputOnly"
+        default="Bulk Edit"
+        description="Label to show in the Bulk Edit button, if empty, it will only show the icon."
+      />
+            <property
+        name="isMasterDetail"
+        label="Is Master-Detail?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s."
+      />
+            <property name="masterDetailField1" label="First Master-Detail Field" type="String" role="inputOnly" />
+            <property name="masterDetailField2" label="Second Master-Detail Field" type="String" role="inputOnly" />
+            <property
+        name="inlineSave"
+        label="Save Enabled?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving."
+      />
+            <property
+        name="saveLabel"
+        label="Save Label"
+        type="String"
+        role="inputOnly"
+        default="Save"
+        description="Label to show in the Save button if inline save is enabled."
+      />
+            <property
+        name="navigateNextAfterSave"
+        label="Navigate Next after Save?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled, after clicking Save it will execute the Next button navigation of the screen and it will output the variable 'saveAndNext' = true."
+      />
+            <property
+        name="listenToPlatformEvent"
+        label="Listen to Platform Event?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id."
+      />
+            <property
+        name="platformEventMatchingFieldName"
+        label="Refresh Matching Field"
+        type="String"
+        role="inputOnly"
+        description="The fieldName to use when matching and refreshing with Platform event."
+      />
+            <property
+        name="platformEventMatchingId"
+        label="Refresh Matching Id"
+        type="String"
+        role="inputOnly"
+        description="Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event."
+      />
+            <property
+        name="pagination"
+        label="Pagination Enabled?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="If enabled, the data will be paginated and a control for the pagination will be displayed."
+      />
+            <property
+        name="pageSize"
+        label="Page Size"
+        type="String"
+        role="inputOnly"
+        default="10"
+        description="Number of records to display per page."
+      />
+            <property
+        name="paginationAlignment"
+        label="Pagination Alignment"
+        type="String"
+        role="inputOnly"
+        default="center"
+        description="Alignment for the pagination controls."
+      />
+            <property
+        name="paginationShowOptions"
+        label="Display Navigation Options?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers."
+      />
+            <property
+        name="grouping"
+        label="Grouping Enabled?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled, the data will be grouped by the field specified."
+      />
+            <property
+        name="groupingField"
+        label="Group By"
+        type="String"
+        role="inputOnly"
+        description="Field to group the data by. If the field is not present in the dataset then it will not group the data."
+      />
+            <property
+        name="groupSortField"
+        label="Sort Group By"
+        type="String"
+        role="inputOnly"
+        description="Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field."
+      />
+            <property
+        name="groupSortDirection"
+        label="Group Sort Direction"
+        type="String"
+        role="inputOnly"
+        description="Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC."
+      />
+            <property
+        name="groupContentSortField"
+        label="Sort Content of Group By"
+        type="String"
+        role="inputOnly"
+        description="Field to sort the content of the group by. It can be one of the fields being showed in the table."
+      />
+            <property
+        name="groupContentSortDirection"
+        label="Group Content Sort Direction"
+        type="String"
+        role="inputOnly"
+        description="Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC."
+      />
+            <property
+        name="groupingSource"
+        label="Source"
+        type="String"
+        role="inputOnly"
+        default="Dataset"
+        description="Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group."
+      />
+            <property
+        name="groupingSourceFieldData"
+        label="Source Field Data"
+        type="String"
+        role="inputOnly"
+        description="If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for."
+      />
+            <property
+        name="showEmptyGroups"
+        label="Show Empty?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled, the groups with no data in it will be shown."
+      />
+            <property
+        name="showTotalsByGroup"
+        label="Show Totals By Group?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="If enabled, a line with the totals by group will be shown."
+      />
+            <property
+        name="recalculateLive"
+        label="Recalculate totals on the fly?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table."
+      />
+            <property
+        name="canCollapseGroups"
+        label="Can Collapse/Expand Groups?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled you can click on the group row to collapse or expand. All calculations will include the collapsed rows, and if you change/add/delete a row, collapse it and save it will still save the changed rows."
+      />
+            <property
+        name="canSelect"
+        label="Selection Enabled?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled a checkbox or radio button will be displayed to allow the selection of the row. NOTE: if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then the checkbox will display regardless of this being No."
+      />
+            <property
+        name="selectionType"
+        label="Type of Selection"
+        type="String"
+        role="inputOnly"
+        default="Multiple Rows"
+        description="Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE:  if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row."
+      />
+            <property
+        name="selectionRequired"
+        label="Selection required?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled you won't be able to move forward until you select 1 row minimum"
+      />
+      <property
+        name="initiallySelectedRows"
+        label="Selected Rows"
+        type="{T[]}"
+        role="inputOnly"
+        description="Record Collection variable with all the rows that needs to be initially selected."
+      />    
+            <property
+        name="showRowNumberColumn"
+        label="Show the column with the row number?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled an extra column at the beginning will be added to show the number of the row. This will only work if grouping is disabled and there are no summarized columns."
+      />
+            <property
+        name="canExport"
+        label="Export Enabled?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled a button will display at the top right corner of the table to export the data to a CSV"
+      />
+            <property
+        name="exportGroups"
+        label="Include the groups in the export?"
+        type="String"
+        role="inputOnly"
+        default="No"
+        description="If enabled an extra column will be added to the CSV with the group name. Only works if the grouping is enabled."
+      />
+            <property
+        name="exportFileName"
+        label="Filename for the CSV"
+        type="String"
+        role="inputOnly"
+        description="This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv"
+      />
+            <property
+        name="sharingContext"
+        label="Sharing Context"
+        type="String"
+        role="inputOnly"
+        default="without"
+        description="The sharing context to executes the queries when using the component."
+      />
 
             <!-- Hidden inputs / only used internally -->
-            <property name="masterDetailConfiguration" label="Master-Detail Configuration"
-                type="String" role="inputOnly"
-                default="{}"
-                description="JSON string with the columns and values for the master detail relationships" />
+            <property
+        name="masterDetailConfiguration"
+        label="Master-Detail Configuration"
+        type="String"
+        role="inputOnly"
+        default="{}"
+        description="JSON string with the columns and values for the master detail relationships"
+      />
             <property name="objectName" label="API Object Name" type="String" role="inputOnly" />
-            <property name="uniqueTableName" label="Unique Table Name" type="String"
-                role="inputOnly" />
+            <property name="uniqueTableName" label="Unique Table Name" type="String" role="inputOnly" />
 
             <!-- Outputs -->
-            <property name="saveAndNext" label="Was it a Save and Next action?" type="Boolean"
-                role="outputOnly"
-                description="True if the 'navigateNextAfterSave' was enabled." />
-            <property name="outputAddedRows" label="Output Added Rows" type="{T[]}"
-                role="outputOnly"
-                description="Record Collection variable with all the added records in the datatable." />
-            <property name="outputEditedRows" label="Output Edited Rows" type="{T[]}"
-                role="outputOnly"
-                description="Record Collection variable with all the edited records in the datatable." />
-            <property name="outputDeletedRows" label="Output Deleted Rows" type="{T[]}"
-                role="outputOnly"
-                description="Record Collection variable with all the deleted records in the datatable." />
-            <property name="rowRecordId" label="The record Id of the row" type="String"
-                role="outputOnly"
-                description="The record Id of the row after clicking one of the custom buttons and coming back from the flow. Only used if Navigate Next after flow is selected." />
-            <property name="rowRecordIds" label="The record Ids of the selected rows"
-                type="String[]"
-                role="outputOnly"
-                description="The record Ids of the selected rows after clicking one of the custom buttons and coming back from the flow. Only used if Navigate Next after flow is selected." />
-            <property name="rowButtonClicked" label="The Button label clicked" type="String"
-                role="outputOnly"
-                description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected." />
-            <property name="wasChanged" label="Was the data change is same shape or form?"
-                type="Boolean"
-                role="outputOnly"
-                description="True if the data was changed (added/edited/deleted)." />
+            <property
+        name="saveAndNext"
+        label="Was it a Save and Next action?"
+        type="Boolean"
+        role="outputOnly"
+        description="True if the 'navigateNextAfterSave' was enabled."
+      />
+            <property
+        name="outputAddedRows"
+        label="Output Added Rows"
+        type="{T[]}"
+        role="outputOnly"
+        description="Record Collection variable with all the added records in the datatable."
+      />
+            <property
+        name="outputEditedRows"
+        label="Output Edited Rows"
+        type="{T[]}"
+        role="outputOnly"
+        description="Record Collection variable with all the edited records in the datatable."
+      />
+            <property
+        name="outputDeletedRows"
+        label="Output Deleted Rows"
+        type="{T[]}"
+        role="outputOnly"
+        description="Record Collection variable with all the deleted records in the datatable."
+      />
+            <property
+        name="rowRecordId"
+        label="The record Id of the row clicked/selected"
+        type="String"
+        role="outputOnly"
+        description="The record Id of the row after clicking one of the buttons (flows or navigation) or after selecting a row if single selection is enabled."
+      />
+            <property
+        name="rowRecord"
+        label="The record of the row clicked/selected"
+        type="{T}"
+        role="outputOnly"
+        description="The whole record of the row after clicking one of the buttons (flows or navigation) or after selecting a row if single selection is enabled."
+      />
+            <property
+        name="rowRecordIds"
+        label="The record Ids of the selected rows"
+        type="String[]"
+        role="outputOnly"
+        description="The record Ids of the selected rows after clicking one of the buttons (flows or navigation) or after selecting them if multiple selection is enabled."
+      />
+      <property
+        name="rowRecords"
+        label="The selected records"
+        type="{T[]}"
+        role="outputOnly"
+        description="Record Collection variable with all the selected records in the datatable."
+      />
+            <property
+        name="rowButtonClicked"
+        label="The Button label clicked"
+        type="String"
+        role="outputOnly"
+        description="The label of the button that was clicked to open the flow. Only used if Navigate Next after flow is selected or the button is Navigate Next."
+      />
+            <property
+        name="wasChanged"
+        label="Was the data change is some shape or form?"
+        type="Boolean"
+        role="outputOnly"
+        description="True if the data was changed (added/edited/deleted)."
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

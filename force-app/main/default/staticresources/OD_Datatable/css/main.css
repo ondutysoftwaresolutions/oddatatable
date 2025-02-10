@@ -1,0 +1,255 @@
+.od-datatable {
+  --height-row: 42px;
+}
+
+#wrapper-body > .quick-actions-panel, 
+#wrapper-body > .quick-actions-panel > .slds-modal__content,
+.od-datatable-dropdown-open flowruntime-lwc-body {
+  overflow-y: hidden !important;
+}
+
+.od-datatable td.slds-has-focus,
+.od-datatable th.slds-has-focus {
+  box-shadow: none !important;
+}
+
+.od-datatable table.slds-table > tbody > tr:hover > td,
+.od-datatable table.slds-table > tbody > tr:hover > td.slds-has-focus:hover, .od-datatable table.slds-table > tbody > tr:hover > th.slds-has-focus:hover {  
+  box-shadow: var(--slds-g-color-border-base-1, #e5e5e5) 0 -1px 0 inset, var(--slds-g-color-border-base-1, #e5e5e5) 0 1px 0 inset !important;
+}
+
+.od-datatable tbody tr {
+  height: var(--height-row);
+}
+
+.od-datatable-horizontal-radio .slds-form-element__control .slds-radio, .slds-form-element__control .slds-checkbox {
+  display: inline-block;
+}
+
+.sharedColumn .slds-form-element__control .slds-checkbox {
+  margin-right: 2rem;
+}
+
+.configurator  lightning-datepicker .slds-form-element__help,
+.od-datatable lightning-datepicker .slds-form-element__help {
+  display: none;
+}
+
+.od-datatable .slds-rich-text-editor__output img {
+  margin-bottom: 0;
+}
+
+.od-datatable .rowButton .slds-button {
+  box-shadow: none;
+  outline: none;
+}
+
+.container.errorTooltip .slds-has-error .slds-form-element__help  {
+  visibility: hidden;
+  display: block !important;
+  width: 100% !important;
+  background-color: var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e)));
+  color: #ffffff;
+  text-align: center;
+  padding: 5px !important;
+  border-radius: 6px;
+  position: absolute !important;
+  z-index: 9999;
+  height: auto !important;
+  clip: unset !important;
+  font-size: 12px;
+  white-space: break-spaces !important;
+  bottom: 110%;
+  left: 0;
+}
+
+.container.errorTooltip .slds-has-error .slds-form-element__help::after {
+  content: " ";
+  position: absolute;
+  white-space: normal;
+  border-width: 5px;
+  border-style: solid;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-color: var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent transparent transparent;
+}
+
+.container.errorTooltip .slds-has-error:hover .slds-form-element__help {
+  visibility: visible;
+}
+
+/* First record */
+.container.errorTooltip.firstRecord .slds-has-error .slds-form-element__help {
+  top: 105%;
+  left: 0;
+  bottom: auto;
+}
+
+.container.errorTooltip.firstRecord .slds-has-error .slds-form-element__help::after {
+  bottom: 100%;  /* At the top of the tooltip */
+  left: 50%;
+  top: auto;
+  border-color: transparent transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent;
+}
+
+/* First Column */
+.container.errorTooltip.firstColumn .slds-has-error .slds-form-element__help {
+  left: 105%;
+  top: 0;
+  bottom: auto;
+}
+
+.container.errorTooltip.firstColumn .slds-has-error .slds-form-element__help::after {
+  top: 50%;
+  right: 100%; /* To the left of the tooltip */
+  left: auto;
+  margin-top: -5px;
+  border-color: transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e))) transparent transparent;
+}
+
+/* Last Column */
+.container.errorTooltip.lastColumn .slds-has-error .slds-form-element__help {
+  right: 100%;
+  margin-right: 6px;
+  left: auto;
+  bottom: auto;
+  top: 0;
+}
+
+.container.errorTooltip.lastColumn .slds-has-error .slds-form-element__help::after {
+  top: 50%;
+  left: 100%; /* To the right of the tooltip */
+  margin-left: 0;
+  bottom: auto;
+  margin-top: -5px;
+  border-color: transparent transparent transparent var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e)));
+}
+
+.container.errorTooltip .slds-has-error:hover > .slds-rich-text-editor__toolbar .slds-form-element__help {
+  visibility: hidden;
+}
+
+/* Grouping and summarize */
+.od-datatable tr[data-row-key-value^="summarize-"] {
+  pointer-events: none;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] > td > lightning-primitive-cell-checkbox > .slds-radio,
+.od-datatable tr[data-row-key-value^="summarize-"] > td > lightning-primitive-cell-checkbox {
+  display: none !important;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="summarize-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"] {
+  display: block;
+  align-content: center;
+  height: var(--height-row);
+}
+
+.od-datatable th div.groupCell,
+.od-datatable td div.groupCell,
+.od-datatable th div.summarizeCell,
+.od-datatable td div.summarizeCell 
+ {
+  font-weight: 700;
+  min-height: var(--height-row);
+  line-height: 34px;
+}
+
+.od-datatable th div.groupCell .displayValue,
+.od-datatable td div.groupCell .displayValue,
+.od-datatable th div.summarizeCell .displayValue,
+.od-datatable td div.summarizeCell .displayValue {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  line-height: 34px;
+}
+
+.od-datatable th div.groupCell,
+.od-datatable td div.groupCell,
+.od-datatable tr[data-row-key-value^="grouping-"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td,
+.od-datatable tr[data-row-key-value^="grouping-"]:hover > td[data-col-key-value*="SELECTABLE_CHECKBOX"].slds-has-focus:hover {
+  background-color: #9999 !important;
+  box-shadow: none !important;
+  margin-bottom: 5px;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"]:hover th,
+.od-datatable tr[data-row-key-value^="grouping-"]:hover td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.od-datatable table.slds-table > tbody > tr[data-row-key-value^="grouping-"]:hover > th.slds-has-focus:hover,
+.od-datatable table.slds-table > tbody > tr[data-row-key-value^="grouping-"]:hover > td.slds-has-focus:hover {
+  box-shadow: none !important;
+}
+
+
+.od-datatable tr[data-row-key-value="summarize-totals"] th div.summarizeCell,
+.od-datatable tr[data-row-key-value="summarize-totals"] td div.summarizeCell,
+.od-datatable tr[data-row-key-value="summarize-totals"] > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > td {
+  background-color: #aaa !important;
+  color: white;
+}
+
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) th div.summarizeCell,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) td div.summarizeCell,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]) > td[data-col-key-value*="SELECTABLE_CHECKBOX"],
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > td {
+  background-color: #e0e0e0 !important;
+  margin-bottom: 5px;  
+}
+
+.od-datatable tr:has(div.deleted-record) {
+  background: #e7e3e3;
+}
+
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value="summarize-totals"].slds-is-selected > th,
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value^="summarize-"]:not([data-row-key-value="summarize-totals"]).slds-is-selected > th,
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > td:not([data-col-key-value*="SELECTABLE_CHECKBOX"]), 
+.od-datatable tr[data-row-key-value^="grouping-"].slds-is-selected > th 
+{
+  background-color: #ffffff !important;
+}
+
+.od-datatable tr[data-row-key-value^="summarize-"] th,
+.od-datatable tr[data-row-key-value^="summarize-"] td,
+.od-datatable tr[data-row-key-value^="grouping-"] th,
+.od-datatable tr[data-row-key-value^="grouping-"] td  {
+  border-top: 0;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .displayValue .slds-button {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--slds-g-color-neutral-base-10, var(--lwc-colorTextDefault, rgb(3, 45, 96)));
+  text-decoration: none;
+  min-height: var(--height-row);
+  border: 0;
+  border-radius: 0;
+  transform: none !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+}
+
+.od-datatable tr[data-row-key-value^="grouping-"] c-od-datatable-row-button .slds-button::after {
+  content: none !important;
+}
+
+.od-datatable tr.slds-is-selected .slds-radio [type=radio]:focus + .slds-radio__label .slds-radio_faux {
+  box-shadow: none !important;
+}
+
+.od-datatable-buttons lightning-button-menu.moreOptionButtons .slds-button {
+  height: 100%;
+  border-color: var(--slds-c-button-neutral-color-border, var(--sds-c-button-neutral-color-border, var(--slds-g-color-border-base-4, var(--lwc-buttonColorBorderPrimary,rgb(243, 243, 243)))));
+}

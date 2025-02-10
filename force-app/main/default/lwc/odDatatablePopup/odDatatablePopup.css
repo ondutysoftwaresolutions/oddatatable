@@ -8,6 +8,11 @@
   width: 70vw;
 }
 
+.slds-modal__container.full {
+  max-width: 90vw;
+  width: 90vw;
+}
+
 .slds-modal__container.md {
   max-width: 40vw;
   width: 40vw;
@@ -16,10 +21,6 @@
 
 .modalBackdrops {
   width: 100vw;
-}
-
-.modalBackdropsBulkEdit {
-  left: -15vw;
 }
 
 .modalBackdropsPropertyEditor {
@@ -32,10 +33,6 @@
 
 .slds-modal.onTopOfEverything {
   z-index: 9999;
-}
-
-.slds-modal.overFlowInitial .slds-modal__content {
-  overflow: initial !important;
 }
 
 @media only screen and (max-width: 1800px) {

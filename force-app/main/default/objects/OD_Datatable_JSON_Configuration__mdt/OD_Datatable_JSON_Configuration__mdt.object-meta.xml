@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Custom metadata to store the JSON configuration of the table to be able to use it in Lightning record pages and communities.
+I needed to do it this way as the Lightning App builder does not support long strings as parameters</description>
+    <label>OD Datatable JSON Configuration</label>
+    <pluralLabel>OD Datatable JSON Configurations</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

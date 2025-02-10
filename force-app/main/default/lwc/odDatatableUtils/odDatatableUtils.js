@@ -1,4 +1,4 @@
-import { FIELD_TYPES } from 'c/odDatatableConstants';
+import { FIELD_TYPES, SORT_DIRECTION } from 'c/odDatatableConstants';
 
 export function isEmpty(value) {
   return value === undefined || value === null;
@@ -113,7 +113,7 @@ export function getPopupHeight(that) {
   return height;
 }
 
-export function sortArrayByProperty(array, property) {
+export function sortArrayByProperty(array, property, direction = SORT_DIRECTION.ASC.value) {
   return array.sort((a, b) => {
     const aProp = a[property] || 9998;
     const bProp = b[property] || 9999;
@@ -121,10 +121,10 @@ export function sortArrayByProperty(array, property) {
     const fb = isNaN(bProp) ? bProp.toLowerCase() : bProp;
 
     if (fa < fb) {
-      return -1;
+      return direction === SORT_DIRECTION.ASC.value ? -1 : 1;
     }
     if (fa > fb) {
-      return 1;
+      return direction === SORT_DIRECTION.ASC.value ? 1 : -1;
     }
 
     return 0;
@@ -139,6 +139,57 @@ export function getPrecision(field) {
   return field.precision > 0 ? field.precision - field.scale : field.digits;
 }
 
-export function generateRandomNumber(stringLength = 36, sliceStart = 2, sliceEnd = 12) {
+export function generateRandomString(stringLength = 36, sliceStart = 2, sliceEnd = 12) {
   return Math.random().toString(stringLength).slice(sliceStart, sliceEnd);
+}
+
+export function getFieldsFromString(string) {
+  return string.match(/(?<={{)(.*?)(?=}})/g);
+}
+
+export function doReplaceMergeField(value, fieldToReplace, record) {
+  const regex = new RegExp('{{' + fieldToReplace + '}}', 'g');
+
+  // get the field name
+  const fieldName = fieldToReplace.replace(`Record.`, '');
+
+  return value.replace(regex, record[fieldName]);
+}
+
+export function formatDateForInput(date) {
+  return (
+    date.getFullYear() +
+    '-' +
+    (date.getMonth() + 1).toString().padStart(2, '0') +
+    '-' +
+    date.getDate().toString().padStart(2, '0')
+  );
+}
+
+export function getSummarizeFieldTypeToDisplay(type) {
+  if (
+    [
+      FIELD_TYPES.ADDRESS,
+      FIELD_TYPES.CHECKBOX,
+      FIELD_TYPES.EMAIL,
+      FIELD_TYPES.ID,
+      FIELD_TYPES.LONG_TEXTAREA,
+      FIELD_TYPES.LOOKUP,
+      FIELD_TYPES.MULTISELECT,
+      FIELD_TYPES.PHONE,
+      FIELD_TYPES.RADIO_BUTTON_TYPE,
+      FIELD_TYPES.RICH_TEXTAREA,
+      FIELD_TYPES.SEARCH,
+      FIELD_TYPES.SELECT,
+      FIELD_TYPES.STRING,
+      FIELD_TYPES.TEXT,
+      FIELD_TYPES.TEXTAREA,
+      FIELD_TYPES.TOGGLE,
+      FIELD_TYPES.URL,
+    ].includes(type)
+  ) {
+    return FIELD_TYPES.TEXT;
+  }
+
+  return type;
 }

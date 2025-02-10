@@ -1,7 +1,7 @@
 <template>
   <c-od-datatable-popup
     onclose={handleClose}
-    container-classes="xl"
+    container-classes="full"
     show-error={errorMessage}
     backdrop-classes="modalBackdropsPropertyEditor"
     modal-classes="overFlowInitial"
@@ -14,7 +14,7 @@
       <c-od-datatable-input-generic
         label="Object Fields"
         field-name="fields"
-        type={theType}
+        type={fieldTypes.SELECT}
         editable
         class="alignItemsCenter slds-grid slds-p-around--xx-small"
         extra-container-classes="slds-size--11-of-12"
@@ -46,16 +46,22 @@
           <table class="columnsTable">
             <thead>
               <tr>
-                <th class="slds-p-around--x-small" style="width: 200px">Field API Name</th>
-                <th class="slds-p-around--x-small" style="width: 200px">Label</th>
-                <th class="slds-p-around--x-small" style="width: 250px">Type</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Editable?</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Required?</th>
-                <th class="slds-p-around--x-small slds-text-align--center" style="width: 80px">Hidden?</th>
-                <th class="slds-p-around--x-small" style="width: 150px">Show As</th>
-                <th class="slds-p-around--x-small" style="width: 250px">Default Value / Custom Column Configuration</th>
-                <th class="slds-p-around--x-small" style="width: 100px">Initial Width (px)</th>
-                <th class="slds-p-around--x-small" style="width: 80px">Order</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Field API Name</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Label</th>
+                <th class="slds-p-around--x-small" style="min-width: 250px">Type</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Editable?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Required?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Hidden?</th>
+                <th class="slds-p-around--x-small slds-text-align--center" style="min-width: 100px">Summarize?</th>
+                <th class="slds-p-around--x-small" style="min-width: 200px">Show As</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Flow Configuration</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Icon/Button Configuration</th>
+                <th class="slds-p-around--x-small" style="min-width: 350px">Hidden/Summarize Configuration</th>
+                <th class="slds-p-around--x-small" style="min-width: 250px">Default Value</th>
+                <th class="slds-p-around--x-small" style="min-width: 100px">Header Actions</th>
+                <th class="slds-p-around--x-small" style="min-width: 100px">Width (px)</th>
+                <th class="slds-p-around--x-small" style="min-width: 100px">Alignment</th>
+                <th class="slds-p-around--x-small" style="min-width: 100px">Order</th>
               </tr>
             </thead>
             <tbody class="">
@@ -80,7 +86,7 @@
                     </c-od-datatable-input-generic>
                   </td>
                   <td>
-                    <div class="slds-grid slds-wrap">
+                    <div class="alignItemsCenter slds-grid slds-wrap">
                       <template lwc:if={field.isFieldColumn}>
                         <c-od-datatable-input-generic type={fieldTypes.TEXT} field-name="type" value={field.typeSpec}>
                         </c-od-datatable-input-generic>
@@ -102,7 +108,7 @@
                         <c-od-datatable-input-generic
                           type={fieldTypes.SELECT}
                           field-name="customType"
-                          class="slds-size--1-of-2"
+                          class={field.classesType}
                           data-custom="true"
                           data-value={field.value}
                           inside-popup-height={popupHeight}
@@ -115,20 +121,21 @@
                           onblurdropdown={handleColumnsOnBlurDropdown}
                         >
                         </c-od-datatable-input-generic>
-                        <template lwc:if={field.flow}>
-                          <c-od-datatable-input-generic
-                            type={fieldTypes.CHECKBOX}
-                            field-name="flowNavigateNext"
-                            class="alignItemsCenter slds-grid slds-size--1-of-2 slds-wrap"
-                            data-value={field.value}
-                            extra-label-classes="slds-wrap flex"
-                            value={field.flowNavigateNext}
-                            editable
-                            label="Navigate Next?"
-                            help-text="Navigate Next after the flow finishes. This will do a NEXT navigation in the flow and output a variable with the row recordId (rowRecordId) and another one with the clicked button label (rowButtonClicked)"
-                            onupdatefield={handleUpdateField}
+                        <template lwc:if={field.isButton}>
+                          <template lwc:if={field.sendToCaller}>
+                            <lightning-helptext
+                              class="help-text"
+                              content="This will send the entire record to a caller method that is listening. Caller method must be onclickrowbutton"
+                            >
+                            </lightning-helptext>
+                          </template>
+                        </template>
+                        <template lwc:else>
+                          <lightning-helptext
+                            class="help-text"
+                            content="This type of custom field type does not work with 'Inline Save' and only works with 'Inline Edit', if you choose any other configuration this field will not be displayed."
                           >
-                          </c-od-datatable-input-generic>
+                          </lightning-helptext>
                         </template>
                       </template>
                     </div>
@@ -159,9 +166,20 @@
                     <c-od-datatable-input-generic
                       type={fieldTypes.CHECKBOX}
                       field-name="hidden"
-                      editable={field.isFieldColumn}
+                      editable={field.canHide}
                       data-value={field.value}
                       value={field.hidden}
+                      onupdatefield={handleUpdateField}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td class="slds-p-around--xx-small slds-text-align--center">
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.CHECKBOX}
+                      field-name="summarize"
+                      editable={field.canSummarize}
+                      data-value={field.value}
+                      value={field.summarize}
                       onupdatefield={handleUpdateField}
                     >
                     </c-od-datatable-input-generic>
@@ -181,6 +199,253 @@
                       onblurdropdown={handleColumnsOnBlurDropdown}
                     >
                     </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <template lwc:if={field.isCustom}>
+                      <template lwc:if={field.flow}>
+                        <div class="slds-grid slds-wrap">
+                          <div class="slds-size--1-of-1 slds-grid slds-wrap">
+                            <c-od-datatable-input-generic
+                              type={fieldTypes.SELECT}
+                              field-name="flowName"
+                              class="slds-size--11-of-12"
+                              data-value={field.value}
+                              inside-popup-height={popupHeight}
+                              editable
+                              value={field.flowName}
+                              onupdatefield={handleUpdateField}
+                              placeholder="Select Flow..."
+                              options={field.flowOptions}
+                              opened={field.opened_flowName}
+                              onfocusdropdown={handleColumnsOnFocusDropdown}
+                              onblurdropdown={handleColumnsOnBlurDropdown}
+                            >
+                            </c-od-datatable-input-generic>
+                            <template lwc:if={field.flowName}>
+                              <lightning-button-icon
+                                title="Configure Flow Variables"
+                                variant="brand"
+                                alternative-text="Configure Flow Variables"
+                                icon-name="utility:flow"
+                                class="slds-form-element slds-p-around--xx-small"
+                                data-value={field.value}
+                                onclick={handleOpenFlowInputVariables}
+                              >
+                              </lightning-button-icon>
+                            </template>
+                          </div>
+                          <template lwc:if={field.flowName}>
+                            <div class="slds-grid slds-p-left--x-small slds-size--1-of-1 slds-wrap">
+                              <c-od-datatable-input-generic
+                                type={fieldTypes.CHECKBOX}
+                                field-name="flowNavigateNext"
+                                class="alignItemsCenter slds-grid slds-size--3-of-8 slds-wrap sharedColumn"
+                                data-value={field.value}
+                                extra-label-classes="slds-wrap flex"
+                                value={field.flowNavigateNext}
+                                editable
+                                label="Navigate Next?"
+                                help-text="Navigate Next after the flow finishes. This will do a NEXT navigation in the flow and output a variable with the row recordId (rowRecordId), a variable with the full row (rowRecord) and another one with the clicked button label (rowButtonClicked)"
+                                onupdatefield={handleUpdateField}
+                              >
+                              </c-od-datatable-input-generic>
+                              <c-od-datatable-input-generic
+                                type={fieldTypes.CHECKBOX}
+                                field-name="waitForPlatformEvent"
+                                editable
+                                data-value={field.value}
+                                value={field.waitForPlatformEvent}
+                                class="alignItemsCenter slds-grid slds-size--3-of-8 slds-wrap sharedColumn"
+                                extra-label-classes="slds-wrap flex"
+                                label="Wait for PE?"
+                                help-text="This indicates that the component, after the subflow finishes, must wait (show a spinner) until a platform event is received. Used in conjunction with the Listen to Platform Event setting"
+                                onupdatefield={handleUpdateField}
+                              >
+                              </c-od-datatable-input-generic>
+                            </div>
+                          </template>
+                        </div>
+                      </template>
+                    </template>
+                  </td>
+                  <td>
+                    <template lwc:if={field.isFieldColumn}>
+                      <template lwc:if={field.icon}>
+                        <div class="slds-align--absolute-center slds-grid slds-wrap">
+                          <c-od-datatable-input-generic
+                            type={fieldTypes.TEXT}
+                            field-name="iconName"
+                            class="slds-size--1-of-2"
+                            data-value={field.value}
+                            editable
+                            value={field.iconName}
+                            onupdatefield={handleUpdateField}
+                            placeholder="utility:error"
+                          >
+                          </c-od-datatable-input-generic>
+                          <lightning-helptext
+                            class="help-text"
+                            content="If you use a custom icon, you need to store it in the static resource OD_Datatable/icons and reference the name here. e.g. icon.svg"
+                          >
+                          </lightning-helptext>
+                          <c-od-datatable-input-generic
+                            type={fieldTypes.SELECT}
+                            field-name="iconVariant"
+                            class="slds-size--2-of-5"
+                            data-value={field.value}
+                            editable
+                            value={field.iconVariant}
+                            placeholder="Variant"
+                            onupdatefield={handleUpdateField}
+                            inside-popup-height={popupHeight}
+                            options={iconVariants}
+                            opened={field.opened_iconVariant}
+                            onfocusdropdown={handleColumnsOnFocusDropdown}
+                            onblurdropdown={handleColumnsOnBlurDropdown}
+                          >
+                          </c-od-datatable-input-generic>
+                        </div>
+                      </template>
+                    </template>
+                    <template lwc:elseif={field.isCustom}>
+                      <template lwc:if={field.isButton}>
+                        <div class="slds-align--absolute-center slds-grid slds-wrap" lwc:if={field.column}>
+                          <c-od-datatable-input-generic
+                            type={fieldTypes.CHECKBOX}
+                            field-name="isButtonIcon"
+                            class="alignItemsCenter slds-grid slds-size--3-of-8 slds-wrap sharedColumn"
+                            data-value={field.value}
+                            extra-label-classes="slds-wrap flex"
+                            value={field.isButtonIcon}
+                            editable
+                            label="Just icon?"
+                            help-text="If checked will only show an icon as a button, otherwise it will be a button with the label specified."
+                            onupdatefield={handleUpdateField}
+                          >
+                          </c-od-datatable-input-generic>
+                          <template lwc:if={field.isButtonIcon}>
+                            <c-od-datatable-input-generic
+                              type={fieldTypes.TEXT}
+                              field-name="iconName"
+                              class="slds-size--4-of-8"
+                              data-value={field.value}
+                              editable
+                              value={field.iconName}
+                              onupdatefield={handleUpdateField}
+                              placeholder="utility:error"
+                            >
+                            </c-od-datatable-input-generic>
+                          </template>
+                        </div>
+                        <template lwc:if={field.isButtonIcon}>
+                          <div class="slds-align--absolute-center slds-grid slds-wrap">
+                            <c-od-datatable-input-generic
+                              type={fieldTypes.SELECT}
+                              field-name="buttonIconVariant"
+                              class="slds-size--1-of-2"
+                              data-value={field.value}
+                              editable
+                              value={field.buttonIconVariant}
+                              placeholder="Variant"
+                              onupdatefield={handleUpdateField}
+                              inside-popup-height={popupHeight}
+                              options={buttonIconVariants}
+                              opened={field.opened_buttonIconVariant}
+                              onfocusdropdown={handleColumnsOnFocusDropdown}
+                              onblurdropdown={handleColumnsOnBlurDropdown}
+                            >
+                            </c-od-datatable-input-generic>
+                            <c-od-datatable-input-generic
+                              type={fieldTypes.TEXT}
+                              field-name="tooltip"
+                              class="slds-size--1-of-2"
+                              data-value={field.value}
+                              editable
+                              value={field.tooltip}
+                              onupdatefield={handleUpdateField}
+                              placeholder="Help text for the icon button"
+                            >
+                            </c-od-datatable-input-generic>
+                          </div>
+                        </template>
+                        <template lwc:else>
+                          <c-od-datatable-input-generic
+                            type={fieldTypes.SELECT}
+                            field-name="buttonVariant"
+                            class="slds-size--1-of-1"
+                            data-value={field.value}
+                            editable
+                            value={field.buttonVariant}
+                            placeholder="Select Button Variant..."
+                            onupdatefield={handleUpdateField}
+                            inside-popup-height={popupHeight}
+                            options={buttonVariants}
+                            opened={field.opened_buttonVariant}
+                            onfocusdropdown={handleColumnsOnFocusDropdown}
+                            onblurdropdown={handleColumnsOnBlurDropdown}
+                          >
+                          </c-od-datatable-input-generic>
+                        </template>
+                      </template>
+                    </template>
+                  </td>
+                  <td>
+                    <template lwc:if={field.hidden}>
+                      <div class="slds-grid slds-wrap">
+                        <c-od-datatable-input-generic
+                          type={fieldTypes.SELECT}
+                          field-name="hiddenType"
+                          class="slds-size--1-of-1"
+                          data-value={field.value}
+                          inside-popup-height={popupHeight}
+                          editable
+                          value={field.hiddenType}
+                          onupdatefield={handleUpdateField}
+                          options={field.hiddenTypeOptions}
+                          opened={field.opened_hiddenType}
+                          onfocusdropdown={handleColumnsOnFocusDropdown}
+                          onblurdropdown={handleColumnsOnBlurDropdown}
+                        >
+                        </c-od-datatable-input-generic>
+                        <template lwc:if={field.hiddenIsRecordBased}>
+                          <c-od-datatable-input-generic
+                            field-name="hiddenConditionField"
+                            type={fieldTypes.SELECT}
+                            data-value={field.value}
+                            editable
+                            class="slds-size--1-of-1"
+                            value={field.hiddenConditionField}
+                            options={booleanFields}
+                            placeholder="Select Boolean field..."
+                            onupdatefield={handleUpdateField}
+                            opened={field.opened_hiddenConditionField}
+                            onfocusdropdown={handleColumnsOnFocusDropdown}
+                            onblurdropdown={handleColumnsOnBlurDropdown}
+                            required
+                          >
+                          </c-od-datatable-input-generic>
+                        </template>
+                      </div>
+                    </template>
+                    <template lwc:elseif={field.summarize}>
+                      <div class="slds-grid slds-wrap">
+                        <c-od-datatable-input-generic
+                          type={fieldTypes.SELECT}
+                          field-name="summarizeType"
+                          class="slds-size--1-of-1"
+                          data-value={field.value}
+                          inside-popup-height={popupHeight}
+                          editable
+                          value={field.summarizeType}
+                          onupdatefield={handleUpdateField}
+                          options={field.summarizeTypeOptions}
+                          opened={field.opened_summarizeType}
+                          onfocusdropdown={handleColumnsOnFocusDropdown}
+                          onblurdropdown={handleColumnsOnBlurDropdown}
+                        >
+                        </c-od-datatable-input-generic>
+                      </div>
+                    </template>
                   </td>
                   <td>
                     <template lwc:if={field.isFieldColumn}>
@@ -206,83 +471,34 @@
                         >
                         </c-od-datatable-input-generic>
                       </template>
-                      <template lwc:if={field.icon}>
-                        <div class="slds-grid slds-wrap">
-                          <c-od-datatable-input-generic
-                            type={fieldTypes.TEXT}
-                            field-name="iconName"
-                            class="slds-size--1-of-2"
-                            data-value={field.value}
-                            editable
-                            value={field.iconName}
-                            onupdatefield={handleUpdateField}
-                            placeholder="utility:error"
-                          >
-                          </c-od-datatable-input-generic>
-                          <c-od-datatable-input-generic
-                            type={fieldTypes.SELECT}
-                            field-name="iconVariant"
-                            class="slds-size--1-of-2"
-                            data-value={field.value}
-                            editable
-                            value={field.iconVariant}
-                            onupdatefield={handleUpdateField}
-                            inside-popup-height={popupHeight}
-                            options={iconVariants}
-                            opened={field.opened_iconVariant}
-                            onfocusdropdown={handleColumnsOnFocusDropdown}
-                            onblurdropdown={handleColumnsOnBlurDropdown}
-                          >
-                          </c-od-datatable-input-generic>
-                        </div>
+                    </template>
+                    <template lwc:if={field.isCustom}>
+                      <template lwc:if={field.isButton}></template>
+                      <template lwc:else>
+                        <c-od-datatable-input-generic
+                          type={fieldTypes.TEXT}
+                          field-name="defaultValue"
+                          class="slds-size--1-of-1"
+                          editable
+                          value={field.defaultValue}
+                          data-value={field.value}
+                          onupdatefield={handleUpdateField}
+                          placeholder="References to the current record are allowed, format {{Record.Name}}"
+                        >
+                        </c-od-datatable-input-generic>
                       </template>
                     </template>
-                    <template lwc:elseif={field.isCustom}>
-                      <template lwc:if={field.flow}>
-                        <div class="slds-grid slds-wrap">
-                          <c-od-datatable-input-generic
-                            type={fieldTypes.SELECT}
-                            field-name="flowName"
-                            class="slds-size--1-of-1"
-                            data-value={field.value}
-                            inside-popup-height={popupHeight}
-                            editable
-                            value={field.flowName}
-                            onupdatefield={handleUpdateField}
-                            placeholder="Select Flow..."
-                            options={field.flowOptions}
-                            opened={field.opened_flowName}
-                            onfocusdropdown={handleColumnsOnFocusDropdown}
-                            onblurdropdown={handleColumnsOnBlurDropdown}
-                          >
-                          </c-od-datatable-input-generic>
-                          <template lwc:if={field.flowName}>
-                            <lightning-button
-                              label="Configure Flow Variables"
-                              title="Configure Flow Variables"
-                              icon-name="utility:flow"
-                              class="slds-p-left--xx-small slds-size--4-of-7"
-                              data-value={field.value}
-                              onclick={handleOpenFlowInputVariables}
-                            >
-                            </lightning-button>
-                            <c-od-datatable-input-generic
-                              type={fieldTypes.CHECKBOX}
-                              field-name="waitForPlatformEvent"
-                              editable
-                              data-value={field.value}
-                              value={field.waitForPlatformEvent}
-                              class="alignItemsCenter slds-grid slds-size--3-of-7 slds-wrap"
-                              extra-label-classes="slds-wrap flex"
-                              label="Wait for PE?"
-                              help-text="This indicates that the component, after the subflow finishes, must wait (show a spinner) until a platform event is received. Used in conjunction with the Listen to Platform Event setting"
-                              onupdatefield={handleUpdateField}
-                            >
-                            </c-od-datatable-input-generic>
-                          </template>
-                        </div>
-                      </template>
-                    </template>
+                  </td>
+                  <td>
+                    <lightning-button-icon
+                      title="Configure Header Actions"
+                      alternative-text="Configure Header Actions"
+                      icon-name="utility:settings"
+                      class="slds-align--absolute-center slds-form-element slds-p-around--xx-small"
+                      data-value={field.value}
+                      onclick={handleOpenHeaderActions}
+                    >
+                    </lightning-button-icon>
                   </td>
                   <td>
                     <c-od-datatable-input-generic
@@ -293,6 +509,22 @@
                       data-value={field.value}
                       value={field.initialWidth}
                       onupdatefield={handleUpdateField}
+                    >
+                    </c-od-datatable-input-generic>
+                  </td>
+                  <td>
+                    <c-od-datatable-input-generic
+                      type={fieldTypes.SELECT}
+                      field-name="alignment"
+                      data-value={field.value}
+                      inside-popup-height={popupHeight}
+                      editable
+                      value={field.alignment}
+                      onupdatefield={handleUpdateField}
+                      options={field.alignmentOptions}
+                      opened={field.opened_alignment}
+                      onfocusdropdown={handleColumnsOnFocusDropdown}
+                      onblurdropdown={handleColumnsOnBlurDropdown}
                     >
                     </c-od-datatable-input-generic>
                   </td>
@@ -323,22 +555,41 @@
           name="save"
           label="Save"
           title="Save"
+          icon-name="utility:save"
           onclick={handleSave}
           class="slds-m-right--large"
         >
         </lightning-button>
-        <lightning-button name="cancel" label="Cancel" title="Cancel" onclick={handleClose}> </lightning-button>
+        <lightning-button name="cancel" label="Cancel" title="Cancel" onclick={handleClose} icon-name="utility:close">
+        </lightning-button>
       </div>
-      <lightning-button
-        name="reOrder"
-        label="Reorder"
-        title="Reorder"
-        onclick={handleReorder}
-        class="slds-is-absolute slds-m-right--x-large"
-        disabled={disabledSave}
-        style="right: 0"
-      >
-      </lightning-button>
+      <div class="slds-is-absolute slds-m-right--x-large slds-grid" style="right: 0">
+        <template lwc:if={showGroupButtonsButton}>
+          <lightning-button
+            label="Group Bottom Nav. Buttons"
+            icon-name="utility:layers"
+            class="slds-m-right--x-small"
+            onclick={handleOpenGroupBottomNavButtons}
+          >
+          </lightning-button>
+        </template>
+        <lightning-button
+          label="Copy Field Columns JSON"
+          icon-name="utility:copy"
+          class="slds-m-right--x-small"
+          onclick={handleCopyFieldColumnsToClipboard}
+        >
+        </lightning-button>
+        <lightning-button
+          name="reOrder"
+          label="Reorder"
+          title="Reorder"
+          onclick={handleReorder}
+          icon-name="utility:sort"
+          disabled={disabledSave}
+        >
+        </lightning-button>
+      </div>
     </div>
   </c-od-datatable-popup>
 
@@ -368,5 +619,27 @@
       bottom-nav={flowBottomNav}
     >
     </c-od-datatable-configuration-flow-input-variables>
+  </template>
+
+  <!-- Header Actions popup -->
+  <template lwc:if={showHeaderActions}>
+    <c-od-datatable-configuration-column-header-actions
+      actions={customHeaderActions}
+      column={headerActionColumn}
+      onclose={handleCloseHeaderActions}
+      onsave={handleSaveHeaderActions}
+      hide-default={hideDefaultHeaderActions}
+    >
+    </c-od-datatable-configuration-column-header-actions>
+  </template>
+
+  <!-- Group Buttons popup -->
+  <template lwc:if={showGroupButtons}>
+    <c-od-datatable-configuration-column-group-buttons
+      buttons={bottomNavigationButtons}
+      onclose={handleCloseGroupBottomNavButtons}
+      onsave={handleSaveGroupBottomNavButtons}
+    >
+    </c-od-datatable-configuration-column-group-buttons>
   </template>
 </template>

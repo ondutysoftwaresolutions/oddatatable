@@ -1,25 +1,49 @@
 <template>
-  <div class={cellClasses}>
-    <c-od-datatable-input-generic
-      type={type}
-      editable={isEditable}
+  <template lwc:if={isGroupRecordCollapsibleCell}>
+    <c-od-datatable-row-button
+      record-id={recordId}
+      is-deleted={isDeleted}
+      name="groupCell"
+      config={config}
+      label={value}
+      record={record}
       field-name={fieldName}
-      value={value}
-      options={config.options}
-      default-value={defaultValue}
-      onupdatefield={handleUpdateField}
-      inside-datatable
-      current-record-id={recordId}
-      required={required}
-      parent-object-name={config.parentObjectName}
-      lookup-configuration={lookupConfig}
-      precision={config.precision}
-      is-html={config.isHtml}
-      scale={config.scale}
-      max-length={config.maxLength}
-      is-multi={config.isMulti}
-      after-validate={config.afterValidate}
     >
-    </c-od-datatable-input-generic>
-  </div>
+    </c-od-datatable-row-button>
+  </template>
+  <template lwc:else>
+    <template lwc:if={showField}>
+      <div class={cellClasses}>
+        <c-od-datatable-input-generic
+          type={theType}
+          editable={isEditable}
+          field-name={fieldName}
+          value={value}
+          options={config.options}
+          default-value={defaultValue}
+          onupdatefield={handleUpdateField}
+          inside-datatable
+          current-record-id={recordId}
+          required={required}
+          parent-object-name={config.parentObjectName}
+          lookup-configuration={lookupConfig}
+          precision={config.precision}
+          is-html={config.isHtml}
+          scale={config.scale}
+          max-length={config.maxLength}
+          is-multi={config.isMulti}
+          after-validate={config.afterValidate}
+          extra-container-classes={config.extraContainerClasses}
+          toggle-value-active={config.valueActive}
+          is-first-column={config.isFirstColumn}
+          is-last-column={config.isLastColumn}
+          toggle-value-inactive={config.valueInactive}
+          is-first-record={record._isFirst}
+          is-last-record={record._isLast}
+          with-sharing={config.withSharing}
+        >
+        </c-od-datatable-input-generic>
+      </div>
+    </template>
+  </template>
 </template>

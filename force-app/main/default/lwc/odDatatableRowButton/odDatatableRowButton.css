@@ -1,7 +1,7 @@
 @import 'c/odDatatableCSSLibrary';
 
 .btn-inside-table-row {
-  --slds-c-button-line-height: none;
+  --slds-c-button-line-height: 26px;
 }
 
 .enabled {

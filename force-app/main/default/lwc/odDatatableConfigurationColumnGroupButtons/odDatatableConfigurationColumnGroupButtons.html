@@ -1,0 +1,93 @@
+<template>
+  <c-od-datatable-popup
+    onclose={handleClose}
+    container-classes="md"
+    backdrop-classes="modalBackdropsPropertyEditor onTopOfEverything"
+    modal-classes="overFlowInitial onTopOfEverything"
+  >
+    <div slot="title" class="title-popup">Group Bottom Navigation Buttons</div>
+    <div slot="body" class="slds-p-around--large">
+      <c-od-datatable-error error-message={errorMessage}></c-od-datatable-error>
+      <div class="slds-m-bottom--large slds-m-top--medium slds-p-around--xx-small slds-size--1-of-1">
+        <table class="columnsTable" style="display: table">
+          <thead>
+            <tr>
+              <th class="slds-p-around--x-small" style="width: 300px">Label</th>
+              <th class="slds-p-around--x-small" style="width: 150px">
+                Main Button?
+                <lightning-helptext
+                  class="help-text"
+                  content="Specifies if this is a main button, which means other buttons can be group underneath it."
+                >
+                </lightning-helptext>
+              </th>
+              <th class="slds-p-around--x-small" style="width: 300px">Group Under</th>
+            </tr>
+          </thead>
+          <tbody class="">
+            <template for:each={buttonsToDisplayTable} for:item="btn">
+              <tr key={btn.value}>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.TEXT}
+                    field-name="label"
+                    value={btn.label}
+                    data-value={btn.value}
+                  >
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <c-od-datatable-input-generic
+                    type={fieldTypes.CHECKBOX}
+                    field-name="mainButton"
+                    data-value={btn.value}
+                    class="slds-text-align--center"
+                    value={btn.mainButton}
+                    editable={btn.canBeMainButton}
+                    onupdatefield={handleUpdateMainButton}
+                  >
+                  </c-od-datatable-input-generic>
+                </td>
+                <td>
+                  <template lwc:if={mainButtonOptions.length}>
+                    <template lwc:if={btn.mainButton}></template>
+                    <template lwc:else>
+                      <c-od-datatable-input-generic
+                        type={fieldTypes.SELECT}
+                        field-name="groupUnder"
+                        placeholder="Select Main Button"
+                        data-value={btn.value}
+                        editable
+                        value={btn.groupUnder}
+                        onupdatefield={handleUpdateGroupUnder}
+                        options={mainButtonOptions}
+                        opened={btn.opened}
+                        onfocusdropdown={handleGroupUnderOnFocusDropdown}
+                        onblurdropdown={handleGroupUnderOnBlurDropdown}
+                      >
+                      </c-od-datatable-input-generic>
+                    </template>
+                  </template>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div slot="footer" class="footer-popup slds-grid">
+      <div class="slds-align--absolute-center slds-size--12-of-12">
+        <lightning-button
+          variant="brand"
+          name="save"
+          label="Save"
+          title="Save"
+          onclick={handleSave}
+          class="slds-m-right--large"
+        >
+        </lightning-button>
+        <lightning-button name="cancel" label="Cancel" title="Cancel" onclick={handleClose}> </lightning-button>
+      </div>
+    </div>
+  </c-od-datatable-popup>
+</template>

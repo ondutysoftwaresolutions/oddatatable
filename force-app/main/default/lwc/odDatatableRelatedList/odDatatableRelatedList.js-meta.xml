@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <masterLabel>On Duty Datatable</masterLabel>
+    <description>Enhanced datatable to display related records with lots of functionality</description>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="relatedObjectApiName" type="String" label="Related Object Name"
+                required="true"
+                description="API Name of the object related to this one that owns the data to display in the table. e.g. Contact" />
+            <property name="fieldApiName" type="String" label="Field API Name"
+                required="true"
+                description="API Name of the field in the related object that links it to this record. e.g. AccountId" />
+            <property name="customMetadataName" type="String" label="Custom Metadata Name"
+                required="true"
+                description="This is the custom metadata name that contains the configuration in JSON format. You need to build the table in a flow and use the Copy Configuration Button which will copy the configuration to the clipboard, then create a custom metadata record (OD_Datatable_JSON_Configuration__mdt) and use the Name here." />
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId"
+                description="Automatically bind the page's record id to the component variable. E.g. {!recordId}"
+                label="Record Id" type="String" required="true" />
+            <property name="relatedObjectApiName" type="String" label="Related Object Name"
+                required="true"
+                description="API Name of the object related to this one that owns the data to display in the table. e.g. Contact" />
+            <property name="fieldApiName" type="String" label="Field API Name"
+                required="true"
+                description="API Name of the field in the related object that links it to this record. e.g. AccountId" />
+            <property name="customMetadataName" type="String" label="Custom Metadata Name"
+                required="true"
+                description="This is the custom metadata name that contains the configuration in JSON format. You need to build the table in a flow and use the Copy Configuration Button which will copy the configuration to the clipboard, then create a custom metadata record (OD_Datatable_JSON_Configuration__mdt) and use the Name here." />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,7 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
-import { getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
+import { generateRandomString, getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 import { FIELD_TYPES, FLOW_DATA_TYPES } from 'c/odDatatableConstants';
-import { generateRandomNumber } from 'c/odDatatableUtils';
 
 export default class OdDatatableConfigurationFlowInputVariables extends LightningElement {
   @api objectName;
@@ -89,7 +88,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
         inputs.forEach((input) => {
           result.push({
             ...input,
-            id: generateRandomNumber(),
+            id: generateRandomString(),
             availableValues: this._buildValueOptions(input.type),
           });
         });
@@ -202,7 +201,7 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
 
   handleAdd() {
     this.inputsToDisplayTable.push({
-      id: generateRandomNumber(),
+      id: generateRandomString(),
       name: '',
       type: '',
       value: '',
@@ -219,7 +218,10 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     const id = event.target.dataset.id;
 
     // check there is not another input with same name
-    if ((value === 'recordId' && !this.bottomNav) || this.inputsToDisplayTable.some((input) => input.name === value)) {
+    if (
+      (value === 'recordId' && !this.bottomNav && this.isEdit) ||
+      this.inputsToDisplayTable.some((input) => input.name === value)
+    ) {
       this.errorMessage = 'There is already another input with the same name.';
     } else {
       this.errorMessage = false;

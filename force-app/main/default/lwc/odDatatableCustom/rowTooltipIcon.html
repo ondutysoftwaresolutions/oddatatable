@@ -1,11 +1,11 @@
 <template>
-  <template lwc:if={typeAttributes.value}>
-    <lightning-helptext
-      class="slds-align--absolute-center"
-      icon-name={typeAttributes.config.iconName}
-      content={typeAttributes.value}
-      icon-variant={typeAttributes.config.iconVariant}
-    >
-    </lightning-helptext>
-  </template>
+  <c-od-datatable-row-icon
+    content={typeAttributes.value}
+    config={typeAttributes.config}
+    record={typeAttributes.record}
+    field-name={typeAttributes.fieldName}
+    type={typeAttributes.type}
+    record-id={typeAttributes.recordId}
+  >
+  </c-od-datatable-row-icon>
 </template>

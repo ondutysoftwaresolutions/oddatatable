@@ -1,10 +1,22 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
-import CSSStyles from '@salesforce/resourceUrl/OD_DatatableCSS';
-import getConfiguration from '@salesforce/apex/OD_ConfigurationEditorController.getConfiguration';
-import getFieldsForObject from '@salesforce/apex/OD_ConfigurationEditorController.getFieldsForObject';
-import { FIELD_TYPES, YES_NO, EMPTY_STRING, INLINE_FLOW } from 'c/odDatatableConstants';
-import { reduceErrors, generateRandomNumber } from 'c/odDatatableUtils';
+import Toast from 'lightning/toast';
+import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
+import getConfiguration from '@salesforce/apex/OD_DatatableConfigurationController.getConfiguration';
+import getFieldsForObject from '@salesforce/apex/OD_DatatableConfigurationController.getFieldsForObject';
+import {
+  ALIGNMENT_OPTIONS,
+  AVAILABLE_FIELDS_GROUPING,
+  FIELD_TYPES,
+  YES_NO,
+  EMPTY_STRING,
+  INLINE_FLOW,
+  GROUPING_SOURCE,
+  SELECTION_TYPES,
+  SORT_DIRECTION,
+  SHARING_CONTEXT,
+} from 'c/odDatatableConstants';
+import { reduceErrors, generateRandomString, sortArrayByProperty } from 'c/odDatatableUtils';
 import OdDatatablePreview from 'c/odDatatablePreview';
 
 export default class OdConfigurationEditor extends LightningElement {
@@ -18,6 +30,8 @@ export default class OdConfigurationEditor extends LightningElement {
   fieldTypes = FIELD_TYPES;
   yesNo = YES_NO;
   inlineFlow = INLINE_FLOW;
+  configurationJSON;
+  sortDirectionOptions = Object.values(SORT_DIRECTION);
 
   // state
   isLoading = true;
@@ -31,6 +45,12 @@ export default class OdConfigurationEditor extends LightningElement {
     editFlowName: false,
     platformEventMatchingFieldName: false,
     platformEventMatchingId: false,
+    paginationAlignment: false,
+    groupingField: false,
+    groupSortField: false,
+    groupSortDirection: false,
+    groupContentSortField: false,
+    groupContentSortDirection: false,
   };
 
   @track fields = [];
@@ -47,6 +67,39 @@ export default class OdConfigurationEditor extends LightningElement {
     },
   ];
 
+  groupingSourceOptions = [
+    {
+      label: GROUPING_SOURCE.DATASET,
+      value: GROUPING_SOURCE.DATASET,
+    },
+    {
+      label: GROUPING_SOURCE.FIELD,
+      value: GROUPING_SOURCE.FIELD,
+    },
+  ];
+
+  selectionTypeOptions = [
+    {
+      label: SELECTION_TYPES.MULTIPLE,
+      value: SELECTION_TYPES.MULTIPLE,
+    },
+    {
+      label: SELECTION_TYPES.SINGLE,
+      value: SELECTION_TYPES.SINGLE,
+    },
+  ];
+
+  sharingContextOptions = [
+    {
+      label: SHARING_CONTEXT.WITHOUT_SHARING,
+      value: SHARING_CONTEXT.WITHOUT_SHARING,
+    },
+    {
+      label: SHARING_CONTEXT.WITH_SHARING,
+      value: SHARING_CONTEXT.WITH_SHARING,
+    },
+  ];
+
   // popups
   showConfigureColumns = false;
   showConfigureMasterDetailFields = false;
@@ -58,6 +111,8 @@ export default class OdConfigurationEditor extends LightningElement {
 
   // private
   _inputVariables = [];
+  _elementInfo;
+  _automaticOutputVariables;
 
   @track inputValues = {
     tableData: {
@@ -109,7 +164,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: '',
       helpText:
-        "Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed",
+        "Screen flow name to fire whenever the add button is clicked. A 'recordOutput' SObject record Output variable is needed.",
     },
     addFlowInputVariables: {
       label: 'Flow Input Variables',
@@ -142,7 +197,7 @@ export default class OdConfigurationEditor extends LightningElement {
         },
       ],
       helpText:
-        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow',
+        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow.',
     },
     editLabel: {
       label: 'Edit Label',
@@ -151,14 +206,13 @@ export default class OdConfigurationEditor extends LightningElement {
       value: 'Edit',
       helpText: 'Label to show in the Edit button when Editing with a flow.',
     },
-
     editFlowName: {
       label: 'Flow Name',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
       value: '',
       helpText:
-        "Screen flow name to fire whenever the edit button in the row is clicked.  A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed",
+        "Screen flow name to fire whenever the edit button in the row is clicked.  A 'recordId' Input Variable and a 'recordOutput' SObject record Output variable are needed.",
     },
     editFlowInputVariables: {
       label: 'Flow Input Variables',
@@ -184,6 +238,15 @@ export default class OdConfigurationEditor extends LightningElement {
           field: 'canDelete',
           on: YES_NO.YES,
         },
+        {
+          field: 'canSelect',
+          on: YES_NO.YES,
+        },
+        {
+          field: 'selectionType',
+          on: YES_NO.YES,
+          value: SELECTION_TYPES.MULTIPLE,
+        },
       ],
       helpText:
         "Add a selection and a button to delete several at one time. This will add a flag 'isDeleted' to the record and you will need to write these back to the Object with a Record Delete in the Flow.",
@@ -205,6 +268,15 @@ export default class OdConfigurationEditor extends LightningElement {
         {
           field: 'canEdit',
           on: YES_NO.YES,
+        },
+        {
+          field: 'canSelect',
+          on: YES_NO.YES,
+        },
+        {
+          field: 'selectionType',
+          on: YES_NO.YES,
+          value: SELECTION_TYPES.MULTIPLE,
         },
       ],
       helpText:
@@ -248,28 +320,219 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
       helpText:
-        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id',
+        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id.',
     },
     platformEventMatchingFieldName: {
       label: 'Refresh Matching Field',
       type: FIELD_TYPES.STRING,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection',
+        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection.',
     },
     platformEventMatchingId: {
       label: 'Refresh Matching Id',
       type: FIELD_TYPES.STRING,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event',
+        'Variable, Constant, formula etc, that contains the matching id to use when refreshing with Platform event.',
+    },
+    pagination: {
+      label: 'Pagination Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the data will be paginated and a control for the pagination will be displayed.',
+    },
+    pageSize: {
+      label: 'Page Size',
+      type: FIELD_TYPES.INTEGER,
+      valueType: FIELD_TYPES.STRING,
+      value: 10,
+      helpText: 'Number of records to display per page.',
+    },
+    paginationShowOptions: {
+      label: 'Display Navigation Options?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.YES,
+      helpText:
+        'If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers.',
+    },
+    paginationAlignment: {
+      label: 'Alignment',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: ALIGNMENT_OPTIONS.CENTER.value,
+      helpText: 'Alignment for the pagination controls.',
+    },
+    grouping: {
+      label: 'Grouping Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the data will be grouped by the field specified.',
+      linked: [
+        {
+          field: 'showRowNumberColumn',
+          on: YES_NO.YES,
+          value: YES_NO.NO,
+        },
+      ],
+    },
+    groupingField: {
+      label: 'Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'Field to group the data by. If the field is not present in the dataset then it will not group the data.',
+    },
+    groupSortField: {
+      label: 'Sort Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'Field to sort the group the data by. It can be the Grouping field or any of the summarized columns (if any). Default is the Grouping Field.',
+    },
+    groupSortDirection: {
+      label: 'Group Sort Direction',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: SORT_DIRECTION.ASC.value,
+      helpText:
+        'Order the groups ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC.',
+    },
+    groupContentSortField: {
+      label: 'Sort Content of Group By',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText: 'Field to sort the content of the group by. It can be one of the fields being showed in the table.',
+    },
+    groupContentSortDirection: {
+      label: 'Group Content Sort Direction',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      value: SORT_DIRECTION.ASC.value,
+      helpText:
+        'Order the content of the group ASC (A-Z, 0-9, Oldest dates first) or DESC (Z-A, 9-0, Newest Dates first). Default is ASC.',
+    },
+    groupingSource: {
+      label: 'Source',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: GROUPING_SOURCE.DATASET,
+      helpText:
+        'Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group.',
+    },
+    groupingSourceFieldData: {
+      label: 'Source Field Data',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      helpText:
+        'If the grouping source is the Picklist field data, this is a comma separated string of all the values to group by for.',
+    },
+    showEmptyGroups: {
+      label: 'Show Empty?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled, the groups with no data in it will be shown.',
+    },
+    showTotalsByGroup: {
+      label: 'Show Totals By Group?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.YES,
+      helpText: 'If enabled, a line with the totals by group will be shown.',
+    },
+    recalculateLive: {
+      label: 'Recalculate totals on the fly?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled and Add or Edit is inline, the totals will be recalculated whenever the data changes in the table.',
+    },
+    canCollapseGroups: {
+      label: 'Can Collapse/Expand Groups?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled you can click on the group row to collapse or expand. All calculations will include the collapsed rows, and if you change/add/delete a row, collapse it and save it will still save the changed rows.',
+    },
+    canSelect: {
+      label: 'Selection Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled a checkbox or radio button will be displayed to allow the selection of the row. NOTE: if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then the checkbox will display regardless of this being No.',
+    },
+    selectionType: {
+      label: 'Type of Selection',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: SELECTION_TYPES.MULTIPLE,
+      helpText:
+        'Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE:  if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row.',
+    },
+    selectionRequired: {
+      label: 'Selection Required?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: "If enabled you won't be able to move forward until you select 1 row minimum",
+    },
+    initiallySelectedRows: {
+      label: 'Selected Rows',
+      type: FIELD_TYPES.SELECT,
+      valueType: 'reference',
+      helpText: 'Record Collection variable with all the rows that needs to be initially selected.',
+    },
+    showRowNumberColumn: {
+      label: 'Show the column with the row number?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled an extra column at the beginning will be added to show the number of the row. This will only work if grouping is disabled and there are no summarized columns.',
+    },
+    canExport: {
+      label: 'Export Enabled?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: 'If enabled a button will display at the top right corner of the table to export the data to a CSV',
+    },
+    exportGroups: {
+      label: 'Include the groups in the export?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText:
+        'If enabled an extra column will be added to the CSV with the group name. Only works if the grouping is enabled.',
+    },
+    exportFileName: {
+      label: 'Filename for the CSV',
+      type: FIELD_TYPES.TEXT,
+      valueType: FIELD_TYPES.STRING,
+      canBeEmpty: true,
+      helpText:
+        'This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv',
+    },
+    sharingContext: {
+      label: 'Sharing Context',
+      type: FIELD_TYPES.RADIO_BUTTON_TYPE,
+      valueType: FIELD_TYPES.STRING,
+      value: SHARING_CONTEXT.WITHOUT_SHARING,
+      helpText: 'The sharing context to executes the queries when using the component.',
     },
 
     // internal use
     uniqueTableName: {
       label: 'Unique Table Name',
       type: FIELD_TYPES.TEXT,
-      value: generateRandomNumber(36, 2, 10),
+      value: generateRandomString(36, 2, 10),
       valueType: FIELD_TYPES.STRING,
     },
     objectName: {
@@ -289,7 +552,7 @@ export default class OdConfigurationEditor extends LightningElement {
       label: 'Master-Detail Configuration',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
-      helpText: 'JSON string with the columns and values for the master detail relationships',
+      helpText: 'JSON string with the columns and values for the master detail relationships.',
     },
     masterDetailField1: {
       label: 'First Master-Detail Field',
@@ -307,7 +570,7 @@ export default class OdConfigurationEditor extends LightningElement {
   // lifecycle methods
   // =================================================================
   connectedCallback() {
-    Promise.all([loadStyle(this, CSSStyles)]);
+    Promise.all([loadStyle(this, `${OD_DatatableResource}/css/main.css`)]);
   }
 
   // =================================================================
@@ -382,17 +645,146 @@ export default class OdConfigurationEditor extends LightningElement {
     return this._inputVariables;
   }
 
+  @api
+  get elementInfo() {
+    return this._elementInfo;
+  }
+
+  @api
+  get automaticOutputVariables() {
+    return this._automaticOutputVariables;
+  }
+
+  // =================================================================
+  // setter for inputs
+  // =================================================================
+  // Set the fields with the data that was stored from the flow.
+  set inputVariables(variables) {
+    this._inputVariables = variables || [];
+    this._initializeValues();
+  }
+
+  // Set a local variable with the data that was stored from flow.
+  set elementInfo(info) {
+    this._elementInfo = info || {};
+  }
+
+  set automaticOutputVariables(value) {
+    this._automaticOutputVariables = value || {};
+  }
+
+  // =================================================================
+  // getter methods
+  // =================================================================
+  get inputType() {
+    const type = this.genericTypeMappings.find(({ typeName }) => typeName === 'T');
+    return type && type.typeValue;
+  }
+
+  get isObjectSelected() {
+    return this.inputType && !this.isLoading;
+  }
+
+  get canAdd() {
+    return this.inputValues.canAdd.value === YES_NO.YES;
+  }
+
+  get canEdit() {
+    return this.inputValues.canEdit.value === YES_NO.YES;
+  }
+
+  get editInline() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get editFlow() {
+    return this.inputValues.editType.value === INLINE_FLOW.FLOW;
+  }
+
+  get addInline() {
+    return this.inputValues.addType.value === INLINE_FLOW.INLINE;
+  }
+
+  get addFlow() {
+    return this.inputValues.addType.value === INLINE_FLOW.FLOW;
+  }
+
+  get canDelete() {
+    return this.inputValues.canDelete.value === YES_NO.YES;
+  }
+
+  get canBulkDelete() {
+    return this.inputValues.canBulkDelete.value === YES_NO.YES;
+  }
+
+  get canBulkEdit() {
+    return this.inputValues.canBulkEdit.value === YES_NO.YES;
+  }
+
+  get isMasterDetail() {
+    return this.inputValues.isMasterDetail.value === YES_NO.YES;
+  }
+
+  get canDeleteEditable() {
+    return !this.canBulkDelete;
+  }
+
+  get canSelectEditable() {
+    return (
+      !this.canBulkDelete && !this.canBulkEdit && !this._areThereAnyBulkFlowButtons(this.inputValues.columns.value)
+    );
+  }
+
+  get canSelectEnabled() {
+    return this.inputValues.canSelect.value === YES_NO.YES;
+  }
+
+  get canEditEditable() {
+    return !this.canBulkEdit;
+  }
+
+  get addTypeEditable() {
+    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  }
+
+  get inlineSave() {
+    return this.inputValues.inlineSave.value === YES_NO.YES;
+  }
+
+  get listenToPlatformEvent() {
+    return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
+  }
+
+  get paginationEnabled() {
+    return this.inputValues.pagination.value === YES_NO.YES;
+  }
+
+  get groupingEnabled() {
+    return this.inputValues.grouping.value === YES_NO.YES;
+  }
+
   get emptyColumns() {
     return !this.inputValues.columns.value;
+  }
+
+  get columnsConfigured() {
+    return !this.emptyColumns;
   }
 
   get emptyMasterDetailColumns() {
     return !this.inputValues.masterDetailConfiguration.value;
   }
 
-  get inputType() {
-    const type = this.genericTypeMappings.find(({ typeName }) => typeName === 'T');
-    return type && type.typeValue;
+  get paginationAlignmentOptions() {
+    return Object.values(ALIGNMENT_OPTIONS);
+  }
+
+  get showRowNumberEditable() {
+    return !this.groupingEnabled && this.summarizedColumns.length === 0;
+  }
+
+  get exportEnabled() {
+    return this.inputValues.canExport.value === YES_NO.YES;
   }
 
   get dataCollectionOptions() {
@@ -431,8 +823,45 @@ export default class OdConfigurationEditor extends LightningElement {
             label: lro.label,
             value: lro.name,
           });
+
+          // add collection processors here if any (for Filter elements e.g.)
+          const collectionProcessors = this.builderContext.collectionProcessors.filter(
+            (cp) => cp.collectionReference === lro.name,
+          );
+          if (collectionProcessors.length > 0) {
+            collectionProcessors.forEach((cpo) => {
+              result.push({
+                label: cpo.label,
+                value: cpo.name,
+              });
+            });
+          }
         });
       }
+    }
+
+    // add here the output variables (this supports the data fetcher component e.g.)
+    const automaticVariables = Object.keys(this.automaticOutputVariables).filter(
+      (av) => av !== this.elementInfo.apiName,
+    );
+    if (automaticVariables.length > 0) {
+      // traverse each key and check if there is an output value, collection for same object type
+      automaticVariables.forEach((av) => {
+        const screenComponent = this.automaticOutputVariables[av];
+
+        const outputVariableForObject = screenComponent.filter(
+          (sc) => sc.dataType === 'sobject' && sc.isOutput && sc.maxOccurs > 1 && sc.subtype === this.inputType,
+        );
+
+        if (outputVariableForObject.length > 0) {
+          outputVariableForObject.forEach((ovo) => {
+            result.push({
+              label: `${av} => ${ovo.label || ovo.apiName}`,
+              value: `${av}.${ovo.apiName}`,
+            });
+          });
+        }
+      });
     }
 
     return result;
@@ -489,80 +918,72 @@ export default class OdConfigurationEditor extends LightningElement {
     return result;
   }
 
-  // =================================================================
-  // setter for inputs
-  // =================================================================
-  // Set the fields with the data that was stored from the flow.
-  set inputVariables(variables) {
-    this._inputVariables = variables || [];
-    this._initializeValues();
+  get summarizedColumns() {
+    const result = [];
+
+    if (this.fields.length > 0) {
+      // add the summarized columns here
+      JSON.parse(this.inputValues.columns.value)
+        .filter((col) => col.typeAttributes.config.summarize)
+        .forEach((sumCol) => {
+          result.push(this.fields.find((fld) => fld.value === sumCol.fieldName));
+        });
+    }
+
+    return result;
   }
 
-  // =================================================================
-  // getter methods
-  // =================================================================
-  get isObjectSelected() {
-    return this.inputType && !this.isLoading;
+  get groupingFieldOptions() {
+    // get all the fields that can be used from the object
+    const result = this.fields.filter((fld) => AVAILABLE_FIELDS_GROUPING.includes(fld.type));
+
+    // add the summarize columns if not there and any
+    const sumColumns = this.summarizedColumns.filter(
+      (col) => AVAILABLE_FIELDS_GROUPING.includes(col.type) && !result.find((fld) => fld.fieldName === col.value),
+    );
+
+    if (sumColumns.length > 0) {
+      result.push(sumColumns);
+    }
+
+    return sortArrayByProperty(result, 'label');
   }
 
-  get canAdd() {
-    return this.inputValues.canAdd.value === YES_NO.YES;
+  get groupingSortFieldOptions() {
+    // add the summarized columns here
+    const result = this.summarizedColumns;
+
+    if (!result.find((col) => col.value === this.inputValues.groupingField.value)) {
+      result.push(this.fields.find((fld) => fld.value === this.inputValues.groupingField.value));
+    }
+
+    return sortArrayByProperty(result, 'label');
   }
 
-  get canEdit() {
-    return this.inputValues.canEdit.value === YES_NO.YES;
+  get groupContentSortFieldOptions() {
+    const result = [];
+
+    if (this.fields.length > 0) {
+      JSON.parse(this.inputValues.columns.value)
+        .filter((col) => !col.typeAttributes.config.isCustom)
+        .forEach((col) => {
+          result.push(this.fields.find((fld) => fld.value === col.fieldName));
+        });
+    }
+
+    return result;
   }
 
-  get editInline() {
-    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
+  get groupingFieldConfiguration() {
+    return this.fields.length > 0 && this.fields.find((fld) => fld.value === this.inputValues.groupingField.value);
   }
 
-  get editFlow() {
-    return this.inputValues.editType.value === INLINE_FLOW.FLOW;
+  get isGroupingFieldPicklist() {
+    return this.groupingFieldConfiguration.type === FIELD_TYPES.SELECT;
   }
 
-  get addInline() {
-    return this.inputValues.addType.value === INLINE_FLOW.INLINE;
-  }
-
-  get addFlow() {
-    return this.inputValues.addType.value === INLINE_FLOW.FLOW;
-  }
-
-  get canDelete() {
-    return this.inputValues.canDelete.value === YES_NO.YES;
-  }
-
-  get canBulkDelete() {
-    return this.inputValues.canBulkDelete.value === YES_NO.YES;
-  }
-
-  get canBulkEdit() {
-    return this.inputValues.canBulkEdit.value === YES_NO.YES;
-  }
-
-  get isMasterDetail() {
-    return this.inputValues.isMasterDetail.value === YES_NO.YES;
-  }
-
-  get canDeleteEditable() {
-    return !this.canBulkDelete;
-  }
-
-  get canEditEditable() {
-    return !this.canBulkEdit;
-  }
-
-  get addTypeEditable() {
-    return this.inputValues.editType.value === INLINE_FLOW.INLINE;
-  }
-
-  get inlineSave() {
-    return this.inputValues.inlineSave.value === YES_NO.YES;
-  }
-
-  get listenToPlatformEvent() {
-    return this.inputValues.listenToPlatformEvent.value === YES_NO.YES;
+  get isGroupingSourceDataset() {
+    return this.inputValues.groupingSource.value === GROUPING_SOURCE.FIELD;
   }
 
   // =================================================================
@@ -622,6 +1043,14 @@ export default class OdConfigurationEditor extends LightningElement {
     this.dispatchEvent(valueChangedEvent);
   }
 
+  _areThereAnyBulkFlowButtons(columns) {
+    return (
+      JSON.parse(columns).filter(
+        (cl) => cl.typeAttributes.config && cl.typeAttributes.config.showAs && cl.typeAttributes.config.showAsMultiple,
+      ).length > 0
+    );
+  }
+
   // =================================================================
   // handler methods
   // =================================================================
@@ -672,6 +1101,17 @@ export default class OdConfigurationEditor extends LightningElement {
             this._doDispatchChange(detailLinked);
           }
         });
+      }
+
+      // if it's grouping source and the value is field, send the source field data too
+      if (event.detail.fieldName === 'groupingSource' && value === GROUPING_SOURCE.FIELD) {
+        const detail = {
+          name: 'groupingSourceFieldData',
+          newValue: this.groupingFieldConfiguration.options.map((opt) => opt.value).join(','),
+          newValueDataType: this.inputValues.groupingSourceFieldData.valueType,
+        };
+
+        this._doDispatchChange(detail);
       }
     }
   }
@@ -757,13 +1197,45 @@ export default class OdConfigurationEditor extends LightningElement {
 
   handleSaveColumnsConfiguration(event) {
     if (event && event.detail) {
-      const detail = {
+      let detail = {
         name: 'columns',
         newValue: event.detail.value,
         newValueDataType: 'string',
       };
 
       this._doDispatchChange(detail);
+
+      if (event.detail.value) {
+        // if there is any bulk navigation button, trigger the change to can select and select multiple
+        if (this._areThereAnyBulkFlowButtons(event.detail.value)) {
+          detail = {
+            name: 'canSelect',
+            newValue: YES_NO.YES,
+            newValueDataType: 'string',
+          };
+
+          this._doDispatchChange(detail);
+
+          detail = {
+            name: 'selectionType',
+            newValue: SELECTION_TYPES.MULTIPLE,
+            newValueDataType: 'string',
+          };
+
+          this._doDispatchChange(detail);
+        }
+
+        // if there is at least one summarized column, trigger the change for show row numbers to false
+        if (JSON.parse(event.detail.value).filter((col) => col.typeAttributes.config.summarize).length > 0) {
+          detail = {
+            name: 'showRowNumberColumn',
+            newValue: YES_NO.NO,
+            newValueDataType: 'string',
+          };
+
+          this._doDispatchChange(detail);
+        }
+      }
 
       this.handleCloseColumnsConfigurator();
     }
@@ -813,8 +1285,93 @@ export default class OdConfigurationEditor extends LightningElement {
   async handleShowPreview() {
     // open the modal
     await OdDatatablePreview.open({
+      label: 'Preview',
       size: 'medium',
       configuration: this.inputValues,
     });
+  }
+
+  // configuration copy and paste
+  handleConfigurationChange(evt) {
+    this.configurationJSON = evt.detail.value;
+  }
+
+  handleCopyConfigurationToClipboard() {
+    const { tableData, ...other } = this.inputValues;
+
+    const valueToCopy = JSON.stringify(other);
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(valueToCopy);
+    } else {
+      const input = document.createElement('textarea');
+      input.innerHTML = valueToCopy;
+      document.body.appendChild(input);
+      input.select();
+
+      // deprecated but still a good fallback because it is supported in most of the browsers
+      document.execCommand('copy');
+
+      document.body.removeChild(input);
+    }
+
+    // display a success toast
+    Toast.show(
+      {
+        label: 'Copied!',
+        message: 'The configuration was copied to your clipboard',
+        mode: 'dismissible',
+        variant: 'success',
+      },
+      this,
+    );
+  }
+
+  handleProcessConfigurationToClipboard() {
+    if (!this.configurationJSON) {
+      Toast.show(
+        {
+          label: 'Field Required!',
+          message: 'Please paste the JSON in the above field to be able to process it',
+          mode: 'dismissible',
+          variant: 'error',
+        },
+        this,
+      );
+    } else {
+      const configuration = JSON.parse(this.configurationJSON);
+
+      this.inputValues = {
+        ...configuration,
+        tableData: this.inputValues.tableData,
+      };
+
+      // dispatch the changes
+      Object.keys(this.inputValues).forEach((key) => {
+        const element = this.inputValues[key];
+
+        // dispatch the change
+        const detail = {
+          name: key,
+          newValue: element.value ? element.value : null,
+          newValueDataType: element.valueType,
+        };
+
+        this._doDispatchChange(detail);
+      });
+
+      this.configurationJSON = '';
+
+      // display a success toast
+      Toast.show(
+        {
+          label: 'Processed!',
+          message: 'The configuration was process successfully',
+          mode: 'dismissible',
+          variant: 'success',
+        },
+        this,
+      );
+    }
   }
 }

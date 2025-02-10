@@ -39,7 +39,7 @@
                     value={searchText}
                     autocomplete="off"
                     placeholder={thePlaceholder}
-                    message-when-value-missing=" "
+                    label=" "
                     class="multilookup-input"
                     variant="label-hidden"
                     onchange={handleSearch}
@@ -83,8 +83,8 @@
                     onchange={handleSearch}
                     tabindex="0"
                     onclick={handleOpenDropdown}
-                    message-when-value-missing=" "
                     onblur={handleBlur}
+                    label=" "
                   >
                   </lightning-input>
                 </template>
@@ -103,6 +103,7 @@
                     value={searchTextToShow}
                     read-only
                     variant="label-hidden"
+                    label=" "
                     tabindex="-1"
                   >
                   </lightning-input>

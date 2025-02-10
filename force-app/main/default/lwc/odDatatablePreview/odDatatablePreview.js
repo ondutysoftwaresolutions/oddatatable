@@ -1,16 +1,19 @@
-import { api } from 'lwc';
+import { api, track } from 'lwc';
 import LightningModal from 'lightning/modal';
 import { DATE_FIELDS, NUMERIC_FIELDS, TEXT_FIELDS, FIELD_TYPES } from 'c/odDatatableConstants';
-import { generateRandomNumber } from 'c/odDatatableUtils';
+import { generateRandomString } from 'c/odDatatableUtils';
 
 export default class OdDatatablePreview extends LightningModal {
   @api configuration;
+
+  @track dummySelectedRows = [];
 
   get dummyData() {
     const result = [];
 
     for (let index = 0; index < 4; index++) {
-      const newRecord = { Id: generateRandomNumber() };
+      const newRecord = { Id: generateRandomString() };
+
       JSON.parse(this.configuration.columns.value).forEach((cl) => {
         let value;
         // text
@@ -28,7 +31,7 @@ export default class OdDatatablePreview extends LightningModal {
 
         // date
         if (DATE_FIELDS.includes(cl.typeAttributes.type)) {
-          value = Date.now().toLocaleString();
+          value = new Date().toISOString();
         }
 
         // numeric / currency / percentage
@@ -59,6 +62,10 @@ export default class OdDatatablePreview extends LightningModal {
       });
 
       result.push(newRecord);
+
+      if (index === 1 || index === 2) {
+        this.dummySelectedRows.push(newRecord);
+      }
     }
 
     return result;
