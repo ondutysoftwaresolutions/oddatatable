@@ -1,3 +1,5 @@
+# NOTE: THIS DOCUMENTATION IS OUTDATED, CURRENTLY WORKING ON THE NEW ONE.
+
 # OnDuty Enhanced Flow Datatable
 
 Lightning Web Component to use in a Flow Screen that allows to display a list of records in a Table, you can update them, delete them or add new ones.
