@@ -1,10 +1,12 @@
-import { api } from 'lwc';
+import { api, track } from 'lwc';
 import LightningModal from 'lightning/modal';
 import { DATE_FIELDS, NUMERIC_FIELDS, TEXT_FIELDS, FIELD_TYPES } from 'c/odDatatableConstants';
 import { generateRandomString } from 'c/odDatatableUtils';
 
 export default class OdDatatablePreview extends LightningModal {
   @api configuration;
+
+  @track dummySelectedRows = [];
 
   get dummyData() {
     const result = [];
@@ -60,6 +62,10 @@ export default class OdDatatablePreview extends LightningModal {
       });
 
       result.push(newRecord);
+
+      if (index === 1 || index === 2) {
+        this.dummySelectedRows.push(newRecord);
+      }
     }
 
     return result;

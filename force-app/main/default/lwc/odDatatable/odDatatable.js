@@ -77,6 +77,7 @@ export default class ODDatatable extends LightningElement {
   // selection
   @api canSelect = YES_NO.NO;
   @api selectionType;
+  @api selectionRequired = YES_NO.NO;
 
   // save
   @api inlineSave;
@@ -123,10 +124,10 @@ export default class ODDatatable extends LightningElement {
   @api outputAddedRows = [];
   @api outputEditedRows = [];
   @api outputDeletedRows = [];
-  @api outputSelectedRows = [];
   @api rowRecordId;
   @api rowRecord;
   @api rowRecordIds;
+  @api rowRecords = [];
   @api rowButtonClicked;
   @api wasChanged = false;
 
@@ -192,6 +193,17 @@ export default class ODDatatable extends LightningElement {
       if (this.isInlineSave && this.hasChanges && isValid && !this.isSaving) {
         isValid = false;
         errorMessage = 'You need to Save or cancel the changes to continue.';
+      }
+    }
+
+    // check selection
+    if (isValid && !this.selectionDisabled) {
+      if (
+        this._isSelectionRequired &&
+        ((this.rowRecords.length === 0 && !this._isSingleSelection) || (this._isSingleSelection && !this.rowRecordId))
+      ) {
+        isValid = false;
+        errorMessage = `You must select ${this._isSingleSelection ? '' : 'at least '}one record to continue`;
       }
     }
 
@@ -262,6 +274,26 @@ export default class ODDatatable extends LightningElement {
       this._getAccessAndBuildRecords(data);
     } else {
       this._tableData = data;
+    }
+  }
+
+  @api
+  get initiallySelectedRows() {
+    return [];
+  }
+
+  set initiallySelectedRows(data = []) {
+    if (!this.selectionDisabled && data.length > 0) {
+      // add the required _id property
+      const dataToUse = JSON.parse(JSON.stringify(data)).map((dt) => ({ ...dt, _id: dt.Id }));
+
+      if (this._isSingleSelection) {
+        this._selectedRows = [dataToUse[0]];
+      } else {
+        this._selectedRows = dataToUse;
+      }
+    } else {
+      this._selectedRows = [];
     }
   }
 
@@ -352,15 +384,16 @@ export default class ODDatatable extends LightningElement {
     return this.selectionType === SELECTION_TYPES.SINGLE;
   }
 
+  get _isSelectionRequired() {
+    return this.selectionRequired === YES_NO.YES;
+  }
+
   get maxiumRowSelection() {
     // if any bulk operation then the selection is always multiple
     if (this.canBulkDelete === YES_NO.YES || this.canBulkEdit === YES_NO.YES || this.otherBulkFlowButtons.length > 0) {
-      return;
     } else {
       if (this._isSingleSelection) {
         return 1;
-      } else {
-        return;
       }
     }
   }
@@ -544,12 +577,6 @@ export default class ODDatatable extends LightningElement {
     return this.recalculateLive === YES_NO.YES;
   }
 
-  get _selectedRowsToProcessBulk() {
-    return this._selectedRows.filter(
-      (row) => !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord,
-    );
-  }
-
   get selectedRowsIds() {
     return this._selectedRows.map((sr) => sr._id);
   }
@@ -690,6 +717,12 @@ export default class ODDatatable extends LightningElement {
 
     // add the total row to the end if any
     if (totalRow) {
+      // check if everything is selected, then select this row too
+      const selectedIds = new Set(this.selectedRowsIds);
+      if (result.every((item) => selectedIds.has(item._id))) {
+        this._selectedRows.push(totalRow);
+      }
+
       result.push(totalRow);
     }
 
@@ -1026,7 +1059,7 @@ export default class ODDatatable extends LightningElement {
     );
   }
 
-  async _doOpenFlowButton(fieldName, record, recordsSelected = undefined) {
+  async _doOpenFlowButton(fieldName, record = undefined) {
     const modalProps = {
       size: 'small',
       label: 'Flow Button',
@@ -1035,7 +1068,6 @@ export default class ODDatatable extends LightningElement {
     };
 
     const column = this._allColumns.find((cl) => cl.fieldName === fieldName);
-    const selectedIds = recordsSelected ? recordsSelected.map((row) => row._id) : undefined;
 
     // this is an edit
     modalProps.flowName = column.typeAttributes.config.flowName;
@@ -1045,21 +1077,16 @@ export default class ODDatatable extends LightningElement {
       : [];
     const waitForPlatformEvent = column.typeAttributes.config.waitForPlatformEvent || false;
 
-    const resultModal = await this._doOpenFlow(modalProps, record, selectedIds, waitForPlatformEvent);
+    const resultModal = await this._doOpenFlow(modalProps, record, this.rowRecordIds, waitForPlatformEvent);
 
     // if something came back from the flow and we have to navigate next
     if (resultModal && resultModal.isSuccess) {
       if (column.typeAttributes.config.flowNavigateNext) {
-        // set the outputs for the flow if records selected
-        if (recordsSelected) {
-          this.rowRecordIds = selectedIds;
-        }
-
         // navigate next
         this._doNavigateNext(fieldName, record);
       } else {
         this._selectedRows = [];
-        this.outputSelectedRows = [];
+        this.rowRecords = [];
       }
     }
   }
@@ -1301,8 +1328,8 @@ export default class ODDatatable extends LightningElement {
 
       const groupId = group || NO_GROUP;
 
-      // Add the group as an element
-      flattened.push({
+      // group element
+      const groupElement = {
         _id: `grouping-${groupId}`,
         _groupId: groupId,
         [firstColumnField]: group,
@@ -1310,7 +1337,10 @@ export default class ODDatatable extends LightningElement {
           _isGroupRecord: true,
           _isCollapsible: this._canCollapseGroups,
         },
-      });
+      };
+
+      // Add the group as an element
+      flattened.push(groupElement);
 
       const newItems = items.map((item) => ({
         ...item,
@@ -1320,9 +1350,22 @@ export default class ODDatatable extends LightningElement {
       // Add all items in that group
       flattened.push(...newItems);
 
+      let summaryElement;
       // add the summary row if it exists
       if (summary && newItems.length > 0) {
-        flattened.push({ ...summary, _groupId: groupId });
+        summaryElement = { ...summary, _groupId: groupId };
+
+        flattened.push(summaryElement);
+      }
+
+      // check if all items are selected then select the group and summary too
+      const selectedIds = new Set(this.selectedRowsIds);
+      if (newItems.every((item) => selectedIds.has(item._id))) {
+        this._selectedRows.push(groupElement);
+
+        if (summaryElement) {
+          this._selectedRows.push(summaryElement);
+        }
       }
 
       return flattened;
@@ -2001,9 +2044,15 @@ export default class ODDatatable extends LightningElement {
         this._selectedRows = [];
       }
 
-      this.outputSelectedRows = JSON.parse(JSON.stringify(this._selectedRows)).filter(
-        (rec) => !rec._originalRecord._isGroupRecord && !rec._originalRecord._isSummarizeRecord,
-      );
+      if (!this._isSingleSelection) {
+        this.rowRecords = JSON.parse(JSON.stringify(this._selectedRows)).filter(
+          (rec) => !rec._originalRecord._isGroupRecord && !rec._originalRecord._isSummarizeRecord,
+        );
+        this.rowRecordIds = this.rowRecords.map((rec) => rec._id);
+      } else {
+        this.rowRecord = JSON.parse(JSON.stringify(this._selectedRows[0]));
+        this.rowRecordId = this.rowRecord._id;
+      }
     }
   }
 
@@ -2124,7 +2173,7 @@ export default class ODDatatable extends LightningElement {
   handleBulkDelete() {
     const recordsAvailable = JSON.parse(JSON.stringify(this._tableData));
 
-    this._selectedRowsToProcessBulk.forEach((row) => {
+    this.rowRecords.forEach((row) => {
       let record;
       let recordIndex = recordsAvailable.findIndex((rc) => rc._id === row._id);
 
@@ -2165,7 +2214,7 @@ export default class ODDatatable extends LightningElement {
 
     this._selectedRows = [];
 
-    this.outputSelectedRows = [];
+    this.rowRecords = [];
   }
 
   handleOpenBulkEdit() {
@@ -2181,7 +2230,7 @@ export default class ODDatatable extends LightningElement {
     const fieldsToUpdate = event.detail.fields;
 
     // for each selected row, update the corresponding fields if necessary
-    this._selectedRowsToProcessBulk.forEach((row) => {
+    this.rowRecords.forEach((row) => {
       fieldsToUpdate.forEach((fl) => {
         // check the the id is not the same as the value (to prevent cycle for parent relationships)
         if (row._id !== fl.value) {
@@ -2221,7 +2270,7 @@ export default class ODDatatable extends LightningElement {
     });
     this._selectedRows = [];
 
-    this.outputSelectedRows = [];
+    this.rowRecords = [];
 
     this.handleCloseBulkEdit();
   }
@@ -2288,11 +2337,11 @@ export default class ODDatatable extends LightningElement {
   }
 
   handleOpenBulkFlow(event) {
-    this._doOpenFlowButton(event.target.dataset.name, undefined, this._selectedRowsToProcessBulk);
+    this._doOpenFlowButton(event.target.dataset.name);
   }
 
   handleOpenBottomNavFlow(event) {
-    this._doOpenFlowButton(event.target.dataset.name, undefined);
+    this._doOpenFlowButton(event.target.dataset.name);
   }
 
   handlePrevPage() {

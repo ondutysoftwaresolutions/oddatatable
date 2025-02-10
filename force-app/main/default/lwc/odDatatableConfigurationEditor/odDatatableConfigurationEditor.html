@@ -218,6 +218,35 @@
           help-text={inputValues.selectionType.helpText}
         >
         </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="selectionRequired"
+          type={inputValues.selectionRequired.type}
+          editable={canSelectEditable}
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.selectionRequired.value}
+          label={inputValues.selectionRequired.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.selectionRequired.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
+          field-name="initiallySelectedRows"
+          type={inputValues.initiallySelectedRows.type}
+          editable={canSelectEditable}
+          class="slds-size--1-of-1"
+          value={inputValues.initiallySelectedRows.value}
+          options={dataCollectionOptions}
+          placeholder="Select source data..."
+          label={inputValues.initiallySelectedRows.label}
+          onupdatefield={handleInputChange}
+          opened={dropdowns.initiallySelectedRows}
+          help-text={inputValues.initiallySelectedRows.helpText}
+          onfocusdropdown={handleOnFocusDropdown}
+          onblurdropdown={handleOnBlurDropdown}
+        >
+        </c-od-datatable-input-generic>
       </template>
     </fieldset>
 

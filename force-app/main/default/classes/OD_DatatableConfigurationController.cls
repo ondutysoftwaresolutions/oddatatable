@@ -26,7 +26,7 @@ public without sharing class OD_DatatableConfigurationController {
 
     // objects
     List<EntityDefinition> listObjects = [
-      SELECT Label, QualifiedApiName
+      SELECT MasterLabel, QualifiedApiName
       FROM EntityDefinition
       WHERE
         IsCustomizable = TRUE
@@ -34,12 +34,11 @@ public without sharing class OD_DatatableConfigurationController {
         AND IsQueryable = TRUE
         AND IsEverUpdatable = TRUE
         AND IsEverCreatable = TRUE
-        AND IsEverDeletable = TRUE
-      ORDER BY Label
+      ORDER BY MasterLabel
     ];
 
     for (EntityDefinition entity : listObjects) {
-      result.objects.add(new OD_Datatable.RecordWrapper(entity.QualifiedApiName, entity.Label));
+      result.objects.add(new OD_Datatable.RecordWrapper(entity.QualifiedApiName, entity.MasterLabel));
     }
 
     // flows

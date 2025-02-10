@@ -4,5 +4,5 @@
 I needed to do it this way as the Lightning App builder does not support long strings as parameters</description>
     <label>OD Datatable JSON Configuration</label>
     <pluralLabel>OD Datatable JSON Configurations</pluralLabel>
-    <visibility>Protected</visibility>
+    <visibility>Public</visibility>
 </CustomObject>

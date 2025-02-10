@@ -476,6 +476,19 @@ export default class OdConfigurationEditor extends LightningElement {
       helpText:
         'Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE:  if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row.',
     },
+    selectionRequired: {
+      label: 'Selection Required?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.NO,
+      helpText: "If enabled you won't be able to move forward until you select 1 row minimum",
+    },
+    initiallySelectedRows: {
+      label: 'Selected Rows',
+      type: FIELD_TYPES.SELECT,
+      valueType: 'reference',
+      helpText: 'Record Collection variable with all the rows that needs to be initially selected.',
+    },
     showRowNumberColumn: {
       label: 'Show the column with the row number?',
       type: FIELD_TYPES.TOGGLE,

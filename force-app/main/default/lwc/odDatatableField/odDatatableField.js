@@ -1,5 +1,12 @@
 import { LightningElement, api } from 'lwc';
-import { CUSTOM_FIELD_TYPES, EVENTS, YES_NO, HIDDEN_TYPE_OPTIONS, FIELD_TYPES } from 'c/odDatatableConstants';
+import {
+  ALIGNMENT_OPTIONS,
+  CUSTOM_FIELD_TYPES,
+  EVENTS,
+  YES_NO,
+  HIDDEN_TYPE_OPTIONS,
+  FIELD_TYPES,
+} from 'c/odDatatableConstants';
 import {
   doReplaceMergeField,
   formatDateForInput,
@@ -95,11 +102,17 @@ export default class OdDatatableField extends LightningElement {
     let cellClassesToUse = this.config.cellClasses || '';
     if (this.config.alignment) {
       cellClassesToUse = `${cellClassesToUse} slds-text-align--${this.config.alignment.toLowerCase()}`;
+
+      if (this.config.alignment === ALIGNMENT_OPTIONS.RIGHT.value) {
+        cellClassesToUse += ' slds-p-right--xx-small';
+      }
     }
 
     return this.isDeleted
       ? 'deleted-record'
-      : `${cellClassesToUse} ${this.record?._isGroupRecord ? 'groupCell' : ''} ${this.record?._isSummarizeRecord ? 'summarizeCell' : ''}`;
+      : `${cellClassesToUse} ${this.record?._isGroupRecord ? 'groupCell' : ''} ${
+          this.record?._isSummarizeRecord ? 'summarizeCell' : ''
+        }`;
   }
 
   get lookupConfig() {
