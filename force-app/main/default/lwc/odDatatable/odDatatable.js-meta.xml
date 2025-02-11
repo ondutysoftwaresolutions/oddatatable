@@ -2,7 +2,7 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <masterLabel>On Duty Datatable</masterLabel>
-    <description>Enhanced datatable with lots of functionality</description>
+    <description>Enhanced datatable component with comprehensive functionality</description>
     <isExposed>true</isExposed>
     <targets>
         <target>lightning__FlowScreen</target>
@@ -47,7 +47,7 @@
         type="String"
         role="inputOnly"
         default="Yes"
-        description="This will add the record to the outputAddedRows and you will need to write these back to the Object with a Record Insert in the Flow."
+        description="Enable the addition of records in the table."
       />
             <property
         name="addLabel"
@@ -63,7 +63,7 @@
         type="String"
         role="inputOnly"
         default="Inline"
-        description="Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow."
+        description="Specify whether you want to be able to add the data directly in the table (Inline) or with a Flow."
       />
             <property
         name="addFlowName"
@@ -85,7 +85,7 @@
         type="String"
         role="inputOnly"
         default="Yes"
-        description="This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow."
+        description="Enable the editing of records in the table."
       />
             <property
         name="editType"
@@ -93,7 +93,7 @@
         type="String"
         role="inputOnly"
         default="Inline"
-        description="Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow."
+        description="Specify whether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow."
       />
             <property
         name="editLabel"
@@ -123,7 +123,7 @@
         type="String"
         role="inputOnly"
         default="Yes"
-        description="This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow."
+        description="Enable the deletion of records in the table."
       />
             <property
         name="canBulkDelete"
@@ -131,7 +131,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="Add a selection and a button to delete several lines at one time. This will add the record to the outputDeletedRows and you will need to write these back to the Object with a Record Delete in the Flow."
+        description="Add a selection and a button to delete several at one time. This will enable the selection of the table with Multiple Rows."
       />
             <property
         name="bulkDeleteLabel"
@@ -147,7 +147,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow."
+        description="Add a selection and a button to edit several lines at one time. This will enable the selection of the table with Multiple Rows."
       />
             <property
         name="bulkEditLabel"
@@ -163,7 +163,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="Is this the detail object on a Master-Detail relationship?. If so, you will need to specify the fields and the values for the parent/s."
+        description="Is this the detail object on a Master-Detail relationship? If so, you will need to specify the fields and the values for the parent/s."
       />
             <property name="masterDetailField1" label="First Master-Detail Field" type="String" role="inputOnly" />
             <property name="masterDetailField2" label="Second Master-Detail Field" type="String" role="inputOnly" />
@@ -173,7 +173,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving."
+        description="If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be sent back to the flow and the user will need to do the saving."
       />
             <property
         name="saveLabel"
@@ -197,7 +197,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id."
+        description="If enabled, the component will listen to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id."
       />
             <property
         name="platformEventMatchingFieldName"
@@ -243,7 +243,7 @@
         type="String"
         role="inputOnly"
         default="Yes"
-        description="If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers."
+        description="If enabled, the pagination options: First, Prev, Next and Last will be shown, otherwise just the page numbers."
       />
             <property
         name="grouping"
@@ -279,7 +279,7 @@
         label="Sort Content of Group By"
         type="String"
         role="inputOnly"
-        description="Field to sort the content of the group by. It can be one of the fields being showed in the table."
+        description="Field to sort the content of the group by. It can be one of the fields being shown in the table."
       />
             <property
         name="groupContentSortDirection"
@@ -294,7 +294,7 @@
         type="String"
         role="inputOnly"
         default="Dataset"
-        description="Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group."
+        description="Specify whether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group."
       />
             <property
         name="groupingSourceFieldData"
@@ -349,22 +349,22 @@
         type="String"
         role="inputOnly"
         default="Multiple Rows"
-        description="Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE:  if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row."
+        description="Allow the selection of multiple rows (checkbox) or single row (radio button). NOTE: if Bulk Edit, Bulk Delete or any other Bulk Operation button are selected, then checkboxes will display regardless of this being Single Row."
       />
             <property
         name="selectionRequired"
-        label="Selection required?"
+        label="Selection Required?"
         type="String"
         role="inputOnly"
         default="No"
-        description="If enabled you won't be able to move forward until you select 1 row minimum"
+        description="If enabled you won't be able to move forward until you select 1 row minimum."
       />
       <property
         name="initiallySelectedRows"
         label="Selected Rows"
         type="{T[]}"
         role="inputOnly"
-        description="Record Collection variable with all the rows that needs to be initially selected."
+        description="Record Collection variable with all the rows that need to be initially selected."
       />    
             <property
         name="showRowNumberColumn"
@@ -380,7 +380,7 @@
         type="String"
         role="inputOnly"
         default="No"
-        description="If enabled a button will display at the top right corner of the table to export the data to a CSV"
+        description="If enabled a button will be displayed at the top right corner of the table to export the data to a CSV."
       />
             <property
         name="exportGroups"
@@ -395,7 +395,7 @@
         label="Filename for the CSV"
         type="String"
         role="inputOnly"
-        description="This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv"
+        description="This is the filename that will be used when exporting (without the csv extension). If nothing specified the filename will be dataExport.csv."
       />
             <property
         name="sharingContext"
@@ -403,7 +403,7 @@
         type="String"
         role="inputOnly"
         default="without"
-        description="The sharing context to executes the queries when using the component."
+        description="The sharing context to execute the queries when using the component."
       />
 
             <!-- Hidden inputs / only used internally -->
@@ -413,7 +413,7 @@
         type="String"
         role="inputOnly"
         default="{}"
-        description="JSON string with the columns and values for the master detail relationships"
+        description="JSON string with the columns and values for the master detail relationships."
       />
             <property name="objectName" label="API Object Name" type="String" role="inputOnly" />
             <property name="uniqueTableName" label="Unique Table Name" type="String" role="inputOnly" />
@@ -484,7 +484,7 @@
       />
             <property
         name="wasChanged"
-        label="Was the data change is some shape or form?"
+        label="Was the data changed?"
         type="Boolean"
         role="outputOnly"
         description="True if the data was changed (added/edited/deleted)."

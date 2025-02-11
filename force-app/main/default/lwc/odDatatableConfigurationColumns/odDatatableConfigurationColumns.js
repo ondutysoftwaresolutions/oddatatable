@@ -526,6 +526,7 @@ export default class OdConfigurationColumns extends LightningElement {
     if (isCustomRecord && !isButtonRecord) {
       showAsOption = SHOW_AS_OPTIONS_CUSTOM_FIELDS;
       objectToUpdate.showAsOptions = [SHOW_AS_OPTIONS_CUSTOM_FIELDS];
+      objectToUpdate.isEditable = true;
     } else {
       showAsOption = [...SHOW_AS_OPTIONS_CUSTOM_BUTTONS, ...SHOW_AS_OPTIONS_FIELDS].find((sw) => sw.value === value);
       objectToUpdate.showAsOptions =

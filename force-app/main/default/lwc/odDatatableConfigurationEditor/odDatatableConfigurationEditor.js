@@ -140,8 +140,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
-      helpText:
-        "This will add a flag 'isNew' to the record and you will need to write these back to the Object with a Record Insert in the Flow.",
+      helpText: 'Enable the addition of records in the table',
     },
     addLabel: {
       label: 'Add Label',
@@ -156,7 +155,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.RADIO_BUTTON_TYPE,
       valueType: FIELD_TYPES.STRING,
       value: INLINE_FLOW.INLINE,
-      helpText: 'Specify wether you want to be able to add the data directly in the table (Inline) or with a Flow.',
+      helpText: 'Specify whether you want to be able to add the data directly in the table (Inline) or with a Flow.',
     },
     addFlowName: {
       label: 'Flow Name',
@@ -177,8 +176,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
-      helpText:
-        "This will add a flag 'isEdited' to the record and you will need to write these back to the Object with a Record Update in the Flow.",
+      helpText: 'Enable the editing of records in the table.',
     },
     editType: {
       label: 'Edit Type',
@@ -197,7 +195,7 @@ export default class OdConfigurationEditor extends LightningElement {
         },
       ],
       helpText:
-        'Specify wether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow.',
+        'Specify whether you want to be able to edit the data directly in the table (Inline) or with a Flow. If Edit is with a flow, then Add must be with a Flow.',
     },
     editLabel: {
       label: 'Edit Label',
@@ -225,8 +223,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
-      helpText:
-        "This will add a flag 'isDeleted' to the record and you will need to write these back to the Object with a Record Delete in the Flow.",
+      helpText: 'Enable the deletion of records in the table.',
     },
     canBulkDelete: {
       label: 'Can Bulk Delete?',
@@ -249,7 +246,7 @@ export default class OdConfigurationEditor extends LightningElement {
         },
       ],
       helpText:
-        "Add a selection and a button to delete several at one time. This will add a flag 'isDeleted' to the record and you will need to write these back to the Object with a Record Delete in the Flow.",
+        'Add a selection and a button to delete several at one time. This will enable the selection of the table with Multiple Rows.',
     },
     bulkDeleteLabel: {
       label: 'Bulk Delete Label',
@@ -280,7 +277,7 @@ export default class OdConfigurationEditor extends LightningElement {
         },
       ],
       helpText:
-        'Add a selection and a button to edit several lines at one time. This will add the record to the outputEditedRows and you will need to write these back to the Object with a Record Update in the Flow.',
+        'Add a selection and a button to edit several lines at one time. This will enable the selection of the table with Multiple Rows.',
     },
     bulkEditLabel: {
       label: 'Bulk Edit Label',
@@ -296,7 +293,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
       helpText:
-        'If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be send back to the flow and the user will need to do the saving.',
+        'If enabled, a Save button will appear in the table to be able to save the changes. If disabled the outputs will be sent back to the flow and the user will need to do the saving.',
     },
     saveLabel: {
       label: 'Save Label',
@@ -320,14 +317,14 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
       helpText:
-        'If enabled, the component will listened to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id.',
+        'If enabled, the component will listen to the OD_Refresh_Datatable__e Platform Event and refreshes itself when there is matching Id.',
     },
     platformEventMatchingFieldName: {
       label: 'Refresh Matching Field',
       type: FIELD_TYPES.STRING,
       valueType: FIELD_TYPES.STRING,
       helpText:
-        'The fieldName to use when matching and refreshing with Platform event. This fields must be in the data source collection.',
+        'The fieldName to use when matching and refreshing with Platform event. This field must be in the data source collection.',
     },
     platformEventMatchingId: {
       label: 'Refresh Matching Id',
@@ -356,7 +353,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.YES,
       helpText:
-        'If enabled, the pagination options: First, Prev, Next and Last will be showed, otherwise just the page numbers.',
+        'If enabled, the pagination options: First, Prev, Next and Last will be shown, otherwise just the page numbers.',
     },
     paginationAlignment: {
       label: 'Alignment',
@@ -405,7 +402,7 @@ export default class OdConfigurationEditor extends LightningElement {
       label: 'Sort Content of Group By',
       type: FIELD_TYPES.TEXT,
       valueType: FIELD_TYPES.STRING,
-      helpText: 'Field to sort the content of the group by. It can be one of the fields being showed in the table.',
+      helpText: 'Field to sort the content of the group by. It can be one of the fields being shown in the table.',
     },
     groupContentSortDirection: {
       label: 'Group Content Sort Direction',
@@ -421,7 +418,7 @@ export default class OdConfigurationEditor extends LightningElement {
       valueType: FIELD_TYPES.STRING,
       value: GROUPING_SOURCE.DATASET,
       helpText:
-        'Specify wether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group.',
+        'Specify whether you want the grouping to be based on data from the source data or grouping by the picklist options. If picklist, then you can select to show/hide the empty groups. If dataset, then it will only show the ones with data and the records without it as a last group.',
     },
     groupingSourceFieldData: {
       label: 'Source Field Data',
@@ -487,7 +484,7 @@ export default class OdConfigurationEditor extends LightningElement {
       label: 'Selected Rows',
       type: FIELD_TYPES.SELECT,
       valueType: 'reference',
-      helpText: 'Record Collection variable with all the rows that needs to be initially selected.',
+      helpText: 'Record Collection variable with all the rows that need to be initially selected.',
     },
     showRowNumberColumn: {
       label: 'Show the column with the row number?',
@@ -502,7 +499,8 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.TOGGLE,
       valueType: FIELD_TYPES.STRING,
       value: YES_NO.NO,
-      helpText: 'If enabled a button will display at the top right corner of the table to export the data to a CSV',
+      helpText:
+        'If enabled a button will be displayed at the top right corner of the table to export the data to a CSV',
     },
     exportGroups: {
       label: 'Include the groups in the export?',
@@ -525,7 +523,7 @@ export default class OdConfigurationEditor extends LightningElement {
       type: FIELD_TYPES.RADIO_BUTTON_TYPE,
       valueType: FIELD_TYPES.STRING,
       value: SHARING_CONTEXT.WITHOUT_SHARING,
-      helpText: 'The sharing context to executes the queries when using the component.',
+      helpText: 'The sharing context to execute the queries when using the component.',
     },
 
     // internal use
@@ -1366,7 +1364,7 @@ export default class OdConfigurationEditor extends LightningElement {
       Toast.show(
         {
           label: 'Processed!',
-          message: 'The configuration was process successfully',
+          message: 'The configuration was processed successfully',
           mode: 'dismissible',
           variant: 'success',
         },
