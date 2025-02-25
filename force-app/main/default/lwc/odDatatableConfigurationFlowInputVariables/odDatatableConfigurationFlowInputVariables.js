@@ -56,6 +56,14 @@ export default class OdDatatableConfigurationFlowInputVariables extends Lightnin
     return this.type === 'editFlowInputVariables';
   }
 
+  get _isAdd() {
+    return this.type === 'addFlowInputVariables';
+  }
+
+  get multipleAdd() {
+    return this._isAdd || this.multiple;
+  }
+
   get disabledSave() {
     let disabled = false;
 

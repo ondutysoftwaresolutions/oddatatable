@@ -44,6 +44,13 @@
   outline: none;
 }
 
+.od-datatable tr:has(div.slds-has-error) {
+  outline: 2px solid var(--slds-c-pill-error-color-border,var(--sds-c-pill-error-color-border,var(--slds-g-color-error-base-40,#ea001e)));
+  outline-offset: 0;
+  position: relative;
+  z-index: 1;
+}
+
 .container.errorTooltip .slds-has-error .slds-form-element__help  {
   visibility: hidden;
   display: block !important;

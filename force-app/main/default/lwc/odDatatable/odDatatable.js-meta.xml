@@ -183,6 +183,14 @@
         default="Save"
         description="Label to show in the Save button if inline save is enabled."
       />
+      <property
+        name="saveAllOrNone"
+        label="Save All or None?"
+        type="String"
+        role="inputOnly"
+        default="Yes"
+        description="If disabled and a record fails, the remainder of the records can still be saved. If enabled and the method isn't successful, no records will be saved."
+      />
             <property
         name="navigateNextAfterSave"
         label="Navigate Next after Save?"

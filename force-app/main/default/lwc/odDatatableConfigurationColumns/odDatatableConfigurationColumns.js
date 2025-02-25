@@ -1,3 +1,4 @@
+/* eslint-disable @lwc/lwc/no-inner-html */
 import { LightningElement, api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import {
@@ -969,7 +970,7 @@ export default class OdConfigurationColumns extends LightningElement {
       navigator.clipboard.writeText(JSON.stringify(valueToCopy));
     } else {
       const input = document.createElement('textarea');
-      input.innerHTML = valueToCopy;
+      input.innerHTML = JSON.stringify(valueToCopy);
       document.body.appendChild(input);
       input.select();
 

@@ -129,4 +129,97 @@ public class OD_Datatable {
       this.label = label;
     }
   }
+
+  public class SaveResultWrapper {
+    @AuraEnabled
+    public Boolean success;
+
+    @AuraEnabled
+    public List<SObject> records;
+
+    @AuraEnabled
+    public SaveErrorsWrapper errors;
+
+    public SaveResultWrapper() {
+      this.success = true;
+      this.records = new List<SObject>();
+      this.errors = new SaveErrorsWrapper();
+    }
+  }
+
+  public class SaveErrorsWrapper {
+    @AuraEnabled
+    public List<SaveErrorWrapper> insertErrors;
+
+    @AuraEnabled
+    public List<SaveErrorWrapper> updateErrors;
+
+    @AuraEnabled
+    public List<SaveErrorWrapper> deleteErrors;
+
+    public SaveErrorsWrapper() {
+      this.insertErrors = new List<SaveErrorWrapper>();
+      this.updateErrors = new List<SaveErrorWrapper>();
+      this.deleteErrors = new List<SaveErrorWrapper>();
+    }
+  }
+
+  public class FieldErrorWrapper {
+    @AuraEnabled
+    public String fieldName;
+
+    @AuraEnabled
+    public String message;
+
+    @AuraEnabled
+    public String statusCode;
+
+    public FieldErrorWrapper(String fieldName, String message, String statusCode) {
+      this.fieldName = fieldName;
+      this.message = message;
+      this.statusCode = statusCode;
+    }
+  }
+
+  public class SaveErrorWrapper {
+    @AuraEnabled
+    public String recordId;
+
+    @AuraEnabled
+    public String message;
+
+    @AuraEnabled
+    public List<FieldErrorWrapper> fieldErrors;
+
+    public SaveErrorWrapper(String recordId, String message, List<Database.Error> errors) {
+      this.recordId = recordId;
+      this.message = message;
+      this.fieldErrors = new List<FieldErrorWrapper>();
+
+      List<String> generalErrorMessages = new List<String>();
+
+      if (errors != null) {
+        for (Database.Error error : errors) {
+          List<String> fields = error.getFields();
+
+          if (fields.isEmpty()) {
+            // This is a general error (not tied to a specific field)
+            generalErrorMessages.add(error.getMessage());
+          } else {
+            // This is a field-specific error
+            for (String field : fields) {
+              this.fieldErrors.add(
+                new FieldErrorWrapper(field, error.getMessage(), String.valueOf(error.getStatusCode()))
+              );
+            }
+          }
+        }
+      }
+
+      // Concatenate general error messages if any exist
+      if (!generalErrorMessages.isEmpty()) {
+        this.message = String.join(generalErrorMessages, '. ');
+      }
+    }
+  }
 }

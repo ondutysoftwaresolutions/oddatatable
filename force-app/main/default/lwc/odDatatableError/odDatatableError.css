@@ -1,0 +1,5 @@
+.sticky {
+  position: sticky;
+  z-index: 9999;
+  top: -1rem;
+}

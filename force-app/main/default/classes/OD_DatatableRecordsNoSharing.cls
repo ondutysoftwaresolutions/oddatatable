@@ -103,16 +103,25 @@ public without sharing class OD_DatatableRecordsNoSharing {
    * @param			String recordsToCreate : JSON string of the list of records to create
    * @param			String recordsToUpdate : JSON string of the list of records to update
    * @param			String recordsToDelete : JSON string of the list of records to delete
-   * @return			List<SObject> with the new and updated SObject records
+   * @param			Boolean allOrNone : If true, all records must save successfully or none will be saved
+   * @return			SaveResultWrapper containing success status, saved records, and any errors
    **********************************************************************************************************/
-  public static List<SObject> saveRecords(
+  public static OD_Datatable.SaveResultWrapper saveRecords(
     String objectName,
     String fields,
     String recordsToCreate,
     String recordsToUpdate,
-    String recordsToDelete
+    String recordsToDelete,
+    Boolean allOrNone
   ) {
-    return OD_DatatableService.saveRecords(objectName, fields, recordsToCreate, recordsToUpdate, recordsToDelete);
+    return OD_DatatableService.saveRecords(
+      objectName,
+      fields,
+      recordsToCreate,
+      recordsToUpdate,
+      recordsToDelete,
+      allOrNone
+    );
   }
 
   /*********************************************************************************************************

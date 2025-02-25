@@ -83,6 +83,7 @@ export default class ODDatatable extends LightningElement {
   @api inlineSave;
   @api saveLabel = 'Save';
   @api navigateNextAfterSave;
+  @api saveAllOrNone = YES_NO.YES;
 
   // platform event
   @api listenToPlatformEvent;
@@ -197,7 +198,7 @@ export default class ODDatatable extends LightningElement {
     }
 
     // check selection
-    if (isValid && !this.selectionDisabled) {
+    if (isValid && !this.selectionDisabled && this.dataToShow.length > 0) {
       if (
         this._isSelectionRequired &&
         ((this.rowRecords.length === 0 && !this._isSingleSelection) || (this._isSingleSelection && !this.rowRecordId))
@@ -285,12 +286,16 @@ export default class ODDatatable extends LightningElement {
   set initiallySelectedRows(data = []) {
     if (!this.selectionDisabled && data.length > 0) {
       // add the required _id property
-      const dataToUse = JSON.parse(JSON.stringify(data)).map((dt) => ({ ...dt, _id: dt.Id }));
+      const dataToUse = JSON.parse(JSON.stringify(data)).map((dt) => ({ ...dt, _id: dt.Id, _originalRecord: dt }));
 
       if (this._isSingleSelection) {
         this._selectedRows = [dataToUse[0]];
+        this.rowRecordId = dataToUse[0]._id;
+        this.rowRecord = dataToUse[0];
       } else {
         this._selectedRows = dataToUse;
+        this.rowRecordIds = dataToUse.map((row) => row._id);
+        this.rowRecords = dataToUse;
       }
     } else {
       this._selectedRows = [];
@@ -389,13 +394,11 @@ export default class ODDatatable extends LightningElement {
   }
 
   get maxiumRowSelection() {
-    // if any bulk operation then the selection is always multiple
     if (this.canBulkDelete === YES_NO.YES || this.canBulkEdit === YES_NO.YES || this.otherBulkFlowButtons.length > 0) {
-    } else {
-      if (this._isSingleSelection) {
-        return 1;
-      }
+      return undefined;
     }
+
+    return this._isSingleSelection ? 1 : undefined;
   }
 
   get bulkOperationDisabled() {
@@ -599,6 +602,10 @@ export default class ODDatatable extends LightningElement {
 
   get _withSharing() {
     return this.sharingContext === SHARING_CONTEXT.WITH_SHARING;
+  }
+
+  get _saveAllOrNone() {
+    return this.saveAllOrNone === YES_NO.YES;
   }
 
   // =================================================================
@@ -1234,7 +1241,7 @@ export default class ODDatatable extends LightningElement {
   // =================================================================
   _groupData(data) {
     // first check if the grouping field is in the dataset
-    const fieldInDataSet = data[0].hasOwnProperty(this.groupingField);
+    const fieldInDataSet = Object.prototype.hasOwnProperty.call(data[0], this.groupingField);
 
     if (!fieldInDataSet) {
       return data;
@@ -1292,19 +1299,21 @@ export default class ODDatatable extends LightningElement {
             ? String(valueA).localeCompare(String(valueB))
             : String(valueB).localeCompare(String(valueA));
         }
-      } else {
-        // Default sorting by group name
-        const isEmptyA = !a.group || a.group === '';
-        const isEmptyB = !b.group || b.group === '';
 
-        if (isEmptyA && isEmptyB) return 0;
-        if (isEmptyA) return 1;
-        if (isEmptyB) return -1;
-
-        return this.groupSortDirection === SORT_DIRECTION.ASC.value
-          ? a.group.localeCompare(b.group)
-          : b.group.localeCompare(a.group);
+        return 0;
       }
+
+      // Default sorting by group name
+      const isEmptyA = !a.group || a.group === '';
+      const isEmptyB = !b.group || b.group === '';
+
+      if (isEmptyA && isEmptyB) return 0;
+      if (isEmptyA) return 1;
+      if (isEmptyB) return -1;
+
+      return this.groupSortDirection === SORT_DIRECTION.ASC.value
+        ? a.group.localeCompare(b.group)
+        : b.group.localeCompare(a.group);
     });
 
     // Sort items within each group if needed
@@ -1463,6 +1472,7 @@ export default class ODDatatable extends LightningElement {
       case 'count':
         result = `Count: ${values.length.toString()}`;
         break;
+      default:
     }
 
     return result;
@@ -1748,6 +1758,8 @@ export default class ODDatatable extends LightningElement {
         rec._hasChanges = false;
       });
 
+      this._doCleanErrors();
+
       Object.keys(this._collapsedRecordsByGroupId).forEach((key) => {
         this._collapsedRecordsByGroupId[key].forEach((rec) => {
           rec._hasChanges = false;
@@ -1755,6 +1767,9 @@ export default class ODDatatable extends LightningElement {
       });
     }
 
+    this.errorMessage = false;
+    this.isSaving = false;
+    this.isLoading = false;
     this._doRemoveSessionStorage();
   }
 
@@ -1811,15 +1826,53 @@ export default class ODDatatable extends LightningElement {
   _doCleanDataToSave(data) {
     const copyData = JSON.parse(JSON.stringify(data));
 
+    // Get editable fields from columns (excluding custom columns and button columns)
+    const validFields = new Set(
+      this._allColumns
+        .filter(
+          (col) =>
+            !col.typeAttributes?.config?.isCustom && col.type !== ROW_BUTTON_TYPE && col.typeAttributes?.editable,
+        )
+        .map((col) => col.fieldName),
+    );
+
+    // add the id for updates and deletes
+    validFields.add('Id');
+
+    // add the _id for inserts
+    validFields.add('_id');
+
+    // Add master-detail fields if any
+    if (this.masterDetailConfiguration) {
+      const masterDetailConfigurationParsed = JSON.parse(this.masterDetailConfiguration);
+      Object.values(masterDetailConfigurationParsed).forEach((config) => {
+        validFields.add(config.apiName);
+      });
+    }
+
     copyData.forEach((record) => {
       Object.keys(record).forEach((key) => {
-        if (/^_/.test(key)) {
+        // Keep _id, editable fields, and master-detail fields
+        if (!validFields.has(key)) {
           delete record[key];
         }
       });
     });
 
     return copyData;
+  }
+
+  _doCleanErrors() {
+    const result = JSON.parse(JSON.stringify(this._tableData));
+
+    result.forEach((rec) => {
+      rec._originalRecord._hasError = false;
+      rec._originalRecord._errorMessage = undefined;
+      rec._originalRecord._fieldErrors = undefined;
+    });
+
+    // Create new array reference to trigger reactivity
+    this._tableData = result;
   }
 
   _doDispatchAfterSave(records) {
@@ -1830,6 +1883,56 @@ export default class ODDatatable extends LightningElement {
         },
       }),
     );
+  }
+
+  _updateRecordError(recordIndex, errorInfo) {
+    // Create completely new record object
+    const updatedRecord = {
+      ...this._tableData[recordIndex],
+      _originalRecord: {
+        ...this._tableData[recordIndex]._originalRecord,
+        _hasError: true,
+        _errorMessage: errorInfo.message,
+        _fieldErrors: errorInfo.fieldErrors,
+      },
+    };
+
+    // Create new array reference to trigger reactivity
+    this._tableData = Object.assign([], this._tableData, {
+      [recordIndex]: updatedRecord,
+    });
+  }
+
+  _doMarkErrorRecords(errors) {
+    const allOfThem = [...errors.deleteErrors, ...errors.insertErrors, ...errors.updateErrors];
+
+    allOfThem.forEach((rec) => {
+      const recordIndex = this._tableData.findIndex((rc) => rc._id === rec.recordId);
+
+      if (recordIndex !== -1) {
+        const fieldErrors = {};
+
+        // Handle field-specific errors if any
+        if (rec.fieldErrors.length > 0) {
+          rec.fieldErrors.forEach((field) => {
+            if (!fieldErrors[field.fieldName]) {
+              fieldErrors[field.fieldName] = '';
+            }
+
+            fieldErrors[field.fieldName] += `${field.message}. `;
+          });
+        }
+
+        // mark record as having error
+        this._updateRecordError(recordIndex, {
+          message: rec.message || undefined,
+          fieldErrors: rec.fieldErrors.length > 0 ? fieldErrors : {},
+        });
+      }
+    });
+
+    this.errorMessage =
+      'There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.';
   }
 
   // =================================================================
@@ -2303,6 +2406,9 @@ export default class ODDatatable extends LightningElement {
       // delete it from the storage
       this._doRemoveSessionStorage();
 
+      // remove errors from records and columns
+      this._doCleanErrors();
+
       const recordsToCreate = this._doCleanDataToSave(this.outputAddedRows);
       const recordsToEdit = this._doCleanDataToSave(this.outputEditedRows);
       const recordsToDelete = this._doCleanDataToSave(this.outputDeletedRows);
@@ -2314,16 +2420,24 @@ export default class ODDatatable extends LightningElement {
         recordsToCreate: JSON.stringify(recordsToCreate),
         recordsToUpdate: JSON.stringify(recordsToEdit),
         recordsToDelete: JSON.stringify(recordsToDelete),
+        allOrNone: this._saveAllOrNone,
       })
         .then((rs) => {
           this.isSaving = false;
           this.errorMessage = false;
 
-          // refresh the data in the table and clean the outputs
-          this._doRefreshDataAfterSave(rs, this.outputDeletedRows);
+          if (rs.records && rs.records.length > 0) {
+            // refresh the data in the table and clean the outputs
+            this._doRefreshDataAfterSave(rs.records, this.outputDeletedRows);
 
-          // dispatch the after save in case this is being used inside a lightning record page with the ids of the impacted rows
-          this._doDispatchAfterSave([...rs, ...this.outputDeletedRows]);
+            // dispatch the after save in case this is being used inside a lightning record page with the ids of the impacted rows
+            this._doDispatchAfterSave([...rs.records, ...this.outputDeletedRows]);
+          }
+
+          // if it is not a success, it means we have errors and need to highlight them
+          if (!rs.success) {
+            this._doMarkErrorRecords(rs.errors);
+          }
         })
         .catch((error) => {
           this.isSaving = false;

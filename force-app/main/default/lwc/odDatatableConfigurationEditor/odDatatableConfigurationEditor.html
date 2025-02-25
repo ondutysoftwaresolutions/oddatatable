@@ -742,6 +742,19 @@
         >
         </c-od-datatable-input-generic>
         <c-od-datatable-input-generic
+          field-name="saveAllOrNone"
+          type={inputValues.saveAllOrNone.type}
+          editable
+          toggle-value-active={yesNo.YES}
+          toggle-value-inactive={yesNo.NO}
+          class="slds-size--1-of-1"
+          value={inputValues.saveAllOrNone.value}
+          label={inputValues.saveAllOrNone.label}
+          onupdatefield={handleInputChange}
+          help-text={inputValues.saveAllOrNone.helpText}
+        >
+        </c-od-datatable-input-generic>
+        <c-od-datatable-input-generic
           field-name="navigateNextAfterSave"
           type={inputValues.navigateNextAfterSave.type}
           editable
@@ -912,7 +925,7 @@
       <lightning-button
         label="Process Configuration JSON"
         icon-name="utility:paste"
-        onclick={handleProcessConfigurationToClipboard}
+        onclick={handleProcessConfiguration}
         variant="brand"
       >
       </lightning-button>

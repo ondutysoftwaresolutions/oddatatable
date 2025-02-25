@@ -167,20 +167,21 @@ public class OD_DatatableRecordsControllerTest {
 
     Test.startTest();
 
-    List<SObject> result = OD_DatatableRecordsController.saveRecords(
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
       true,
       'Contact',
       'FirstName,LastName',
       '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
       '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
-      '[{ "Id": "' + contacts[1].Id + '"}]'
+      '[{ "Id": "' + contacts[1].Id + '"}]',
+      false
     );
 
     Test.stopTest();
 
     contacts = [SELECT Id, LastName FROM Contact ORDER BY LastName];
 
-    Assert.isTrue(result.size() == 3, 'Wrong number of returned records');
+    Assert.isTrue(result.records.size() == 3, 'Wrong number of returned records');
     Assert.isTrue(contacts.size() == 4, 'Wrong number of contacts after the process');
     Assert.areEqual(contacts[0].LastName, 'Created 1', 'Wrong last name on the first contact');
     Assert.areEqual(contacts[1].LastName, 'Created 2', 'Wrong last name on the second contact');
@@ -194,13 +195,14 @@ public class OD_DatatableRecordsControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_DatatableRecordsController.saveRecords(
+      OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
         true,
         null,
         'FirstName,LastName',
         '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
         '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
-        '[{ "Id": "' + contacts[1].Id + '"}]'
+        '[{ "Id": "' + contacts[1].Id + '"}]',
+        false
       );
     } catch (AuraHandledException e) {
       Assert.isTrue(
@@ -219,7 +221,15 @@ public class OD_DatatableRecordsControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_DatatableRecordsController.saveRecords(true, 'Contact', null, null, null, null);
+      OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+        true,
+        'Contact',
+        null,
+        null,
+        null,
+        null,
+        false
+      );
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('A list of records to add, edit and/or delete are needed to do the save'),
@@ -228,6 +238,65 @@ public class OD_DatatableRecordsControllerTest {
     }
 
     Test.stopTest();
+  }
+
+  @IsTest
+  static void testSaveRecordsWithDMLErrorsSharing() {
+    Test.startTest();
+
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+      true,
+      'Contact',
+      'FirstName,LastName',
+      '[{"FirstName": "Error1"}, {"FirstName": "Error2"}]',
+      null,
+      null,
+      false
+    );
+
+    Test.stopTest();
+
+    Assert.isFalse(result.success, 'The save operation should have failed');
+    Assert.isTrue(result.errors.insertErrors.size() > 0, 'There should be insert errors');
+
+    for (OD_Datatable.SaveErrorWrapper error : result.errors.insertErrors) {
+      Assert.isTrue(error.message != null && error.message.length() > 0, 'Error message should not be empty');
+      Assert.isTrue(error.fieldErrors.size() > 0, 'Field errors should be captured');
+
+      Boolean hasLastNameField = false;
+      for (OD_Datatable.FieldErrorWrapper fieldError : error.fieldErrors) {
+        if (fieldError.fieldName == 'LastName') {
+          hasLastNameField = true;
+          break;
+        }
+      }
+      Assert.isTrue(hasLastNameField, 'LastName field should be in the field errors');
+    }
+  }
+
+  @IsTest
+  static void testSaveRecordsWithGeneralErrorsSharing() {
+    Test.startTest();
+
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+      true,
+      'Contact',
+      'FirstName,LastName',
+      '[{"FirstName": "Error1"}, {"FirstName": "Error2"}]',
+      null,
+      null,
+      false
+    );
+
+    Test.stopTest();
+
+    Assert.isFalse(result.success, 'The save operation should have failed');
+    Assert.isTrue(result.errors.insertErrors.size() > 0, 'There should be insert errors');
+
+    for (OD_Datatable.SaveErrorWrapper error : result.errors.insertErrors) {
+      Assert.isTrue(error.message != null && error.message.length() > 0, 'Error message should not be empty');
+      Assert.isTrue(error.fieldErrors.size() > 0, 'Field errors should be captured');
+    }
   }
 
   @IsTest
@@ -470,20 +539,21 @@ public class OD_DatatableRecordsControllerTest {
 
     Test.startTest();
 
-    List<SObject> result = OD_DatatableRecordsController.saveRecords(
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
       false,
       'Contact',
       'FirstName,LastName',
       '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
       '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
-      '[{ "Id": "' + contacts[1].Id + '"}]'
+      '[{ "Id": "' + contacts[1].Id + '"}]',
+      false
     );
 
     Test.stopTest();
 
     contacts = [SELECT Id, LastName FROM Contact ORDER BY LastName];
 
-    Assert.isTrue(result.size() == 3, 'Wrong number of returned records');
+    Assert.isTrue(result.records.size() == 3, 'Wrong number of returned records');
     Assert.isTrue(contacts.size() == 4, 'Wrong number of contacts after the process');
     Assert.areEqual(contacts[0].LastName, 'Created 1', 'Wrong last name on the first contact');
     Assert.areEqual(contacts[1].LastName, 'Created 2', 'Wrong last name on the second contact');
@@ -497,13 +567,14 @@ public class OD_DatatableRecordsControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_DatatableRecordsController.saveRecords(
+      OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
         false,
         null,
         'FirstName,LastName',
         '[{"LastName": "Created 1"},{"LastName": "Created 2"}]',
         '[{ "Id": "' + contacts[0].Id + '", "LastName": "LastName Updated"}]',
-        '[{ "Id": "' + contacts[1].Id + '"}]'
+        '[{ "Id": "' + contacts[1].Id + '"}]',
+        false
       );
     } catch (AuraHandledException e) {
       Assert.isTrue(
@@ -522,7 +593,15 @@ public class OD_DatatableRecordsControllerTest {
     Test.startTest();
 
     try {
-      List<SObject> result = OD_DatatableRecordsController.saveRecords(false, 'Contact', null, null, null, null);
+      OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+        false,
+        'Contact',
+        null,
+        null,
+        null,
+        null,
+        false
+      );
     } catch (AuraHandledException e) {
       Assert.isTrue(
         e.getMessage().contains('A list of records to add, edit and/or delete are needed to do the save'),
@@ -531,6 +610,65 @@ public class OD_DatatableRecordsControllerTest {
     }
 
     Test.stopTest();
+  }
+
+  @IsTest
+  static void testSaveRecordsWithDMLErrorsNoSharing() {
+    Test.startTest();
+
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+      false,
+      'Contact',
+      'FirstName,LastName',
+      '[{"FirstName": "Error1"}, {"FirstName": "Error2"}]',
+      null,
+      null,
+      false
+    );
+
+    Test.stopTest();
+
+    Assert.isFalse(result.success, 'The save operation should have failed');
+    Assert.isTrue(result.errors.insertErrors.size() > 0, 'There should be insert errors');
+
+    for (OD_Datatable.SaveErrorWrapper error : result.errors.insertErrors) {
+      Assert.isTrue(error.message != null && error.message.length() > 0, 'Error message should not be empty');
+      Assert.isTrue(error.fieldErrors.size() > 0, 'Field errors should be captured');
+
+      Boolean hasLastNameField = false;
+      for (OD_Datatable.FieldErrorWrapper fieldError : error.fieldErrors) {
+        if (fieldError.fieldName == 'LastName') {
+          hasLastNameField = true;
+          break;
+        }
+      }
+      Assert.isTrue(hasLastNameField, 'LastName field should be in the field errors');
+    }
+  }
+
+  @IsTest
+  static void testSaveRecordsWithGeneralErrorsNoSharing() {
+    Test.startTest();
+
+    OD_Datatable.SaveResultWrapper result = OD_DatatableRecordsController.saveRecords(
+      false,
+      'Contact',
+      'FirstName,LastName',
+      '[{"FirstName": "Error1"}, {"FirstName": "Error2"}]',
+      null,
+      null,
+      false
+    );
+
+    Test.stopTest();
+
+    Assert.isFalse(result.success, 'The save operation should have failed');
+    Assert.isTrue(result.errors.insertErrors.size() > 0, 'There should be insert errors');
+
+    for (OD_Datatable.SaveErrorWrapper error : result.errors.insertErrors) {
+      Assert.isTrue(error.message != null && error.message.length() > 0, 'Error message should not be empty');
+      Assert.isTrue(error.fieldErrors.size() > 0, 'Field errors should be captured');
+    }
   }
 
   @IsTest

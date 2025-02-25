@@ -94,25 +94,7 @@ export default class ODInputGeneric extends LightningElement {
 
   renderedCallback() {
     if (!this._alreadyRendered && this.afterValidate) {
-      // check the inputs
-      const elementInput = this.template.querySelector('lightning-input');
-      const elementTextarea = this.template.querySelector('lightning-textarea');
-      const elementRichTextarea = this.template.querySelector('lightning-input-rich-text');
-
-      // inputs
-      if (elementInput) {
-        elementInput.reportValidity();
-      }
-
-      // text areas
-      if (elementTextarea) {
-        elementTextarea.reportValidity();
-      }
-
-      // rich text areas
-      if (elementRichTextarea) {
-        elementRichTextarea.reportValidity();
-      }
+      this._doValidateInputs();
 
       this._alreadyRendered = true;
     }
@@ -121,6 +103,13 @@ export default class ODInputGeneric extends LightningElement {
   // =======================================================================================================================================================================================================================================
   // getter methods
   // =======================================================================================================================================================================================================================================
+  @api
+  updateError(message) {
+    Promise.resolve().then(() => {
+      this._doValidateInputs(message);
+    });
+  }
+
   get showLabel() {
     return this.label;
   }
@@ -350,7 +339,7 @@ export default class ODInputGeneric extends LightningElement {
   }
 
   get richTextAreaValid() {
-    return this.required && this.theValue;
+    return (this.required && this.theValue) || !this.required;
   }
 
   // =======================================================================================================================================================================================================================================
@@ -366,6 +355,40 @@ export default class ODInputGeneric extends LightningElement {
     const event = new CustomEvent('updatefield', { detail });
 
     this.dispatchEvent(event);
+  }
+
+  _doValidateInputs(errorMessage = undefined) {
+    // check the inputs
+    const elementInput = this.template.querySelector('lightning-input');
+    const elementTextarea = this.template.querySelector('lightning-textarea');
+    const elementRichTextarea = this.template.querySelector('lightning-input-rich-text');
+
+    // inputs
+    if (elementInput) {
+      if (!isEmpty(errorMessage)) {
+        elementInput.setCustomValidity(errorMessage);
+      }
+
+      elementInput.reportValidity();
+    }
+
+    // text areas
+    if (elementTextarea) {
+      if (!isEmpty(errorMessage)) {
+        elementTextarea.setCustomValidity(errorMessage);
+      }
+
+      elementTextarea.reportValidity();
+    }
+
+    // rich text areas
+    if (elementRichTextarea) {
+      if (!isEmpty(errorMessage)) {
+        elementRichTextarea.setCustomValidity(errorMessage);
+      }
+
+      elementRichTextarea.reportValidity();
+    }
   }
 
   // =======================================================================================================================================================================================================================================

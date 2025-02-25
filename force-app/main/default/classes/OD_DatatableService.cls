@@ -324,23 +324,34 @@ public inherited sharing class OD_DatatableService {
    * @name			saveRecords
    * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
    * @created			27 / 07 / 2023
-   * @description		Save the records (add, edit and delete)
+   * @description		Save the records (add, edit and delete) with error handling for each operation.
+   *                  Returns a wrapper containing success status, successfully saved records, and
+   *                  detailed error information for any failed operations including field-level errors.
    * @param			String objectName : The Name of the object to modify
    * @param			String fields : Comma separated field names to retrieve after insert/update
    * @param			String recordsToCreate : JSON string of the list of records to create
    * @param			String recordsToUpdate : JSON string of the list of records to update
    * @param			String recordsToDelete : JSON string of the list of records to delete
-   * @return			List<SObject> with the new and updated SObject records
+   * @param			Boolean allOrNone : If true, all records must save successfully or none will be saved
+   * @return			SaveResultWrapper containing:
+   *                  - success (Boolean): Overall operation success
+   *                  - records (List<SObject>): Successfully saved records
+   *                  - errors (SaveErrorsWrapper):
+   *                      - insertErrors: Failed insert operations with record index, message, and fields
+   *                      - updateErrors: Failed update operations with record ID, message, and fields
+   *                      - deleteErrors: Failed delete operations with record ID and message
    **********************************************************************************************************/
-  public static List<SObject> saveRecords(
+  public static OD_Datatable.SaveResultWrapper saveRecords(
     String objectName,
     String fields,
     String recordsToCreate,
     String recordsToUpdate,
-    String recordsToDelete
+    String recordsToDelete,
+    Boolean allOrNone
   ) {
     try {
-      List<SObject> result = new List<SObject>();
+      OD_Datatable.SaveResultWrapper result = new OD_Datatable.SaveResultWrapper();
+      List<SObject> successRecords = new List<SObject>();
 
       // type to deserialise
       String strType = 'List<' + objectName + '>';
@@ -360,41 +371,110 @@ public inherited sharing class OD_DatatableService {
         throw e;
       }
 
+      // Create a savepoint at the start
+      Savepoint sp = Database.setSavepoint();
+
       // create new records
       if (String.isNotBlank(recordsToCreate)) {
-        List<SObject> listToCreate = (List<SObject>) JSON.deserialize(recordsToCreate, theType);
+        // First deserialize to List<Object> and convert each item to Map
+        List<Object> rawList = (List<Object>) JSON.deserializeUntyped(recordsToCreate);
+        List<Map<String, Object>> recordMaps = new List<Map<String, Object>>();
+        for (Object item : rawList) {
+          recordMaps.add((Map<String, Object>) item);
+        }
 
-        insert listToCreate;
+        List<SObject> listToCreate = new List<SObject>();
 
-        Formula.recalculateFormulas(listToCreate);
+        // Convert to SObjects for DML
+        for (Map<String, Object> recordMap : recordMaps) {
+          SObject newRecord = (SObject) Type.forName(objectName).newInstance();
+          for (String field : recordMap.keySet()) {
+            if (!field.startsWith('_')) {
+              // Skip _id and other special fields
+              newRecord.put(field, recordMap.get(field));
+            }
+          }
+          listToCreate.add(newRecord);
+        }
 
-        result.addAll(listToCreate);
+        List<Database.SaveResult> createResults = Database.insert(listToCreate, false); // Always false to get error details
+
+        for (Integer i = 0; i < createResults.size(); i++) {
+          Database.SaveResult sr = createResults[i];
+          if (sr.isSuccess()) {
+            successRecords.add(listToCreate[i]);
+          } else {
+            result.success = false;
+            result.errors.insertErrors.add(
+              new OD_Datatable.SaveErrorWrapper(
+                (String) recordMaps[i].get('_id'), // Use the preserved _id
+                sr.getErrors()[0].getMessage(),
+                sr.getErrors()
+              )
+            );
+          }
+        }
+
+        if (!successRecords.isEmpty()) {
+          Formula.recalculateFormulas(successRecords);
+        }
       }
 
       // update records
       if (String.isNotBlank(recordsToUpdate)) {
         List<SObject> listToUpdate = (List<SObject>) JSON.deserialize(recordsToUpdate, theType);
+        List<Database.SaveResult> updateResults = Database.update(listToUpdate, false); // Always false to get error details
 
-        update listToUpdate;
+        for (Integer i = 0; i < updateResults.size(); i++) {
+          Database.SaveResult sr = updateResults[i];
+          if (sr.isSuccess()) {
+            successRecords.add(listToUpdate[i]);
+          } else {
+            result.success = false;
+            result.errors.updateErrors.add(
+              new OD_Datatable.SaveErrorWrapper(listToUpdate[i].Id, sr.getErrors()[0].getMessage(), sr.getErrors())
+            );
+          }
+        }
 
-        Formula.recalculateFormulas(listToUpdate);
-
-        result.addAll(listToUpdate);
+        if (!successRecords.isEmpty()) {
+          Formula.recalculateFormulas(successRecords);
+        }
       }
 
       // delete records
       if (String.isNotBlank(recordsToDelete)) {
         List<SObject> listToDelete = (List<SObject>) JSON.deserialize(recordsToDelete, theType);
+        List<Database.DeleteResult> deleteResults = Database.delete(listToDelete, false); // Always false to get error details
 
-        delete listToDelete;
+        for (Integer i = 0; i < deleteResults.size(); i++) {
+          Database.DeleteResult dr = deleteResults[i];
+          if (!dr.isSuccess()) {
+            result.success = false;
+            result.errors.deleteErrors.add(
+              new OD_Datatable.SaveErrorWrapper(listToDelete[i].Id, dr.getErrors()[0].getMessage(), dr.getErrors())
+            );
+          }
+        }
       }
 
-      List<Id> listIdsToQuery = new List<Id>();
-      for (SObject record : result) {
-        listIdsToQuery.add(record.Id);
+      // If allOrNone is true and we had any errors, rollback everything
+      if (allOrNone && !result.success) {
+        Database.rollback(sp);
+        result.records = new List<SObject>();
+        return result;
       }
 
-      return getRecords(objectName, fields, 'Id', listIdsToQuery);
+      // Query and return successful records
+      if (!successRecords.isEmpty()) {
+        List<Id> listIdsToQuery = new List<Id>();
+        for (SObject record : successRecords) {
+          listIdsToQuery.add(record.Id);
+        }
+        result.records = getRecords(objectName, fields, 'Id', listIdsToQuery);
+      }
+
+      return result;
     } catch (AuraHandledException e) {
       throw e;
     } catch (DmlException e) {

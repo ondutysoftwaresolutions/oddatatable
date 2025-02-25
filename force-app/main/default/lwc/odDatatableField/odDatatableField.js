@@ -98,6 +98,23 @@ export default class OdDatatableField extends LightningElement {
     return !hidden;
   }
 
+  get errorMessage() {
+    let error = '';
+
+    if (this.record._hasError) {
+      if (this.record._fieldErrors[this.fieldName]) {
+        error += this.record._fieldErrors[this.fieldName];
+      }
+
+      // add general error
+      if (this.record._errorMessage) {
+        error += error ? `. ${this.record._errorMessage}` : this.record._errorMessage;
+      }
+    }
+
+    return error;
+  }
+
   get cellClasses() {
     let cellClassesToUse = this.config.cellClasses || '';
     if (this.config.alignment) {
@@ -106,6 +123,16 @@ export default class OdDatatableField extends LightningElement {
       if (this.config.alignment === ALIGNMENT_OPTIONS.RIGHT.value) {
         cellClassesToUse += ' slds-p-right--xx-small';
       }
+    }
+
+    if (this.errorMessage) {
+      cellClassesToUse += ' slds-has-error';
+    }
+
+    // get the input generic element
+    const input = this.template.querySelector('c-od-datatable-input-generic');
+    if (input) {
+      input.updateError(this.errorMessage);
     }
 
     return this.isDeleted

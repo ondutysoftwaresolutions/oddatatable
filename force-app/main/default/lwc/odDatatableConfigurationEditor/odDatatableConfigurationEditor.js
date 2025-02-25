@@ -1,3 +1,4 @@
+/* eslint-disable @lwc/lwc/no-inner-html */
 import { LightningElement, api, track, wire } from 'lwc';
 import { loadStyle } from 'lightning/platformResourceLoader';
 import Toast from 'lightning/toast';
@@ -302,6 +303,14 @@ export default class OdConfigurationEditor extends LightningElement {
       value: 'Save',
       canBeEmpty: true,
       helpText: 'Label to show in the Save button if inline save is enabled.',
+    },
+    saveAllOrNone: {
+      label: 'Save All or None?',
+      type: FIELD_TYPES.TOGGLE,
+      valueType: FIELD_TYPES.STRING,
+      value: YES_NO.YES,
+      helpText:
+        "If disabled and a record fails, the remainder of the records can still be saved. If enabled and the method isn't successful, no records will be saved.",
     },
     navigateNextAfterSave: {
       label: 'Navigate Next after Save?',
@@ -1074,7 +1083,7 @@ export default class OdConfigurationEditor extends LightningElement {
       }
 
       // dispatch the change
-      const detail = {
+      let detail = {
         name: event.detail.fieldName,
         newValue: value ? value : null,
         newValueDataType: inputValue.valueType,
@@ -1103,7 +1112,7 @@ export default class OdConfigurationEditor extends LightningElement {
 
       // if it's grouping source and the value is field, send the source field data too
       if (event.detail.fieldName === 'groupingSource' && value === GROUPING_SOURCE.FIELD) {
-        const detail = {
+        detail = {
           name: 'groupingSourceFieldData',
           newValue: this.groupingFieldConfiguration.options.map((opt) => opt.value).join(','),
           newValueDataType: this.inputValues.groupingSourceFieldData.valueType,
@@ -1295,6 +1304,7 @@ export default class OdConfigurationEditor extends LightningElement {
   }
 
   handleCopyConfigurationToClipboard() {
+    // eslint-disable-next-line no-unused-vars
     const { tableData, ...other } = this.inputValues;
 
     const valueToCopy = JSON.stringify(other);
@@ -1325,7 +1335,7 @@ export default class OdConfigurationEditor extends LightningElement {
     );
   }
 
-  handleProcessConfigurationToClipboard() {
+  handleProcessConfiguration() {
     if (!this.configurationJSON) {
       Toast.show(
         {
@@ -1340,6 +1350,7 @@ export default class OdConfigurationEditor extends LightningElement {
       const configuration = JSON.parse(this.configurationJSON);
 
       this.inputValues = {
+        ...this.inputValues,
         ...configuration,
         tableData: this.inputValues.tableData,
       };
@@ -1364,7 +1375,7 @@ export default class OdConfigurationEditor extends LightningElement {
       Toast.show(
         {
           label: 'Processed!',
-          message: 'The configuration was processed successfully',
+          message: 'The configuration was process successfully',
           mode: 'dismissible',
           variant: 'success',
         },

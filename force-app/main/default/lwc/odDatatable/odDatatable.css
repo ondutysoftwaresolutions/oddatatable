@@ -12,3 +12,12 @@
   outline: none;
   box-shadow: none;
 }
+
+.save-inline-buttons {
+  position: sticky;
+  bottom: -1rem;
+  padding: 0.5rem;
+  background: white;
+  border-top: 1px solid rgb(201 201 201);
+  z-index: 1;
+}

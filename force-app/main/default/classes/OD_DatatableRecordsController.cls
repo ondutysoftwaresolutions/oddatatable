@@ -143,16 +143,18 @@ public without sharing class OD_DatatableRecordsController {
    * @param			String recordsToCreate : JSON string of the list of records to create
    * @param			String recordsToUpdate : JSON string of the list of records to update
    * @param			String recordsToDelete : JSON string of the list of records to delete
-   * @return			List<SObject> with the new and updated SObject records
+   * @param			Boolean allOrNone : If true, all records must save successfully or none will be saved
+   * @return			SaveResultWrapper containing success status, saved records, and any errors
    **********************************************************************************************************/
   @AuraEnabled
-  public static List<SObject> saveRecords(
+  public static OD_Datatable.SaveResultWrapper saveRecords(
     Boolean withSharing,
     String objectName,
     String fields,
     String recordsToCreate,
     String recordsToUpdate,
-    String recordsToDelete
+    String recordsToDelete,
+    Boolean allOrNone
   ) {
     if (withSharing) {
       return OD_DatatableRecordsSharing.saveRecords(
@@ -160,7 +162,8 @@ public without sharing class OD_DatatableRecordsController {
         fields,
         recordsToCreate,
         recordsToUpdate,
-        recordsToDelete
+        recordsToDelete,
+        allOrNone
       );
     } else {
       return OD_DatatableRecordsNoSharing.saveRecords(
@@ -168,7 +171,8 @@ public without sharing class OD_DatatableRecordsController {
         fields,
         recordsToCreate,
         recordsToUpdate,
-        recordsToDelete
+        recordsToDelete,
+        allOrNone
       );
     }
   }
