@@ -5,7 +5,7 @@
 ## Object and Columns
 
 **Object Name**: Select the object to use for the source of the table
-**Configure Columns**: See section below **Columns**
+**Configure Columns**: [Columns Documentation](./columns/README.md)
 
 ## Data
 
