@@ -1,16 +1,16 @@
 {
-  "name": "signature-pad",
+  "name": "oddatatable",
   "private": true,
   "license": "MIT",
   "author": {
     "email": "ing.martinez.pablo@gmail.com",
     "name": "On Duty Software Solutions"
   },
-  "version": "1.0.0",
-  "description": "Lightning Web Component for a Signature Pad. Can be used in Lightning Experience and Flows. Supports Guest Users in Experience Cloud",
+  "version": "2.1.0",
+  "description": "Enhanced Datatable Lightning Web Component for Salesforce. Can be used in Flow Screens, Lightning Record Pages, and Experience Cloud.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ondutysoftwaresolutions/signaturePad"
+    "url": "https://github.com/ondutysoftwaresolutions/oddatatable"
   },
   "scripts": {
     "lint": "eslint **/{aura,lwc}/**",

@@ -15,4 +15,4 @@
    b. **Field API Name**: API Name of the field in the related object that links it to this record (e.g. AccountId).
    c. **Custom Metadata Name**: This is the custom metadata name that contains the configuration in JSON format (the one we built above).
 
-**NOTE**: If you hace Save enabled, the component will add the _Field API Name_: _Current Record Id_ to every record that is being added. You do not need to specify anything for that field, the component will always add the relationship to the current record, based on the field specified in the properties.
+**NOTE**: When Save is enabled, the component automatically adds the relationship between new records and the current record. The component uses the specified Field API Name to create this relationship, populating it with the Current Record Id. You don't need to manually specify this field in new records - the component handles this relationship automatically.

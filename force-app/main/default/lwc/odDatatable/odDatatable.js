@@ -198,7 +198,7 @@ export default class ODDatatable extends LightningElement {
     }
 
     // check selection
-    if (isValid && !this.selectionDisabled && this.dataToShow.length > 0) {
+    if (isValid && !this.selectionDisabled && this.dataToShow.length > 0 && !this.isSaving) {
       if (
         this._isSelectionRequired &&
         ((this.rowRecords.length === 0 && !this._isSingleSelection) || (this._isSingleSelection && !this.rowRecordId))
@@ -718,19 +718,21 @@ export default class ODDatatable extends LightningElement {
       result = result.concat(this.outputAddedRows);
     }
 
-    const totalRow = this._checkAndSummarize(result);
+    if (result.length > 0) {
+      const totalRow = this._checkAndSummarize(result);
 
-    result = this.showGrouping ? this._groupData(result) : result;
+      result = this.showGrouping ? this._groupData(result) : result;
 
-    // add the total row to the end if any
-    if (totalRow) {
-      // check if everything is selected, then select this row too
-      const selectedIds = new Set(this.selectedRowsIds);
-      if (result.every((item) => selectedIds.has(item._id))) {
-        this._selectedRows.push(totalRow);
+      // add the total row to the end if any
+      if (totalRow) {
+        // check if everything is selected, then select this row too
+        const selectedIds = new Set(this.selectedRowsIds);
+        if (result.every((item) => selectedIds.has(item._id))) {
+          this._selectedRows.push(totalRow);
+        }
+
+        result.push(totalRow);
       }
-
-      result.push(totalRow);
     }
 
     this._tableData = result;
