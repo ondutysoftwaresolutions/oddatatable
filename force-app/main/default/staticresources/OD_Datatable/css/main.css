@@ -1,3 +1,7 @@
+.modal-container.slds-modal__container:has(.od-datatable) {
+  max-width: unset;;
+}
+
 .od-datatable {
   --height-row: 42px;
 }
