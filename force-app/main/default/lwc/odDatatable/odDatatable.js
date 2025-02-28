@@ -1877,14 +1877,8 @@ export default class ODDatatable extends LightningElement {
     this._tableData = result;
   }
 
-  _doDispatchAfterSave(records) {
-    this.dispatchEvent(
-      new CustomEvent('aftersave', {
-        detail: {
-          recordIds: records.map((record) => ({ recordId: record.Id })),
-        },
-      }),
-    );
+  _doDispatchAfterSave() {
+    this.dispatchEvent(new CustomEvent('aftersave'));
   }
 
   _updateRecordError(recordIndex, errorInfo) {
@@ -1906,35 +1900,46 @@ export default class ODDatatable extends LightningElement {
   }
 
   _doMarkErrorRecords(errors) {
-    const allOfThem = [...errors.deleteErrors, ...errors.insertErrors, ...errors.updateErrors];
+    if (errors.deleteErrors.length > 0) {
+      this.errorMessage = '';
+      errors.deleteErrors.forEach((rec) => {
+        this.errorMessage += `${rec.message}. `;
+      });
+    }
 
-    allOfThem.forEach((rec) => {
-      const recordIndex = this._tableData.findIndex((rc) => rc._id === rec.recordId);
+    // for the update and the insert, do errors in the rows and add a generic message
+    const insertUpdate = [...errors.insertErrors, ...errors.updateErrors];
 
-      if (recordIndex !== -1) {
-        const fieldErrors = {};
+    if (insertUpdate.length > 0) {
+      insertUpdate.forEach((rec) => {
+        const recordIndex = this._tableData.findIndex((rc) => rc._id === rec.recordId);
 
-        // Handle field-specific errors if any
-        if (rec.fieldErrors.length > 0) {
-          rec.fieldErrors.forEach((field) => {
-            if (!fieldErrors[field.fieldName]) {
-              fieldErrors[field.fieldName] = '';
-            }
+        if (recordIndex !== -1) {
+          const fieldErrors = {};
 
-            fieldErrors[field.fieldName] += `${field.message}. `;
+          // Handle field-specific errors if any
+          if (rec.fieldErrors.length > 0) {
+            rec.fieldErrors.forEach((field) => {
+              if (!fieldErrors[field.fieldName]) {
+                fieldErrors[field.fieldName] = '';
+              }
+
+              fieldErrors[field.fieldName] += `${field.message}. `;
+            });
+          }
+
+          // mark record as having error
+          this._updateRecordError(recordIndex, {
+            message: rec.message || undefined,
+            fieldErrors: rec.fieldErrors.length > 0 ? fieldErrors : {},
           });
         }
+      });
 
-        // mark record as having error
-        this._updateRecordError(recordIndex, {
-          message: rec.message || undefined,
-          fieldErrors: rec.fieldErrors.length > 0 ? fieldErrors : {},
-        });
-      }
-    });
-
-    this.errorMessage =
-      'There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.';
+      this.errorMessage =
+        this.errorMessage ||
+        'There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.';
+    }
   }
 
   // =================================================================
@@ -2428,12 +2433,12 @@ export default class ODDatatable extends LightningElement {
           this.isSaving = false;
           this.errorMessage = false;
 
-          if (rs.records && rs.records.length > 0) {
+          if ((rs.records && rs.records.length > 0) || this.outputDeletedRows.length > 0) {
             // refresh the data in the table and clean the outputs
             this._doRefreshDataAfterSave(rs.records, this.outputDeletedRows);
 
             // dispatch the after save in case this is being used inside a lightning record page with the ids of the impacted rows
-            this._doDispatchAfterSave([...rs.records, ...this.outputDeletedRows]);
+            this._doDispatchAfterSave();
           }
 
           // if it is not a success, it means we have errors and need to highlight them

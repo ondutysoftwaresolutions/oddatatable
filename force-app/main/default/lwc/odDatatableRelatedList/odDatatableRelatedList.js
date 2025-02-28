@@ -1,7 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { RefreshEvent } from 'lightning/refresh';
 import getRecordsRelatedList from '@salesforce/apex/OD_DatatableRecordsController.getRecordsRelatedList';
 import getConfigurationRelatedList from '@salesforce/apex/OD_DatatableConfigurationController.getConfigurationRelatedList';
-import { notifyRecordUpdateAvailable } from 'lightning/uiRecordApi';
 import { generateRandomString, reduceErrors } from 'c/odDatatableUtils';
 import { GROUPING_SOURCE, SHARING_CONTEXT, SORT_DIRECTION, YES_NO } from 'c/odDatatableConstants';
 
@@ -319,11 +319,7 @@ export default class OdDatatableRelatedList extends LightningElement {
   // =================================================================
   // Handler methods
   // =================================================================
-  handleAfterSave(e) {
-    const recordIds = JSON.parse(JSON.stringify(e.detail.recordIds));
-
-    recordIds.push({ recordId: this.recordId });
-
-    notifyRecordUpdateAvailable(recordIds);
+  handleAfterSave() {
+    this.dispatchEvent(new RefreshEvent());
   }
 }
