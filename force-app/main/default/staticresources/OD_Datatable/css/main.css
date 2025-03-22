@@ -6,6 +6,12 @@
   --height-row: 42px;
 }
 
+:not(.in-record-page) .sticky {
+  position: sticky;
+  z-index: 9999;
+  top: -1rem;
+}
+
 #wrapper-body > .quick-actions-panel, 
 #wrapper-body > .quick-actions-panel > .slds-modal__content,
 .od-datatable-dropdown-open flowruntime-lwc-body {

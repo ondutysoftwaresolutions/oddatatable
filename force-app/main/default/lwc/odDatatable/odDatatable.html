@@ -6,10 +6,7 @@
     <!-- This is in case a configuration of a field has changed in Salesforce after building the table -->
     <template lwc:if={fieldsThatChanged.length}>
       <div class="slds-m-bottom--small slds-p-bottom--x-large slds-theme--error">
-        <div class="slds-p-around--medium slds-text-heading_medium">
-          The following fields have changed, please reconfigure the table before using it as it can cause errors when
-          saving:
-        </div>
+        <div class="slds-p-around--medium slds-text-heading_medium">{labels.fieldsHaveChanged}</div>
         <ul class="slds-p-left--x-large slds-text-heading--small">
           <template for:each={fieldsThatChanged} for:item="fl">
             <li key={fl.name} class="slds-list--dotted">{fl.label}</li>
@@ -27,8 +24,8 @@
           <lightning-button-icon
             class="exportButton"
             icon-name="utility:download"
-            alternative-text="Download"
-            title="Download"
+            alternative-text={labels.download}
+            title={labels.download}
             onclick={handleExport}
             variant="brand-outline"
           >
@@ -65,7 +62,7 @@
         <template lwc:if={showPaginationNavigationOptions}>
           <lightning-button
             variant="base"
-            label="First"
+            label={labels.paginationFirst}
             onclick={handleFirstPage}
             class="slds-m-right_xx-small"
             disabled={isFirstPage}
@@ -73,7 +70,7 @@
           </lightning-button>
           <lightning-button
             variant="base"
-            label="Prev"
+            label={labels.paginationPrev}
             onclick={handlePrevPage}
             class="slds-m-right_xx-small"
             disabled={isFirstPage}
@@ -88,13 +85,13 @@
         <template lwc:if={showPaginationNavigationOptions}>
           <lightning-button
             variant="base"
-            label="Next"
+            label={labels.paginationNext}
             onclick={handleNextPage}
             class="slds-m-right_xx-small"
             disabled={isLastPage}
           >
           </lightning-button>
-          <lightning-button variant="base" label="Last" onclick={handleLastPage} disabled={isLastPage}>
+          <lightning-button variant="base" label={labels.paginationLast} onclick={handleLastPage} disabled={isLastPage}>
           </lightning-button>
         </template>
       </div>
@@ -255,7 +252,7 @@
       <!-- Save and cancel buttons -->
       <template lwc:if={showSaveButtons}>
         <div class="slds-align--absolute-center slds-grid slds-wrap save-inline-buttons">
-          <lightning-button label="Cancel" onclick={handleCancel}> </lightning-button>
+          <lightning-button label={labels.cancel} onclick={handleCancel}> </lightning-button>
           <lightning-button class="slds-m-left--xx-small" label={saveLabel} variant="brand" onclick={handleSave}>
           </lightning-button>
         </div>

@@ -1,6 +1,10 @@
 import { LightningElement, api } from 'lwc';
 import getRecordsForLookup from '@salesforce/apex/OD_DatatableRecordsController.getRecordsForLookup';
 import getLookupRecord from '@salesforce/apex/OD_DatatableRecordsController.getLookupRecord';
+import START_TYPING_LABEL from '@salesforce/label/c.Autocomplete_Start_Typing';
+import PLACEHOLDER_LABEL from '@salesforce/label/c.Autocomplete_Placeholder';
+import NO_OPTIONS_LABEL from '@salesforce/label/c.Autocomplete_No_Options';
+import LABEL_NOT_FOUND_LABEL from '@salesforce/label/c.Autocomplete_Label_Not_Found';
 import { SERVER_SIDE_SEARCH } from 'c/odDatatableConstants';
 import { isEmpty, reduceErrors } from 'c/odDatatableUtils';
 
@@ -80,12 +84,12 @@ export default class ODInputAutocomplete extends LightningElement {
 
   get noOptionText() {
     return this.isServerSearch && !this._searched && this.opened && !this.isSearching
-      ? 'Start typing...'
-      : 'No options found.';
+      ? START_TYPING_LABEL
+      : NO_OPTIONS_LABEL;
   }
 
   get thePlaceholder() {
-    return this.placeholder || 'Select...';
+    return this.placeholder || PLACEHOLDER_LABEL;
   }
 
   get noOptionClasses() {
@@ -142,7 +146,7 @@ export default class ODInputAutocomplete extends LightningElement {
             result.push(record);
           } else {
             result.push({
-              label: 'Label not found',
+              label: LABEL_NOT_FOUND_LABEL,
               value: element,
             });
           }

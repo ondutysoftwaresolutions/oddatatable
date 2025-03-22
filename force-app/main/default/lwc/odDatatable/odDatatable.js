@@ -6,6 +6,24 @@ import OD_DatatableResource from '@salesforce/resourceUrl/OD_Datatable';
 import getFieldsForObject from '@salesforce/apex/OD_DatatableRecordsController.getFieldsForObject';
 import saveRecords from '@salesforce/apex/OD_DatatableRecordsController.saveRecords';
 import getRecords from '@salesforce/apex/OD_DatatableRecordsController.getRecords';
+import DOWNLOAD_LABEL from '@salesforce/label/c.Download';
+import CANCEL_BUTTON_LABEL from '@salesforce/label/c.Cancel_Button';
+import PAGINATION_FIRST_LABEL from '@salesforce/label/c.Pagination_First';
+import PAGINATION_LAST_LABEL from '@salesforce/label/c.Pagination_Last';
+import PAGINATION_NEXT_LABEL from '@salesforce/label/c.Pagination_Next';
+import PAGINATION_PREV_LABEL from '@salesforce/label/c.Pagination_Prev';
+import FIELDS_HAVE_CHANGED_LABEL from '@salesforce/label/c.Fields_Have_Changed_Error';
+import GENERIC_VALIDATION_LABEL from '@salesforce/label/c.Generic_Validation_Error';
+import SELECT_VALIDATION_LABEL from '@salesforce/label/c.Select_Validation_Error';
+import SAVE_VALIDATION_LABEL from '@salesforce/label/c.Save_Validation_Error';
+import ADD_EDIT_FLOW_LABEL from '@salesforce/label/c.Add_Edit_Flow_Label';
+import FLOW_BUTTON_LABEL from '@salesforce/label/c.Flow_Button_Label';
+import PLATFORM_EVENT_WAITING_MESSAGE from '@salesforce/label/c.Platforrm_Event_Waiting';
+import TOTALS_LABEL from '@salesforce/label/c.Totals_Label';
+import COUNT_LABEL from '@salesforce/label/c.Count_Label';
+import SAVING_GENERIC_ERROR_MESSAGE from '@salesforce/label/c.Saving_Generic_Error_Message';
+import GROUP_NAME_CSV_COLUMN_LABEL from '@salesforce/label/c.Group_Name_CSV_Column_Label';
+
 import {
   ALIGNMENT_OPTIONS,
   HEADER_ACTION_TYPES,
@@ -24,6 +42,7 @@ import {
   SHARING_CONTEXT,
 } from 'c/odDatatableConstants';
 import {
+  isEmpty,
   reduceErrors,
   getFieldType,
   getPrecision,
@@ -144,6 +163,16 @@ export default class ODDatatable extends LightningElement {
   savingMessage = ' ';
   currentPage = 0;
 
+  labels = {
+    download: DOWNLOAD_LABEL,
+    cancel: CANCEL_BUTTON_LABEL,
+    paginationFirst: PAGINATION_FIRST_LABEL,
+    paginationLast: PAGINATION_LAST_LABEL,
+    paginationNext: PAGINATION_NEXT_LABEL,
+    paginationPrev: PAGINATION_PREV_LABEL,
+    fieldsHaveChanged: FIELDS_HAVE_CHANGED_LABEL,
+  };
+
   fieldsThatChanged = [];
 
   showBulkEditPopup = false;
@@ -167,7 +196,7 @@ export default class ODDatatable extends LightningElement {
   @api
   validate() {
     let isValid = true;
-    let errorMessage = 'Please review the errors in the table to be able to continue';
+    let errorMessage = GENERIC_VALIDATION_LABEL;
 
     // check if there is at least one non valid, return the error
     if (Object.values(this._validInvalidFields).some((fa) => !fa)) {
@@ -180,7 +209,12 @@ export default class ODDatatable extends LightningElement {
         this._tableData
           .filter((row) => !row._originalRecord._isGroupRecord && !row._originalRecord._isSummarizeRecord)
           .every((rec) => {
-            if (col.typeAttributes.editable && col.typeAttributes.required && !rec[col.fieldName] && !rec.isDeleted) {
+            if (
+              col.typeAttributes.editable &&
+              col.typeAttributes.required &&
+              isEmpty(rec[col.fieldName]) &&
+              !rec.isDeleted
+            ) {
               isValid = false;
               return false;
             }
@@ -193,7 +227,7 @@ export default class ODDatatable extends LightningElement {
       // check the save if it's inline
       if (this.isInlineSave && this.hasChanges && isValid && !this.isSaving) {
         isValid = false;
-        errorMessage = 'You need to Save or cancel the changes to continue.';
+        errorMessage = SAVE_VALIDATION_LABEL;
       }
     }
 
@@ -204,7 +238,7 @@ export default class ODDatatable extends LightningElement {
         ((this.rowRecords.length === 0 && !this._isSingleSelection) || (this._isSingleSelection && !this.rowRecordId))
       ) {
         isValid = false;
-        errorMessage = `You must select ${this._isSingleSelection ? '' : 'at least '}one record to continue`;
+        errorMessage = SELECT_VALIDATION_LABEL;
       }
     }
 
@@ -1012,7 +1046,9 @@ export default class ODDatatable extends LightningElement {
       .forEach((col) => {
         newRecord.isNew = true;
         newRecord._id = generateRandomString();
-        newRecord[col.fieldName] = col.typeAttributes.config.defaultValue || '';
+        newRecord[col.fieldName] = isEmpty(col.typeAttributes.config.defaultValue)
+          ? ''
+          : col.typeAttributes.config.defaultValue;
       });
 
     // add the _originalRecord too
@@ -1046,7 +1082,7 @@ export default class ODDatatable extends LightningElement {
   _doAddEditWithFlow(record = undefined) {
     const modalProps = {
       size: 'small',
-      label: 'Edit or Add from a flow',
+      label: ADD_EDIT_FLOW_LABEL,
     };
 
     if (!record) {
@@ -1079,7 +1115,7 @@ export default class ODDatatable extends LightningElement {
   async _doOpenFlowButton(fieldName, record = undefined) {
     const modalProps = {
       size: 'small',
-      label: 'Flow Button',
+      label: FLOW_BUTTON_LABEL,
       preview: this.preview,
       currentRecord: record,
     };
@@ -1202,7 +1238,7 @@ export default class ODDatatable extends LightningElement {
       // add an extra check on the column configuration
       if (this._listeningToPlatformEvent && waitForPlatformEvent) {
         this.isSaving = true;
-        this.savingMessage = 'We are processing the records. Please wait...';
+        this.savingMessage = PLATFORM_EVENT_WAITING_MESSAGE;
       }
     }
 
@@ -1418,15 +1454,15 @@ export default class ODDatatable extends LightningElement {
         }
 
         if (groupToUse) {
-          record[firstColumnField] = `Totals:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+          record[firstColumnField] = `${TOTALS_LABEL}${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
         } else {
-          record[firstColumnField] = `TOTALS:${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
+          record[firstColumnField] = `${TOTALS_LABEL.toUpperCase()}${SPACES_FOR_TOTALS}${record[firstColumnField]}`;
         }
       } else {
         if (groupToUse) {
-          record[firstColumnField] = `Totals:`;
+          record[firstColumnField] = TOTALS_LABEL;
         } else {
-          record[firstColumnField] = `TOTALS:`;
+          record[firstColumnField] = TOTALS_LABEL.toUpperCase();
         }
       }
     }
@@ -1496,7 +1532,7 @@ export default class ODDatatable extends LightningElement {
         break;
 
       case 'count':
-        result = `Count: ${values.length.toString()}`;
+        result = `${COUNT_LABEL} ${values.length.toString()}`;
         break;
       default:
     }
@@ -1960,9 +1996,7 @@ export default class ODDatatable extends LightningElement {
         }
       });
 
-      this.errorMessage =
-        this.errorMessage ||
-        'There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.';
+      this.errorMessage = this.errorMessage || SAVING_GENERIC_ERROR_MESSAGE;
     }
   }
 
@@ -2018,7 +2052,7 @@ export default class ODDatatable extends LightningElement {
 
     // add the extra column if needed
     if (this._doExportGroups) {
-      headers.unshift('Group_Name');
+      headers.unshift(GROUP_NAME_CSV_COLUMN_LABEL);
     }
 
     csvRows.push(headers.join(','));

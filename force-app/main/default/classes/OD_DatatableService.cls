@@ -385,13 +385,25 @@ public inherited sharing class OD_DatatableService {
 
         List<SObject> listToCreate = new List<SObject>();
 
+        // Get field describe map for the object to use for type conversion
+        SObjectType sObjectType = Schema.getGlobalDescribe().get(objectName);
+        Map<String, Schema.SObjectField> fieldMap = sObjectType.getDescribe().fields.getMap();
+
         // Convert to SObjects for DML
         for (Map<String, Object> recordMap : recordMaps) {
           SObject newRecord = (SObject) Type.forName(objectName).newInstance();
           for (String field : recordMap.keySet()) {
             if (!field.startsWith('_')) {
               // Skip _id and other special fields
-              newRecord.put(field, recordMap.get(field));
+              Object value = recordMap.get(field);
+
+              // Convert the value to the appropriate type based on the field's metadata
+              if (value != null && fieldMap.containsKey(field)) {
+                Schema.DisplayType fieldType = fieldMap.get(field).getDescribe().getType();
+                value = convertToFieldType(value, fieldType);
+              }
+
+              newRecord.put(field, value);
             }
           }
           listToCreate.add(newRecord);
@@ -488,6 +500,94 @@ public inherited sharing class OD_DatatableService {
       AuraHandledException e = new AuraHandledException(message);
       e.setMessage(message);
       throw e;
+    }
+  }
+
+  /*********************************************************************************************************
+   * @name			convertToFieldType
+   * @author			Pablo Martinez <ondutysoftwaresolutions@gmail.com>
+   * @created			22 / 03 / 2025
+   * @description		Convert a value to the appropriate type based on the field's metadata
+   * @param			Object value : The value to convert
+   * @param			Schema.DisplayType fieldType : The type of the field
+   * @return			Object with the converted value
+   **********************************************************************************************************/
+  private static Object convertToFieldType(Object value, Schema.DisplayType fieldType) {
+    // If the value is null, return null
+    if (value == null || value == '') {
+      return null;
+    }
+
+    try {
+      // Handle conversion based on field type
+      switch on fieldType {
+        when INTEGER {
+          // Convert String to Integer
+          if (value instanceof String) {
+            return Integer.valueOf(value);
+          }
+          // Convert Decimal to Integer
+          else if (value instanceof Decimal) {
+            return Integer.valueOf((Decimal) value);
+          }
+        }
+        when DOUBLE, CURRENCY, PERCENT {
+          // Convert String to Decimal
+          if (value instanceof String) {
+            return Decimal.valueOf((String) value);
+          }
+        }
+        when BOOLEAN {
+          // Convert String to Boolean
+          if (value instanceof String) {
+            String strValue = (String) value;
+            return (strValue.equalsIgnoreCase('true') ||
+            strValue.equalsIgnoreCase('1') ||
+            strValue.equalsIgnoreCase('yes'));
+          }
+          // Convert Integer to Boolean
+          else if (value instanceof Integer) {
+            return ((Integer) value) == 1;
+          }
+          // Convert Decimal to Boolean
+          else if (value instanceof Decimal) {
+            return ((Decimal) value) == 1;
+          }
+        }
+        when DATE {
+          // Convert String to Date
+          if (value instanceof String) {
+            return Date.valueOf((String) value);
+          }
+        }
+        when DATETIME {
+          // Convert String to DateTime
+          if (value instanceof String) {
+            return DateTime.ValueofGmt(((String) value).replace('T', ' '));
+          }
+        }
+        when TIME {
+          // Convert String to Time
+          if (value instanceof String) {
+            // Time.valueOf() doesn't exist, so we need to parse it manually
+            String timeStr = (String) value;
+            List<String> parts = timeStr.split(':');
+            if (parts.size() >= 2) {
+              Integer hour = Integer.valueOf(parts[0]);
+              Integer minute = Integer.valueOf(parts[1]);
+              Integer second = parts.size() > 2 ? Integer.valueOf(parts[2].split('\\.')[0]) : 0;
+              return Time.newInstance(hour, minute, second, 0);
+            }
+          }
+        }
+      }
+
+      // If no conversion was needed or possible, return the original value
+      return value;
+    } catch (Exception e) {
+      // If conversion fails, return the original value
+      // This allows the database to handle any type conversion errors
+      return value;
     }
   }
 

@@ -6,6 +6,14 @@
     </types>
     <types>
 		<members>*</members>
+		<name>CustomLabel</name>
+	</types>
+    <types>
+        <members>*</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
+		<members>*</members>
 		<name>CustomObject</name>
 	</types>
      <types>
@@ -20,5 +28,5 @@
         <members>*</members>
         <name>StaticResource</name>
     </types>
-    <version>56.0</version>
+    <version>62.0</version>
 </Package>

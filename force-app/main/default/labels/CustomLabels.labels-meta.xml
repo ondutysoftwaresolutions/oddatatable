@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Add_Edit_Flow_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Add Edit Flow Label</shortDescription>
+        <value>Edit or Add from a flow</value>
+    </labels>
+    <labels>
+        <fullName>Autocomplete_Label_Not_Found</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Autocomplete Label Not Found</shortDescription>
+        <value>Label not found</value>
+    </labels>
+    <labels>
+        <fullName>Autocomplete_No_Options</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Autocomplete No Options</shortDescription>
+        <value>No options found.</value>
+    </labels>
+    <labels>
+        <fullName>Autocomplete_Placeholder</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Autocomplete Placeholder</shortDescription>
+        <value>Select...</value>
+    </labels>
+    <labels>
+        <fullName>Autocomplete_Start_Typing</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Autocomplete Start Typing</shortDescription>
+        <value>Start typing...</value>
+    </labels>
+    <labels>
+        <fullName>Bulk_Edit_Update_Button</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Bulk Edit Update Button</shortDescription>
+        <value>Update Selected Rows</value>
+    </labels>
+    <labels>
+        <fullName>Cancel_Button</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Cancel Button</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>Close_Button</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Close Button</shortDescription>
+        <value>Close</value>
+    </labels>
+    <labels>
+        <fullName>Count_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Count Label</shortDescription>
+        <value>Count:</value>
+    </labels>
+    <labels>
+        <fullName>Download</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Download</shortDescription>
+        <value>Download</value>
+    </labels>
+    <labels>
+        <fullName>Fields_Have_Changed_Error</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Fields Have Changed Error</shortDescription>
+        <value>The following fields have changed, please reconfigure the table before using it as it can cause errors when saving:</value>
+    </labels>
+    <labels>
+        <fullName>Flow_Button_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Flow Button Label</shortDescription>
+        <value>Flow Button</value>
+    </labels>
+    <labels>
+        <fullName>Generic_Validation_Error</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Generic Validation Error</shortDescription>
+        <value>Please review the errors in the table to be able to continue</value>
+    </labels>
+    <labels>
+        <fullName>Group_Name_CSV_Column_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Group Name CSV Column Label</shortDescription>
+        <value>Group_Name</value>
+    </labels>
+    <labels>
+        <fullName>Pagination_First</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Pagination First</shortDescription>
+        <value>First</value>
+    </labels>
+    <labels>
+        <fullName>Pagination_Last</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Pagination Last</shortDescription>
+        <value>Last</value>
+    </labels>
+    <labels>
+        <fullName>Pagination_Next</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Pagination Next</shortDescription>
+        <value>Next</value>
+    </labels>
+    <labels>
+        <fullName>Pagination_Prev</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Pagination Prev</shortDescription>
+        <value>Prev</value>
+    </labels>
+    <labels>
+        <fullName>Platforrm_Event_Waiting</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Platforrm Event Waiting</shortDescription>
+        <value>We are processing the records. Please wait...</value>
+    </labels>
+    <labels>
+        <fullName>Save_Validation_Error</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Save Validation Error</shortDescription>
+        <value>You need to Save or cancel the changes to continue.</value>
+    </labels>
+    <labels>
+        <fullName>Saving_Generic_Error_Message</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Saving Generic Error Message</shortDescription>
+        <value>There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.</value>
+    </labels>
+    <labels>
+        <fullName>Select_Validation_Error</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Select Validation Error</shortDescription>
+        <value>You must select one record to continue.</value>
+    </labels>
+    <labels>
+        <fullName>Totals_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Totals Label</shortDescription>
+        <value>Totals:</value>
+    </labels>
+</CustomLabels>

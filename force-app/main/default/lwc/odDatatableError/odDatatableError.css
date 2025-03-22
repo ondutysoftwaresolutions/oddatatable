@@ -1,5 +1,1 @@
-:not(.in-record-page) .sticky {
-  position: sticky;
-  z-index: 9999;
-  top: -1rem;
-}
+@import 'c/odDatatableCSSLibrary';

@@ -55,13 +55,14 @@
           variant="brand"
           disabled={disabledUpdate}
           name="update"
-          label="Update Selected Rows"
-          title="Update Selected Rows"
+          label={labels.updateButton}
+          title={labels.updateButton}
           onclick={handleUpdateRows}
           class="slds-m-right--large"
         >
         </lightning-button>
-        <lightning-button name="close" label="Close" title="Close" onclick={handleClose}> </lightning-button>
+        <lightning-button name="close" label={labels.closeButton} title={labels.closeButton} onclick={handleClose}>
+        </lightning-button>
       </div>
     </div>
   </c-od-datatable-popup>
