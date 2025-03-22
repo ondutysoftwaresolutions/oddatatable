@@ -294,10 +294,15 @@
             value={theValue}
             required={required}
             max-length={maxLength}
-            onchange={handleChangeInputTextarea}
+            onchange={handleChangeInputText}
             placeholder={placeholder}
           >
           </lightning-textarea>
+          <template lwc:if={showCharacterCount}>
+            <div class="slds-size--1-of-1 slds-text-align--right slds-text-body_small remainingCharacters">
+              {characterCount}
+            </div>
+          </template>
         </template>
         <template lwc:else>
           <lightning-formatted-rich-text
@@ -331,12 +336,19 @@
             max-length={maxLength}
             name={fieldName}
             variant="label-hidden"
+            data-name={fieldName}
             required={required}
             autocomplete="off"
-            onchange={handleChangeInput}
+            onchange={handleChangeInputText}
+            pattern={pattern}
             placeholder={placeholder}
           >
           </lightning-input>
+          <template lwc:if={showCharacterCount}>
+            <div class="slds-size--1-of-1 slds-text-align--right slds-text-body_small remainingCharacters">
+              {characterCount}
+            </div>
+          </template>
         </template>
         <template lwc:else>
           <template lwc:if={isUrl}>

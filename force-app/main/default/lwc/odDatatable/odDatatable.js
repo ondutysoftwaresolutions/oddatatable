@@ -256,6 +256,13 @@ export default class ODDatatable extends LightningElement {
       if (!this.afterValidate) {
         this._doCleanOutputs(true, false);
       }
+
+      // add here the new records that comes from the flow with no Id, records created in the flow but not yet commited e.g.
+      this._tableData
+        .filter((rec) => rec.isNew && !rec.Id)
+        .forEach((rec) => {
+          this.outputAddedRows.push(rec);
+        });
     } else if (result.error) {
       this.isLoading = false;
       this.errorMessage = reduceErrors(result.error);
@@ -692,7 +699,8 @@ export default class ODDatatable extends LightningElement {
       } else {
         let record = {
           ...rec,
-          _id: rec.Id,
+          _id: rec.Id || rec._id || generateRandomString(),
+          isNew: !rec.Id,
           _originalRecord: {
             ...rec,
             _isFirst: index === 0,
@@ -1148,12 +1156,28 @@ export default class ODDatatable extends LightningElement {
 
           // bulk edition
           if (!resultModal.bottomNavFlow) {
+            let newIndexForAdd = 99999;
+
             resultModal.flowOutput.forEach((rec) => {
               // add or modify the record in the tableData
               const recordIndex = this._tableData.findIndex((rc) => rc._id === rec.Id);
 
               if (recordIndex !== -1) {
                 this._doUpdateRecord(recordIndex, rec);
+              } else {
+                // add delete and edit button
+                const newRecord = {
+                  ...ROW_BUTTON_CONFIGURATION.DELETE,
+                  ...ROW_BUTTON_CONFIGURATION.EDIT,
+                  _editLabel: this.editLabel,
+                  ...rec,
+                  _originalRecord: rec,
+                  _id: rec.Id,
+                };
+
+                this._doUpdateRecord(newIndexForAdd, newRecord);
+
+                newIndexForAdd++;
               }
             });
           } else {

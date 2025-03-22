@@ -4,6 +4,7 @@
   min-height: 2vh;
   display: flex;
   width: 100%;
+  flex-wrap: wrap;
   align-items: center;
 }
 

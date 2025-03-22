@@ -12,7 +12,7 @@ import {
   LOCAL_SIDE_SEARCH,
   SERVER_SIDE_SEARCH,
 } from 'c/odDatatableConstants';
-import { isEmpty } from 'c/odDatatableUtils';
+import { countWords, isEmpty } from 'c/odDatatableUtils';
 
 export default class ODInputGeneric extends LightningElement {
   @api fieldName;
@@ -40,10 +40,13 @@ export default class ODInputGeneric extends LightningElement {
   @api toggleLabel;
   @api insideDatatable = false;
   @api maxLength = 255;
+  @api showCharacterCount = false;
+  @api maxWords;
   @api maxNumber;
   @api minNumber = 0;
   @api isHtml = false;
   @api scale = 2;
+  @api pattern;
   @api precision = 18;
   @api afterValidate = false;
   @api currentRecordId;
@@ -342,6 +345,17 @@ export default class ODInputGeneric extends LightningElement {
     return (this.required && this.theValue) || !this.required;
   }
 
+  get characterCount() {
+    if (this.maxWords) {
+      const remainingWords = this.maxWords - (this.theValue ? countWords(this.theValue) : 0);
+
+      return `${remainingWords} words remaining`;
+    }
+    const remainingCharacters = this.maxLength - (this.theValue ? this.theValue.length : 0);
+
+    return `${remainingCharacters} characters remaining`;
+  }
+
   // =======================================================================================================================================================================================================================================
   // private methods
   // =======================================================================================================================================================================================================================================
@@ -437,9 +451,21 @@ export default class ODInputGeneric extends LightningElement {
     this._doUpdateField(event.target.dataset.name, event.target.value, valid);
   }
 
-  handleChangeInputTextarea(event) {
-    event.target.reportValidity();
-    this._doUpdateField(event.target.dataset.name, event.target.value, event.target.checkValidity());
+  handleChangeInputText(event) {
+    const value = event.target.value;
+    const words = countWords(value);
+    let valid = event.target.checkValidity();
+
+    // check if we need to count number of words
+    if (this.showCharacterCount && this.maxWords && words > this.maxWords) {
+      this.updateError(`The maximum number of words allowed for this field is ${this.maxWords} and you got ${words}.`);
+      valid = false;
+    } else {
+      event.target.setCustomValidity('');
+      event.target.reportValidity();
+    }
+
+    this._doUpdateField(event.target.dataset.name, event.target.value, valid);
   }
 
   handleChangeNumber(event) {

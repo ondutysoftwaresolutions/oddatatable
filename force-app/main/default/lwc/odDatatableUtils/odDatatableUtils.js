@@ -193,3 +193,8 @@ export function getSummarizeFieldTypeToDisplay(type) {
 
   return type;
 }
+
+export function countWords(str) {
+  const matches = str.match(/\b\w+\b/g);
+  return matches ? matches.length : 0;
+}
