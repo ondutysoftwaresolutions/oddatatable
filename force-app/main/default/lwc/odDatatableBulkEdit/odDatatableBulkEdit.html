@@ -46,9 +46,8 @@
           class="slds-p-right--medium"
           extra-label-classes="slds-align--absolute-center"
           value={onlyEmpty}
-          toggle-label="Only update if empty?"
+          toggle-label={labels.toggleLabel}
           onupdatefield={handleToggleIfEmpty}
-          help-text="Only update the fields in the selected rows if the current value is empty."
         >
         </c-od-datatable-input-generic>
         <lightning-button

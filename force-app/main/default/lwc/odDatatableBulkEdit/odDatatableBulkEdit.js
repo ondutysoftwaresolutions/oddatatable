@@ -3,6 +3,7 @@ import { getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 import { FIELD_TYPES, YES_NO } from 'c/odDatatableConstants';
 import UPDATE_BUTTON_LABEL from '@salesforce/label/c.Bulk_Edit_Update_Button';
 import CLOSE_BUTTON_LABEL from '@salesforce/label/c.Close_Button';
+import TOGGLE_LABEL from '@salesforce/label/c.Bulk_Edit_Toggle_Label';
 
 export default class OdDatatableBulkEdit extends LightningElement {
   @api title;
@@ -13,6 +14,7 @@ export default class OdDatatableBulkEdit extends LightningElement {
   labels = {
     updateButton: UPDATE_BUTTON_LABEL,
     closeButton: CLOSE_BUTTON_LABEL,
+    toggleLabel: TOGGLE_LABEL,
   };
 
   fieldTypes = FIELD_TYPES;

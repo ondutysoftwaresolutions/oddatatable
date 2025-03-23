@@ -1,3 +1,6 @@
+import DELETE_BUTTON_TOOLTIP from '@salesforce/label/c.Delete_Button_Tooltip';
+import RESTORE_BUTTON_TOOLTIP from '@salesforce/label/c.Restore_Button_Tooltip';
+
 export const FIELD_TYPES = {
   ADDRESS: 'address',
   CHECKBOX: 'boolean',
@@ -267,24 +270,22 @@ export const ROW_BUTTON_CONFIGURATION = {
   DELETE: {
     iconName: 'utility:delete',
     _deleteAction: EVENTS.DELETE,
-    tooltip: 'Delete this record. If it is an input record, it will mark it as deleted',
+    tooltip: DELETE_BUTTON_TOOLTIP,
   },
   UNDELETE: {
     iconName: 'utility:undelete',
     _deleteAction: EVENTS.UNDELETE,
-    tooltip: 'Restore this record',
+    tooltip: RESTORE_BUTTON_TOOLTIP,
   },
   GROUP_COLLAPSE: {
     buttonVariant: 'base',
     iconName: 'utility:chevronup',
     action: EVENTS.GROUP_COLLAPSE,
-    tooltip: 'Collapse this group',
   },
   GROUP_EXPAND: {
     buttonVariant: 'base',
     iconName: 'utility:chevrondown',
     action: EVENTS.GROUP_EXPAND,
-    tooltip: 'Expand this group',
   },
 };
 

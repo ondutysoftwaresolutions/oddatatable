@@ -41,6 +41,14 @@
         <value>Start typing...</value>
     </labels>
     <labels>
+        <fullName>Bulk_Edit_Toggle_Label</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Bulk Edit Toggle Label</shortDescription>
+        <value>Only update if empty?</value>
+    </labels>
+    <labels>
         <fullName>Bulk_Edit_Update_Button</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
@@ -71,6 +79,14 @@
         <protected>true</protected>
         <shortDescription>Count Label</shortDescription>
         <value>Count:</value>
+    </labels>
+    <labels>
+        <fullName>Delete_Button_Tooltip</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Delete Button Tooltip</shortDescription>
+        <value>Delete this record. If it is an input record, it will mark it as deleted</value>
     </labels>
     <labels>
         <fullName>Download</fullName>
@@ -151,6 +167,14 @@
         <protected>true</protected>
         <shortDescription>Platforrm Event Waiting</shortDescription>
         <value>We are processing the records. Please wait...</value>
+    </labels>
+    <labels>
+        <fullName>Restore_Button_Tooltip</fullName>
+        <categories>OD Datatable</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Restore Button Tooltip</shortDescription>
+        <value>Restore this record</value>
     </labels>
     <labels>
         <fullName>Save_Validation_Error</fullName>
