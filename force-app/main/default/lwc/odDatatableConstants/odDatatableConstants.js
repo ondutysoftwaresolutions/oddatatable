@@ -1,5 +1,5 @@
-import DELETE_BUTTON_TOOLTIP from '@salesforce/label/c.Delete_Button_Tooltip';
-import RESTORE_BUTTON_TOOLTIP from '@salesforce/label/c.Restore_Button_Tooltip';
+import DELETE_BUTTON_TOOLTIP from '@salesforce/label/c.od_Delete_Button_Tooltip';
+import RESTORE_BUTTON_TOOLTIP from '@salesforce/label/c.od_Restore_Button_Tooltip';
 
 export const FIELD_TYPES = {
   ADDRESS: 'address',

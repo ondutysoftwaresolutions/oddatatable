@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
-        <fullName>Add_Edit_Flow_Label</fullName>
+        <fullName>od_Add_Edit_Flow_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -9,7 +9,7 @@
         <value>Edit or Add from a flow</value>
     </labels>
     <labels>
-        <fullName>Autocomplete_Label_Not_Found</fullName>
+        <fullName>od_Autocomplete_Label_Not_Found</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -17,7 +17,7 @@
         <value>Label not found</value>
     </labels>
     <labels>
-        <fullName>Autocomplete_No_Options</fullName>
+        <fullName>od_Autocomplete_No_Options</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -25,7 +25,7 @@
         <value>No options found.</value>
     </labels>
     <labels>
-        <fullName>Autocomplete_Placeholder</fullName>
+        <fullName>od_Autocomplete_Placeholder</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -33,7 +33,7 @@
         <value>Select...</value>
     </labels>
     <labels>
-        <fullName>Autocomplete_Start_Typing</fullName>
+        <fullName>od_Autocomplete_Start_Typing</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -41,7 +41,7 @@
         <value>Start typing...</value>
     </labels>
     <labels>
-        <fullName>Bulk_Edit_Toggle_Label</fullName>
+        <fullName>od_Bulk_Edit_Toggle_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -49,7 +49,7 @@
         <value>Only update if empty?</value>
     </labels>
     <labels>
-        <fullName>Bulk_Edit_Update_Button</fullName>
+        <fullName>od_Bulk_Edit_Update_Button</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -57,7 +57,7 @@
         <value>Update Selected Rows</value>
     </labels>
     <labels>
-        <fullName>Cancel_Button</fullName>
+        <fullName>od_Cancel_Button</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -65,7 +65,7 @@
         <value>Cancel</value>
     </labels>
     <labels>
-        <fullName>Close_Button</fullName>
+        <fullName>od_Close_Button</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -73,7 +73,7 @@
         <value>Close</value>
     </labels>
     <labels>
-        <fullName>Count_Label</fullName>
+        <fullName>od_Count_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -81,7 +81,7 @@
         <value>Count:</value>
     </labels>
     <labels>
-        <fullName>Delete_Button_Tooltip</fullName>
+        <fullName>od_Delete_Button_Tooltip</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -89,7 +89,7 @@
         <value>Delete this record. If it is an input record, it will mark it as deleted</value>
     </labels>
     <labels>
-        <fullName>Download</fullName>
+        <fullName>od_Download</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -97,7 +97,7 @@
         <value>Download</value>
     </labels>
     <labels>
-        <fullName>Fields_Have_Changed_Error</fullName>
+        <fullName>od_Fields_Have_Changed_Error</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -105,7 +105,7 @@
         <value>The following fields have changed, please reconfigure the table before using it as it can cause errors when saving:</value>
     </labels>
     <labels>
-        <fullName>Flow_Button_Label</fullName>
+        <fullName>od_Flow_Button_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -113,7 +113,7 @@
         <value>Flow Button</value>
     </labels>
     <labels>
-        <fullName>Generic_Validation_Error</fullName>
+        <fullName>od_Generic_Validation_Error</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -121,7 +121,7 @@
         <value>Please review the errors in the table to be able to continue</value>
     </labels>
     <labels>
-        <fullName>Group_Name_CSV_Column_Label</fullName>
+        <fullName>od_Group_Name_CSV_Column_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -129,7 +129,7 @@
         <value>Group_Name</value>
     </labels>
     <labels>
-        <fullName>Pagination_First</fullName>
+        <fullName>od_Pagination_First</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -137,7 +137,7 @@
         <value>First</value>
     </labels>
     <labels>
-        <fullName>Pagination_Last</fullName>
+        <fullName>od_Pagination_Last</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -145,7 +145,7 @@
         <value>Last</value>
     </labels>
     <labels>
-        <fullName>Pagination_Next</fullName>
+        <fullName>od_Pagination_Next</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -153,7 +153,7 @@
         <value>Next</value>
     </labels>
     <labels>
-        <fullName>Pagination_Prev</fullName>
+        <fullName>od_Pagination_Prev</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -161,7 +161,7 @@
         <value>Prev</value>
     </labels>
     <labels>
-        <fullName>Platforrm_Event_Waiting</fullName>
+        <fullName>od_Platforrm_Event_Waiting</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -169,7 +169,7 @@
         <value>We are processing the records. Please wait...</value>
     </labels>
     <labels>
-        <fullName>Restore_Button_Tooltip</fullName>
+        <fullName>od_Restore_Button_Tooltip</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -177,7 +177,7 @@
         <value>Restore this record</value>
     </labels>
     <labels>
-        <fullName>Save_Validation_Error</fullName>
+        <fullName>od_Save_Validation_Error</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -185,7 +185,7 @@
         <value>You need to Save or cancel the changes to continue.</value>
     </labels>
     <labels>
-        <fullName>Saving_Generic_Error_Message</fullName>
+        <fullName>od_Saving_Generic_Error_Message</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -193,7 +193,7 @@
         <value>There were errors saving your records. Please review the highlighted errors in the table and make the necessary corrections before trying again.</value>
     </labels>
     <labels>
-        <fullName>Select_Validation_Error</fullName>
+        <fullName>od_Select_Validation_Error</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>
@@ -201,7 +201,7 @@
         <value>You must select one record to continue.</value>
     </labels>
     <labels>
-        <fullName>Totals_Label</fullName>
+        <fullName>od_Totals_Label</fullName>
         <categories>OD Datatable</categories>
         <language>en_US</language>
         <protected>true</protected>

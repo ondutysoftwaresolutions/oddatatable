@@ -1,9 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
 import { getPopupHeight, getBodyPopupClasses } from 'c/odDatatableUtils';
 import { FIELD_TYPES, YES_NO } from 'c/odDatatableConstants';
-import UPDATE_BUTTON_LABEL from '@salesforce/label/c.Bulk_Edit_Update_Button';
-import CLOSE_BUTTON_LABEL from '@salesforce/label/c.Close_Button';
-import TOGGLE_LABEL from '@salesforce/label/c.Bulk_Edit_Toggle_Label';
+import UPDATE_BUTTON_LABEL from '@salesforce/label/c.od_Bulk_Edit_Update_Button';
+import CLOSE_BUTTON_LABEL from '@salesforce/label/c.od_Close_Button';
+import TOGGLE_LABEL from '@salesforce/label/c.od_Bulk_Edit_Toggle_Label';
 
 export default class OdDatatableBulkEdit extends LightningElement {
   @api title;

@@ -1,10 +1,10 @@
 import { LightningElement, api } from 'lwc';
 import getRecordsForLookup from '@salesforce/apex/OD_DatatableRecordsController.getRecordsForLookup';
 import getLookupRecord from '@salesforce/apex/OD_DatatableRecordsController.getLookupRecord';
-import START_TYPING_LABEL from '@salesforce/label/c.Autocomplete_Start_Typing';
-import PLACEHOLDER_LABEL from '@salesforce/label/c.Autocomplete_Placeholder';
-import NO_OPTIONS_LABEL from '@salesforce/label/c.Autocomplete_No_Options';
-import LABEL_NOT_FOUND_LABEL from '@salesforce/label/c.Autocomplete_Label_Not_Found';
+import START_TYPING_LABEL from '@salesforce/label/c.od_Autocomplete_Start_Typing';
+import PLACEHOLDER_LABEL from '@salesforce/label/c.od_Autocomplete_Placeholder';
+import NO_OPTIONS_LABEL from '@salesforce/label/c.od_Autocomplete_No_Options';
+import LABEL_NOT_FOUND_LABEL from '@salesforce/label/c.od_Autocomplete_Label_Not_Found';
 import { SERVER_SIDE_SEARCH } from 'c/odDatatableConstants';
 import { isEmpty, reduceErrors } from 'c/odDatatableUtils';
 
