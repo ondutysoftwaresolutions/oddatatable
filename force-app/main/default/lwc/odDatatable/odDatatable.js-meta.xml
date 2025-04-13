@@ -21,8 +21,7 @@
         name="tableData"
         label="Data Source Record Collection"
         type="{T[]}"
-        role="inputOnly"
-        description="Record Collection variable containing the records to display in the datatable."
+        description="Record Collection variable containing the records to display in the datatable. This is mutated by add/edit/delete"
       />
             <property
         name="columns"
