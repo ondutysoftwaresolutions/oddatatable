@@ -224,7 +224,7 @@ export default class ODInputAutocomplete extends LightningElement {
         }
       }
 
-      return `position: fixed; max-height: ${maxHeight}px;top: ${top}; bottom: ${bottom}; max-width: ${bounding.width}px; transform: none; left: ${left};`;
+      return `position: fixed; max-height: ${maxHeight}px;top: ${top}; bottom: ${bottom}; max-width: ${bounding.width}px; transform: none; left: ${left};z-index: 999999;`;
     }
 
     return '';
