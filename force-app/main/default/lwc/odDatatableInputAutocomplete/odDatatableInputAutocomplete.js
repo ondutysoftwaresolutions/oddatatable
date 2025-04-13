@@ -603,7 +603,7 @@ export default class ODInputAutocomplete extends LightningElement {
   }
 
   // function to close the dropdown when moving away from the input (and not going away from the dropdown)
-  handleBlur(e) {
+  handleBlur() {
     this._doClose(!this.isServerSearch);
     // dispatch onblur, just in case a parent component is listening
     this._doDispatchBlur();

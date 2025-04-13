@@ -83,14 +83,22 @@ public inherited sharing class OD_DatatableService {
       // for each field
       for (String fieldName : fieldsMap.keySet()) {
         Schema.DescribeFieldResult fieldResult = fieldsMap.get(fieldName).getDescribe();
+        Schema.DescribeFieldResult fieldResultEdit;
+
+        // check if compound, use that as the field result for canEdit
+        if (String.isNotBlank(fieldResult.getCompoundFieldName())) {
+          fieldResultEdit = fieldsMap.get(fieldResult.getCompoundFieldName()).getDescribe();
+        } else {
+          fieldResultEdit = fieldResult;
+        }
 
         Boolean canEdit =
-          !fieldResult.isCalculated() &&
-          (fieldResult.isPermissionable() ||
-          fieldResult.isNameField() ||
-          !fieldResult.isNillable()) &&
-          !fieldResult.isAutoNumber() &&
-          !fieldResult.isQueryByDistance();
+          !fieldResultEdit.isCalculated() &&
+          (fieldResultEdit.isPermissionable() ||
+          fieldResultEdit.isNameField() ||
+          !fieldResultEdit.isNillable()) &&
+          !fieldResultEdit.isAutoNumber() &&
+          !fieldResultEdit.isQueryByDistance();
 
         // build the field wrapper
         OD_Datatable.FieldWrapper newField = new OD_Datatable.FieldWrapper();
