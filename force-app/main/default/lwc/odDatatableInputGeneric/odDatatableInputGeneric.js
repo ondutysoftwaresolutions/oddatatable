@@ -43,10 +43,11 @@ export default class ODInputGeneric extends LightningElement {
   @api showCharacterCount = false;
   @api maxWords;
   @api maxNumber;
-  @api minNumber = 0;
+  @api minNumber;
   @api isHtml = false;
   @api scale = 2;
   @api pattern;
+  @api messagePatternMismatch = 'Your entry does not match the allowed pattern.';
   @api precision = 18;
   @api afterValidate = false;
   @api currentRecordId;

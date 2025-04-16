@@ -96,7 +96,8 @@ public inherited sharing class OD_DatatableService {
           !fieldResultEdit.isCalculated() &&
           (fieldResultEdit.isPermissionable() ||
           fieldResultEdit.isNameField() ||
-          !fieldResultEdit.isNillable()) &&
+          !fieldResultEdit.isNillable() ||
+          fieldResultEdit.isUpdateable()) &&
           !fieldResultEdit.isAutoNumber() &&
           !fieldResultEdit.isQueryByDistance();
 

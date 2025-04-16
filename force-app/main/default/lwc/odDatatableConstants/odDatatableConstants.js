@@ -15,6 +15,7 @@ export const FIELD_TYPES = {
   LONG_TEXTAREA: 'long_textarea',
   LOOKUP: 'lookup',
   MULTISELECT: 'multipicklist',
+  PASSWORD: 'password',
   PERCENTAGE: 'percent',
   PHONE: 'phone',
   RADIO_BUTTON_TYPE: 'radioButtonType',
