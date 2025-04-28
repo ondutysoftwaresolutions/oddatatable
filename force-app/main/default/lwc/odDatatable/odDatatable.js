@@ -42,6 +42,7 @@ import {
   SHARING_CONTEXT,
 } from 'c/odDatatableConstants';
 import {
+  isBlank,
   isEmpty,
   reduceErrors,
   getFieldType,
@@ -212,7 +213,7 @@ export default class ODDatatable extends LightningElement {
             if (
               col.typeAttributes.editable &&
               col.typeAttributes.required &&
-              isEmpty(rec[col.fieldName]) &&
+              isBlank(rec[col.fieldName]) &&
               !rec.isDeleted
             ) {
               isValid = false;
@@ -723,6 +724,7 @@ export default class ODDatatable extends LightningElement {
 
     this._originalTableData.forEach((rec, index, array) => {
       // if this record is in the stored session one use the stored one (for when we validate and back to the same page)
+      const indexAdded = this.outputAddedRows.findIndex((ad) => ad._id === rec._id);
       const indexEdited = this.outputEditedRows.findIndex((ed) => ed._id === rec.Id);
       const indexDeleted = this.outputDeletedRows.findIndex((dl) => dl._id === rec.Id);
 
@@ -730,6 +732,8 @@ export default class ODDatatable extends LightningElement {
         result.push(this.outputEditedRows[indexEdited]);
       } else if (indexDeleted !== -1 && !afterSave) {
         result.push(this.outputDeletedRows[indexDeleted]);
+      } else if (indexAdded !== -1 && !afterSave) {
+        result.push(this.outputAddedRows[indexAdded]);
       } else {
         let record = {
           ...rec,
@@ -754,11 +758,6 @@ export default class ODDatatable extends LightningElement {
         result.push(record);
       }
     });
-
-    // add the added rows if any
-    if (this.outputAddedRows.length > 0 && !afterSave) {
-      result = result.concat(this.outputAddedRows);
-    }
 
     if (result.length > 0) {
       const totalRow = this._checkAndSummarize(result);

@@ -4,6 +4,10 @@ export function isEmpty(value) {
   return value === undefined || value === null;
 }
 
+export function isBlank(value) {
+  return isEmpty(value) || value === '' || value === ' ';
+}
+
 /**
  * Reduces one or more LDS errors into a string[] of error messages.
  * @param {FetchResponse|FetchResponse[]} errors
